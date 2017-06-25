@@ -66,9 +66,10 @@ class App extends Component {
           <ToastContainer />
           <div className="App-header">
             <img src={logo} className="App-logo" alt="logo" />
-            <h2>Welcome to React, {this.state.nick}</h2>
+            <br />
+            <h2 className="inline">Welcome to React, </h2>
+            <Nick nick={this.state.nick} onNickChange={this.updateNick} />
           </div>
-          <Nick nick={this.state.nick} onNickChange={this.updateNick} />
           <Route path="/list" component={List} />
           <Route path="/admin" component={Admin} />
         </div>
