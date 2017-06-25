@@ -81,7 +81,7 @@ class Admin extends Component {
   }
 
   render() {
-    if (!this.props.isAdmin) {
+    if (this.state.isAdmin) {
       return (
         <div>
           <input
