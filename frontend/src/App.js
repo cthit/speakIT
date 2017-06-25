@@ -70,6 +70,7 @@ class App extends Component {
             <h2 className="inline">Welcome to React, </h2>
             <Nick nick={this.state.nick} onNickChange={this.updateNick} />
           </div>
+          <Route exact path="/" component={List} />
           <Route path="/list" component={List} />
           <Route path="/admin" component={Admin} />
         </div>
