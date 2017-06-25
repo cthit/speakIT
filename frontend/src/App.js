@@ -61,6 +61,7 @@ class App extends Component {
           </div>
           <Nick nick={this.state.nick} onNickChange={this.updateNick} />
           <Route path="/list" component={List} />
+          <Route path="/admin" component={Admin} />
         </div>
       </Router>
     );
