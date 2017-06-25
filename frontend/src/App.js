@@ -3,6 +3,9 @@ import logo from "./logo.svg";
 import "./App.css";
 import { BrowserRouter as Router, Route } from "react-router-dom";
 
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.min.css";
+
 import List from "./List.js";
 import Nick from "./Nick.js";
 import Admin from "./Admin.js";
@@ -31,13 +34,18 @@ class App extends Component {
     myFetch("/me", {
       method: "POST",
       body: JSON.stringify({ nick: newNick })
-    }).then(resp => {
-      if (resp.status === 200) {
-        this.setState({ nick: newNick });
-      } else {
-        console.log("Could not update nick, are you connected to the server?");
-      }
-    });
+    })
+      .then(resp => {
+        if (resp.status === 200) {
+          this.setState({ nick: newNick });
+          toast.success("Nick updated successfully!");
+        } else {
+          toast.error("Could not update nick.");
+        }
+      })
+      .catch(err =>
+        toast.error("Could not update nick, not connected to server.")
+      );
   }
 
   getNick() {
@@ -55,6 +63,7 @@ class App extends Component {
     return (
       <Router>
         <div className="App">
+          <ToastContainer />
           <div className="App-header">
             <img src={logo} className="App-logo" alt="logo" />
             <h2>Welcome to React, {this.state.nick}</h2>

@@ -1,4 +1,5 @@
 import React, { Component } from "react";
+import { toast } from "react-toastify";
 
 const BASE_URL = "http://83.254.25.245:3001/";
 const myFetch = (path, args) => {
@@ -23,7 +24,7 @@ class Admin extends Component {
   newDiscussion() {
     myFetch("/admin/discussion", { method: "POST" }).then(resp => {
       if (resp.status === 200) {
-        console.log("discussion added");
+        toast.success("Discussion added");
       }
     });
   }
@@ -31,7 +32,7 @@ class Admin extends Component {
   endDiscussion() {
     myFetch("/admin/discussion", { method: "DELETE" }).then(resp => {
       if (resp.status === 200) {
-        console.log("discussion ended");
+        toast.success("dDscussion ended");
       }
     });
   }
@@ -42,7 +43,7 @@ class Admin extends Component {
       body: JSON.stringify({ nick: this.state.nickToRemove })
     }).then(resp => {
       if (resp.status === 200) {
-        console.log(this.state.nickToRemove + "Removed from discussion");
+        toast.success(this.state.nickToRemove + "Removed from discussion");
       }
     });
   }
@@ -51,14 +52,16 @@ class Admin extends Component {
     myFetch("/admin", {
       method: "POST",
       body: JSON.stringify({ code: this.state.authCode })
-    }).then(resp => {
-      if (resp.status === 200) {
-        console.log(this.state.authCode + " was a success.");
-        this.setState({ isAdmin: true });
-      } else {
-        console.log("Wrong code, try again");
-      }
-    });
+    })
+      .then(resp => {
+        if (resp.status === 200) {
+          toast.success("Authorization successfull!");
+          this.setState({ isAdmin: true });
+        } else {
+          toast.error("Could not authorize, code not accepted.");
+        }
+      })
+      .catch(err => toast.error("Not connected..."));
   }
 
   handleNickToRemoveChange(event) {
