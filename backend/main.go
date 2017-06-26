@@ -14,12 +14,14 @@ type State struct {
 	SpeakerLists  [][]sessions.Session // A list of speakerLists where each index is a list of sessions in queue to speak
 }
 
+const SESSION_KEY = "talarlista_session"
+
 var store = sessions.NewCookieStore([]byte("this is the secret stuff"))
 var state State
 
 func listHandler(w http.ResponseWriter, req *http.Request) {
 	log.Print("Listhandler begin")
-	session, err := store.Get(req, "talarlista_session")
+	session, err := store.Get(req, SESSION_KEY)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
