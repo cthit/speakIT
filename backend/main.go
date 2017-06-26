@@ -137,7 +137,7 @@ func main() {
 
 	handler = context.ClearHandler(handler)
 
-	log.Printf("About to listen on 3001. Go to http://127.0.0.1:3001/")
+	log.Print("About to listen on 3001. Go to http://127.0.0.1:3001/")
 	//err := http.ListenAndServeTLS(":3001", "cert.pem", "key.pem", nil)
 	err := http.ListenAndServe(":3001", handler)
 	log.Fatal(err)
