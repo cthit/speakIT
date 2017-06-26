@@ -37,17 +37,23 @@ func listHandler(w http.ResponseWriter, req *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	session.Save(req, w)
 
 	log.Printf("Session is new %v\n", session.IsNew)
 	if session.IsNew {
 		var id = uuid.New()
-		session.Values[UUID_KEY] = id
+		session.Values[UUID_KEY] = id.String()
+
 		log.Printf("New user id: %v\n", id)
 
 		state.addUser(User{"", false, id, session})
 		log.Printf("State with new user: %v", state)
 	}
+
+	err = session.Save(req, w)
+	if err != nil {
+		log.Printf("Error when saving session to storage: %v", err)
+	}
+
 
 	session.Options = &sessions.Options{ // should this be done inside the previous if-statement?
 		MaxAge:   86400,
@@ -77,14 +83,19 @@ func listHandler(w http.ResponseWriter, req *http.Request) {
 }
 
 func getUUIDfromSession(session *sessions.Session) (uuid.UUID, error) {
-	storedId, ok := session.Values[UUID_KEY]
+	storedValue, ok := session.Values[UUID_KEY]
 	if !ok {
 		return uuid.UUID{}, errors.New("Could not find user from session-stored UUID")
 	}
 
-	id, ok := storedId.(uuid.UUID)
+	stringId, ok := storedValue.(string)
 	if !ok {
-		return uuid.UUID{}, errors.New("Could not cast storedId to uuid.UUID")
+		return uuid.UUID{}, errors.New("Could not cast stored value to string")
+	}
+
+	id, err := uuid.Parse(stringId)
+	if err != nil {
+		return uuid.UUID{}, errors.New("Could not parse stored string into uuid.UUID")
 	}
 
 	return id, nil
