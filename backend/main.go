@@ -3,7 +3,6 @@ package main
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"github.com/google/uuid"
 	"github.com/gorilla/context"
 	"github.com/gorilla/sessions"
@@ -138,15 +137,14 @@ func (s *State) updateUser(session *sessions.Session, user User) bool {
 		return false
 	}
 
-	user, ok := s.Users[id]
-	if ok {
+	storedUser, ok := s.Users[id]
+	if !ok {
 		log.Printf("Could not find user when updating: sessionId: \"%s\"", id)
 		return false
 	}
-	user.Nick = user.Nick
+	storedUser.Nick = user.Nick
 
 	s.Users[id] = user
-	//*(s.Users[session.ID]) = user.Nick
 	return true
 }
 
