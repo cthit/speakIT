@@ -53,12 +53,10 @@ func listHandler(w http.ResponseWriter, req *http.Request) {
 		log.Printf("Error when saving session to storage: %v", err)
 	}
 
-
 	session.Options = &sessions.Options{ // should this be done inside the previous if-statement?
 		MaxAge:   86400,
 		HttpOnly: true,
 	}
-
 
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
@@ -213,7 +211,6 @@ func adminHandler(w http.ResponseWriter, req *http.Request) {
 
 func userHandler(w http.ResponseWriter, req *http.Request) {
 	session, err := store.Get(req, SESSION_KEY)
-	fmt.Printf("Session: %s\n", session)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -222,7 +219,7 @@ func userHandler(w http.ResponseWriter, req *http.Request) {
 	if req.Method == http.MethodGet {
 		user, err := state.getUserFromSession(session)
 		if err != nil {
-			log.Printf("Could not get user from session %v\n", err)
+			log.Printf("Could not get user from session: %v\n", err)
 			//TODO add http error
 			return
 		}
