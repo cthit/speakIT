@@ -12,8 +12,8 @@ import (
 )
 
 type State struct {
-	Users        map[uuid.UUID]User `json:"users"`         // All participators at the student division meeting.
-	SpeakerLists [][]User           `json:"speakersLists"` // A list of speakerLists where each index is a list of sessions in queue to speak
+	Users        map[uuid.UUID]*User `json:"users"`         // All participators at the student division meeting.
+	SpeakerLists [][]*User           `json:"speakersLists"` // A list of speakerLists where each index is a list of sessions in queue to speak
 }
 
 type User struct {
@@ -44,7 +44,7 @@ func listHandler(w http.ResponseWriter, req *http.Request) {
 
 		log.Printf("New user id: %v\n", id)
 
-		state.addUser(User{"", false, id, session})
+		state.addUser(&User{"", false, id, session})
 		log.Printf("State with new user: %v", state)
 	}
 
@@ -100,26 +100,26 @@ func getUUIDfromSession(session *sessions.Session) (uuid.UUID, error) {
 	return id, nil
 }
 
-func (s State) getUserFromSession(session *sessions.Session) (User, error) {
+func (s State) getUserFromSession(session *sessions.Session) (*User, error) {
 	id, err := getUUIDfromSession(session)
 
 	if err != nil {
-		return User{}, err
+		return nil, err
 	}
 
 	return s.getUser(id)
 }
 
-func (s State) getUser(id uuid.UUID) (User, error) {
+func (s State) getUser(id uuid.UUID) (*User, error) {
 	user, ok := s.Users[id]
 
 	if !ok {
-		return User{}, errors.New("Could not find user")
+		return nil, errors.New("Could not find user")
 	}
 	return user, nil
 }
 
-func (s State) addUser(user User) bool {
+func (s State) addUser(user *User) bool {
 	_, ok := s.Users[user.id]
 	if ok {
 		return false
@@ -144,7 +144,6 @@ func (s *State) updateUser(session *sessions.Session, user User) bool {
 	}
 	storedUser.Nick = user.Nick
 
-	s.Users[id] = user
 	return true
 }
 
@@ -157,7 +156,7 @@ func listGet(w http.ResponseWriter) {
 	w.Write(b)
 }
 
-func listPost(w http.ResponseWriter, user User) {
+func listPost(w http.ResponseWriter, user *User) {
 	currentSpeakerList := state.SpeakerLists[len(state.SpeakerLists)-1]
 
 	if isRegistered(user, currentSpeakerList) {
@@ -170,7 +169,7 @@ func listPost(w http.ResponseWriter, user User) {
 
 }
 
-func listDelete(w http.ResponseWriter, user User) {
+func listDelete(w http.ResponseWriter, user *User) {
 	currentSpeakerList := state.SpeakerLists[len(state.SpeakerLists)-1]
 	if isRegistered(user, currentSpeakerList) {
 		state.SpeakerLists[len(state.SpeakerLists)-1] = removeUserFromList(user, currentSpeakerList)
@@ -181,7 +180,7 @@ func listDelete(w http.ResponseWriter, user User) {
 	}
 }
 
-func isRegistered(currentUser User, speakersList []User) bool {
+func isRegistered(currentUser *User, speakersList []*User) bool {
 	for _, user := range speakersList {
 		if currentUser.id == user.id {
 			return true
@@ -190,7 +189,7 @@ func isRegistered(currentUser User, speakersList []User) bool {
 	return false
 }
 
-func removeUserFromList(user User, userList []User) []User {
+func removeUserFromList(user *User, userList []*User) []*User {
 	userIndex := -1
 	for i, s := range userList {
 		if user.id == s.id {
@@ -256,8 +255,8 @@ func userHandler(w http.ResponseWriter, req *http.Request) {
 func main() {
 	log.SetFlags(log.Lshortfile)
 
-	state.SpeakerLists = append(state.SpeakerLists, []User{})
-	state.Users = make(map[uuid.UUID]User)
+	state.SpeakerLists = append(state.SpeakerLists, []*User{})
+	state.Users = make(map[uuid.UUID]*User)
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", listHandler)
