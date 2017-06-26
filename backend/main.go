@@ -256,6 +256,8 @@ func userHandler(w http.ResponseWriter, req *http.Request) {
 }
 
 func main() {
+	log.SetFlags(log.Lshortfile)
+
 	state.SpeakerLists = append(state.SpeakerLists, []User{})
 	state.Users = make(map[uuid.UUID]User)
 
