@@ -40,7 +40,6 @@ func listHandler(w http.ResponseWriter, req *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	w.Header().Set("Access-Control-Allow-Origin", "*")
 
 	user, err := state.getUserFromSession(session)
 	if err != nil {
@@ -208,20 +207,7 @@ func userHandler(w http.ResponseWriter, req *http.Request) {
 	}
 
 	if req.Method == http.MethodGet {
-		user, err := state.getUserFromSession(session)
-		if err != nil {
-			log.Printf("Could not get user from session: %v\n", err)
-			sendErrorResponse(w, JsonError{"No user"}, http.StatusInternalServerError)
-			return
-		}
-
-		bytes, err := json.Marshal(user)
-		w.Header().Set("Content-Type", "application/json")
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-		} else {
-			w.Write(bytes)
-		}
+		respondWithUser(w, session)
 	} else if req.Method == http.MethodPost {
 
 		var dat User
@@ -235,8 +221,24 @@ func userHandler(w http.ResponseWriter, req *http.Request) {
 			log.Print("Could not update user data")
 			w.Write([]byte("{\"status\":\"fail\"}"))
 		} else {
-			w.Write([]byte("{\"status\":\"success\"}"))
+			respondWithUser(w, session)
 		}
+	}
+}
+
+func respondWithUser(w http.ResponseWriter, session *sessions.Session) {
+	user, err := state.getUserFromSession(session)
+	if err != nil {
+		log.Printf("Could not get user from session: %v\n", err)
+		sendErrorResponse(w, JsonError{"No user"}, http.StatusInternalServerError)
+		return
+	}
+
+	bytes, err := json.Marshal(user)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	} else {
+		w.Write(bytes)
 	}
 }
 
@@ -274,11 +276,9 @@ func (u *UserMiddleware) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 		if err != nil {
 			log.Printf("Error when saving session to storage: %v\n", err)
 		}
-		log.Print(session.Values)
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	w.Header().Set("Access-Control-Allow-Origin", "*")
 
 	_, err = state.getUserFromSession(session)
 	if err != nil {
@@ -302,17 +302,16 @@ func main() {
 	mux.HandleFunc("/admin", adminHandler)
 	mux.HandleFunc("/me", userHandler)
 
-	handler := cors.Default().Handler(mux)
-
 	c := cors.New(cors.Options{
 		//Debug: true,
+		AllowCredentials: true,
 		AllowedMethods: []string{"GET", "POST", "DELETE"},
 	})
-	handler = c.Handler(handler)
+	handler := c.Handler(mux)
 
 	handler = context.ClearHandler(handler)
-
 	handler = createUserMiddleware(handler, &state)
+
 
 	log.Print("About to listen on 3001. Go to http://127.0.0.1:3001/")
 	//err := http.ListenAndServeTLS(":3001", "cert.pem", "key.pem", nil)
