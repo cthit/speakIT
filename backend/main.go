@@ -230,7 +230,7 @@ func respondWithUser(w http.ResponseWriter, session *sessions.Session) {
 	user, err := state.getUserFromSession(session)
 	if err != nil {
 		log.Printf("Could not get user from session: %v\n", err)
-		sendErrorResponse(w, JsonError{"No user"}, http.StatusInternalServerError)
+		sendErrorResponse(w, JsonError{"No user for that session. Try clearing your cookies."}, http.StatusInternalServerError)
 		return
 	}
 
