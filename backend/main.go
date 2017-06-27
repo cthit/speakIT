@@ -33,7 +33,6 @@ var store = sessions.NewFilesystemStore("store", []byte("this is the secret stuf
 var state State
 
 func listHandler(w http.ResponseWriter, req *http.Request) {
-	log.Print("Listhandler begin")
 	session, err := store.Get(req, SESSION_KEY)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
