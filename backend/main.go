@@ -20,42 +20,23 @@ type User struct {
 	Nick    string `json:"nick"`
 	IsAdmin bool   `json:"isAdmin"`
 	id      uuid.UUID
-	session *sessions.Session
+}
+
+type JsonError struct {
+	Message string `json:"msg"`
 }
 
 const SESSION_KEY = "talarlista_session"
 const UUID_KEY = "uuid"
 
-var store = sessions.NewCookieStore([]byte("this is the secret stuff"))
+var store = sessions.NewFilesystemStore("store", []byte("this is the secret stuff"))
 var state State
 
 func listHandler(w http.ResponseWriter, req *http.Request) {
-	log.Print("Listhandler begin")
 	session, err := store.Get(req, SESSION_KEY)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
-	}
-
-	log.Printf("Session is new %v\n", session.IsNew)
-	if session.IsNew {
-		var id = uuid.New()
-		session.Values[UUID_KEY] = id.String()
-
-		log.Printf("New user id: %v\n", id)
-
-		state.addUser(&User{"", false, id, session})
-		log.Printf("State with new user: %v", state)
-	}
-
-	err = session.Save(req, w)
-	if err != nil {
-		log.Printf("Error when saving session to storage: %v", err)
-	}
-
-	session.Options = &sessions.Options{ // should this be done inside the previous if-statement?
-		MaxAge:   86400,
-		HttpOnly: true,
 	}
 
 	w.Header().Set("Content-Type", "application/json")
@@ -64,6 +45,8 @@ func listHandler(w http.ResponseWriter, req *http.Request) {
 	user, err := state.getUserFromSession(session)
 	if err != nil {
 		log.Printf("listHandler: Could not get user from session %v\n", err)
+		sendErrorResponse(w, JsonError{"Could not find the sessions corresponding user."}, http.StatusInternalServerError)
+		return
 	}
 	log.Printf("User: %v\n", user)
 	switch req.Method {
@@ -77,6 +60,14 @@ func listHandler(w http.ResponseWriter, req *http.Request) {
 		w.Write([]byte("List unsupported method.\n"))
 		log.Print("Unsupported method")
 	}
+}
+
+func sendErrorResponse(w http.ResponseWriter, details JsonError, code int) {
+	content, err := json.Marshal(details)
+	if err != nil {
+		log.Printf("Could not marshal error response: %v", err)
+	}
+	http.Error(w, string(content), code)
 }
 
 func getUUIDfromSession(session *sessions.Session) (uuid.UUID, error) {
@@ -220,7 +211,7 @@ func userHandler(w http.ResponseWriter, req *http.Request) {
 		user, err := state.getUserFromSession(session)
 		if err != nil {
 			log.Printf("Could not get user from session: %v\n", err)
-			//TODO add http error
+			sendErrorResponse(w, JsonError{"No user"}, http.StatusInternalServerError)
 			return
 		}
 
@@ -249,6 +240,56 @@ func userHandler(w http.ResponseWriter, req *http.Request) {
 	}
 }
 
+type UserMiddleware struct {
+	handler http.Handler
+	state   *State
+}
+
+func createUserMiddleware(handler http.Handler, state *State) *UserMiddleware {
+	return &UserMiddleware{handler, state}
+}
+
+func (u *UserMiddleware) ServeHTTP(w http.ResponseWriter, req *http.Request) {
+	session, err := store.Get(req, SESSION_KEY)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	if session.IsNew {
+		var id = uuid.New()
+		session.Values[UUID_KEY] = id.String()
+
+		log.Printf("New user id: %v\n", id)
+
+		u.state.addUser(&User{"", false, id})
+
+		session.Options = &sessions.Options{
+			MaxAge:   86400,
+			HttpOnly: true,
+		}
+
+		err = session.Save(req, w)
+
+		if err != nil {
+			log.Printf("Error when saving session to storage: %v\n", err)
+		}
+		log.Print(session.Values)
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+
+	_, err = state.getUserFromSession(session)
+	if err != nil {
+		log.Printf("User not found in middleware: %v\n", err)
+		sendErrorResponse(w, JsonError{"Session does not correpond to user in state. Clear your cookies to get a new session."}, http.StatusInternalServerError)
+	} else {
+		u.handler.ServeHTTP(w, req)
+	}
+
+}
+
 func main() {
 	log.SetFlags(log.Lshortfile)
 
@@ -270,6 +311,8 @@ func main() {
 	handler = c.Handler(handler)
 
 	handler = context.ClearHandler(handler)
+
+	handler = createUserMiddleware(handler, &state)
 
 	log.Print("About to listen on 3001. Go to http://127.0.0.1:3001/")
 	//err := http.ListenAndServeTLS(":3001", "cert.pem", "key.pem", nil)
