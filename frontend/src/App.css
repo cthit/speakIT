@@ -19,6 +19,24 @@
 }
 
 @keyframes App-logo-spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.icon {
+  font-size: 0.7em;
+  cursor: pointer;
+}
+
+.inline {
+  display: inline;
+}
+
+.nick-input {
+  height: 1.5em;
+  font-weight: bold;
 }
