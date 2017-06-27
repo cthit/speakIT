@@ -10,10 +10,7 @@ import List from "./List.js";
 import Nick from "./Nick.js";
 import Admin from "./Admin.js";
 
-const BASE_URL = "http://83.254.25.245:3001/";
-const myFetch = (path, args) => {
-  return fetch(BASE_URL + path, args);
-};
+import { getJson, postJson } from "./fetch.js";
 
 class App extends Component {
   constructor(props) {
@@ -31,25 +28,18 @@ class App extends Component {
   }
 
   updateNick(newNick) {
-    myFetch("/me", {
-      method: "POST",
-      body: JSON.stringify({ nick: newNick })
-    })
+    postJson("/me", { nick: newNick })
       .then(resp => {
-        if (resp.status === 200) {
-          this.setState({ nick: newNick });
-          toast.success("Nick updated successfully!");
-        } else {
-          toast.error("Could not update nick.");
-        }
+        this.setState({ nick: newNick });
+        toast.success("Nick updated successfully!");
       })
       .catch(err =>
-        toast.error("Could not update nick, not connected to server.")
+        toast.error(`Could not update nick, not connected to server: ${err}`)
       );
   }
 
   getNick() {
-    myFetch("/me").then(resp => {
+    getJson("/me").then(resp => {
       if (resp.status === 200) {
         resp.json().then(data => {
           console.log("data", data);

@@ -1,10 +1,7 @@
 import React, { Component } from "react";
 import { toast } from "react-toastify";
 
-const BASE_URL = "http://83.254.25.245:3001/";
-const myFetch = (path, args) => {
-  return fetch(BASE_URL + path, args);
-};
+import { getJson, postJson, sendDelete } from "./fetch.js";
 
 class Admin extends Component {
   constructor(props) {
@@ -22,37 +19,41 @@ class Admin extends Component {
   }
 
   newDiscussion() {
-    myFetch("/admin/discussion", { method: "POST" }).then(resp => {
-      if (resp.status === 200) {
+    postJson("/admin/discussion")
+      .then(resp => {
         toast.success("Discussion added");
-      }
-    });
+      })
+      .catch(err => {
+        toast.error(`Could not add discussion ${err}`);
+      });
   }
 
   endDiscussion() {
-    myFetch("/admin/discussion", { method: "DELETE" }).then(resp => {
-      if (resp.status === 200) {
-        toast.success("dDscussion ended");
-      }
-    });
+    sendDelete("/admin/discussion")
+      .then(resp => {
+        toast.success("Discussion ended");
+      })
+      .catch(err => {
+        toast.error(`Could not end discussion ${err}`);
+      });
   }
 
   removeUser() {
-    myFetch("/admin/user", {
-      method: "DELETE",
-      body: JSON.stringify({ nick: this.state.nickToRemove })
-    }).then(resp => {
-      if (resp.status === 200) {
-        toast.success(this.state.nickToRemove + "Removed from discussion");
-      }
-    });
+    sendDelete("/admin/user", { nick: this.state.nickToRemove })
+      .then(resp => {
+        if (resp.status === 200) {
+          toast.success(this.state.nickToRemove + "Removed from discussion");
+        }
+      })
+      .catch(err => {
+        toast.success(
+          `Could not remove '${this.state.nickToRemove}' from discussion`
+        );
+      });
   }
 
   attemptAuth() {
-    myFetch("/admin", {
-      method: "POST",
-      body: JSON.stringify({ code: this.state.authCode })
-    })
+    postJson("/admin", { code: this.state.authCode })
       .then(resp => {
         if (resp.status === 200) {
           toast.success("Authorization successfull!");
@@ -73,14 +74,14 @@ class Admin extends Component {
   }
 
   getIsAdmin() {
-    myFetch("/me").then(resp => {
-      if (resp.status === 200) {
-        resp.json().then(data => {
-          console.log("data", data);
-          this.setState({ isAdmin: data.isAdmin });
-        });
-      }
-    });
+    getJson("/me")
+      .then(resp => {
+        console.log("data", resp);
+        this.setState({ isAdmin: resp.isAdmin });
+      })
+      .catch(err => {
+        toast.error(`Error getting admin status: ${err}`);
+      });
   }
 
   render() {
