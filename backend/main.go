@@ -66,7 +66,8 @@ func sendErrorResponse(w http.ResponseWriter, details JsonError, code int) {
 	if err != nil {
 		log.Printf("Could not marshal error response: %v", err)
 	}
-	http.Error(w, string(content), code)
+	w.WriteHeader(code)
+	w.Write(content)
 }
 
 func getUUIDfromSession(session *sessions.Session) (uuid.UUID, error) {
@@ -116,23 +117,23 @@ func (s State) addUser(user *User) bool {
 	return true
 }
 
-func (s *State) updateUser(session *sessions.Session, user User) bool {
+func (s *State) updateUser(session *sessions.Session, user User) error {
 
 	id, err := getUUIDfromSession(session)
 
 	if err != nil {
 		log.Printf("Could not get UUID from session %v\n", err)
-		return false
+		return errors.New("Session has no UUID")
 	}
 
 	storedUser, ok := s.Users[id]
 	if !ok {
 		log.Printf("Could not find user when updating: sessionId: \"%s\"", id)
-		return false
+		return errors.New("No user for that session")
 	}
 	storedUser.Nick = user.Nick
 
-	return true
+	return nil
 }
 
 func listGet(w http.ResponseWriter) {
@@ -214,12 +215,14 @@ func userHandler(w http.ResponseWriter, req *http.Request) {
 		decodeErr := json.NewDecoder(req.Body).Decode(&dat)
 		if decodeErr != nil {
 			log.Printf("Could not decode data %v\n", decodeErr)
+			sendErrorResponse(w, JsonError{decodeErr.Error()}, http.StatusBadRequest)
+			return
 		}
 
-		ok := state.updateUser(session, dat)
-		if !ok {
+		err := state.updateUser(session, dat)
+		if err != nil {
 			log.Print("Could not update user data")
-			w.Write([]byte("{\"status\":\"fail\"}"))
+			sendErrorResponse(w, JsonError{err.Error()}, http.StatusUnauthorized)
 		} else {
 			respondWithUser(w, session)
 		}
@@ -283,7 +286,7 @@ func (u *UserMiddleware) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	_, err = state.getUserFromSession(session)
 	if err != nil {
 		log.Printf("User not found in middleware: %v\n", err)
-		sendErrorResponse(w, JsonError{"Session does not correpond to user in state. Clear your cookies to get a new session."}, http.StatusInternalServerError)
+		sendErrorResponse(w, JsonError{"No user for this session. Clear your cookies to get a new session."}, http.StatusUnauthorized)
 	} else {
 		u.handler.ServeHTTP(w, req)
 	}
@@ -302,16 +305,18 @@ func main() {
 	mux.HandleFunc("/admin", adminHandler)
 	mux.HandleFunc("/me", userHandler)
 
+	handler := http.Handler(createUserMiddleware(mux, &state))
+
 	c := cors.New(cors.Options{
 		//Debug: true,
 		AllowedOrigins: []string{"http://localhost:3000"},
 		AllowCredentials: true,
 		AllowedMethods: []string{"GET", "POST", "DELETE"},
 	})
-	handler := c.Handler(mux)
+	handler = c.Handler(handler)
 
 	handler = context.ClearHandler(handler)
-	handler = createUserMiddleware(handler, &state)
+
 
 
 	log.Print("About to listen on 3001. Go to http://127.0.0.1:3001/")
