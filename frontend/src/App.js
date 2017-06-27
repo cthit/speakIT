@@ -47,7 +47,7 @@ class App extends Component {
         }
       })
       .catch(err => {
-        toast.error("Could not get user");
+        toast.error(`Could not get user: ${err.msg}`);
       });
   }
 
