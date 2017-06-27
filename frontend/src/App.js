@@ -30,7 +30,7 @@ class App extends Component {
   updateNick(newNick) {
     postJson("/me", { nick: newNick })
       .then(resp => {
-        this.setState({ nick: newNick });
+        this.setState({ nick: resp.nick });
         toast.success("Nick updated successfully!");
       })
       .catch(err =>
@@ -39,14 +39,16 @@ class App extends Component {
   }
 
   getNick() {
-    getJson("/me").then(resp => {
-      if (resp.status === 200) {
-        resp.json().then(data => {
-          console.log("data", data);
-          this.setState({ nick: data.nick });
-        });
-      }
-    });
+    getJson("/me")
+      .then(resp => {
+        console.log("data", resp);
+        if (resp.nick !== "") {
+          this.setState({ nick: resp.nick });
+        }
+      })
+      .catch(err => {
+        toast.error("Could not get user");
+      });
   }
 
   render() {
