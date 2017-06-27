@@ -240,16 +240,16 @@ func userHandler(w http.ResponseWriter, req *http.Request) {
 	}
 }
 
-type UserHandler struct {
+type UserMiddleware struct {
 	handler http.Handler
 	state   *State
 }
 
-func newUserHandler(handler http.Handler, state *State) *UserHandler {
-	return &UserHandler{handler, state}
+func createUserMiddleware(handler http.Handler, state *State) *UserMiddleware {
+	return &UserMiddleware{handler, state}
 }
 
-func (u *UserHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
+func (u *UserMiddleware) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	session, err := store.Get(req, SESSION_KEY)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -312,7 +312,7 @@ func main() {
 
 	handler = context.ClearHandler(handler)
 
-	handler = newUserHandler(handler, &state)
+	handler = createUserMiddleware(handler, &state)
 
 	log.Print("About to listen on 3001. Go to http://127.0.0.1:3001/")
 	//err := http.ListenAndServeTLS(":3001", "cert.pem", "key.pem", nil)
