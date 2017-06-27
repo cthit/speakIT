@@ -23,6 +23,10 @@ type User struct {
 	session *sessions.Session
 }
 
+type JsonError struct {
+	Message string `json:"msg"`
+}
+
 const SESSION_KEY = "talarlista_session"
 const UUID_KEY = "uuid"
 
@@ -64,6 +68,8 @@ func listHandler(w http.ResponseWriter, req *http.Request) {
 	user, err := state.getUserFromSession(session)
 	if err != nil {
 		log.Printf("listHandler: Could not get user from session %v\n", err)
+		sendErrorResponse(w, JsonError{"Could not find the sessions corresponding user."}, http.StatusInternalServerError)
+		return
 	}
 	log.Printf("User: %v\n", user)
 	switch req.Method {
@@ -77,6 +83,14 @@ func listHandler(w http.ResponseWriter, req *http.Request) {
 		w.Write([]byte("List unsupported method.\n"))
 		log.Print("Unsupported method")
 	}
+}
+
+func sendErrorResponse(w http.ResponseWriter, details JsonError, code int) {
+	content, err := json.Marshal(details)
+	if err != nil {
+		log.Printf("Could not marshal error response: %v", err)
+	}
+	http.Error(w, string(content), code)
 }
 
 func getUUIDfromSession(session *sessions.Session) (uuid.UUID, error) {
@@ -220,7 +234,7 @@ func userHandler(w http.ResponseWriter, req *http.Request) {
 		user, err := state.getUserFromSession(session)
 		if err != nil {
 			log.Printf("Could not get user from session: %v\n", err)
-			//TODO add http error
+			sendErrorResponse(w, JsonError{"No user"}, http.StatusInternalServerError)
 			return
 		}
 
