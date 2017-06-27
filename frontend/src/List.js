@@ -1,10 +1,7 @@
 import React, { Component } from "react";
 import "whatwg-fetch";
 
-const BASE_URL = "http://83.254.25.245:3001/";
-const myFetch = (path, args) => {
-  return fetch(BASE_URL + path, args);
-};
+import { getJson, postJson, sendDelete } from "./fetch.js";
 
 class List extends Component {
   constructor(props) {
@@ -24,7 +21,7 @@ class List extends Component {
 
   updateSpeakersList() {
     console.log("Updating speakers list");
-    myFetch("/list").then();
+    getJson("/list").then();
   }
 
   componentDidMount() {
@@ -34,29 +31,26 @@ class List extends Component {
   registerTalkRequest() {
     console.log("raise hand");
 
-    myFetch("/list", { method: "POST" }).then(resp => {
-      if (resp.status === 200) {
+    postJson("/list")
+      .then(resp => {
         this.setState({ status: this.statics.registered });
-      } else {
-        console.error("Could not register to the speakers list.", resp);
-      }
-    });
+      })
+      .catch(err => {
+        console.error("Could not register to the speakers list.", err);
+      });
   }
 
   unregisterTalkRequest() {
     console.log("lower hand");
     this.setState({ status: this.statics.unregistered });
 
-    myFetch("/list", {
-      method: "DELETE",
-      "Access-Control-Allow-Methods": "GET,POST,DELETE"
-    }).then(resp => {
-      if (resp.status === 200) {
+    sendDelete("/list")
+      .then(resp => {
         this.setState({ status: this.statics.unregistered });
-      } else {
-        console.error("Could not unregister to the speakers list.", resp);
-      }
-    });
+      })
+      .catch(err => {
+        console.error("Could not unregister from the speakers list.", err);
+      });
   }
 
   render() {
