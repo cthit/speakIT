@@ -26,7 +26,7 @@ type User struct {
 const SESSION_KEY = "talarlista_session"
 const UUID_KEY = "uuid"
 
-var store = sessions.NewCookieStore([]byte("this is the secret stuff"))
+var store = sessions.NewFilesystemStore("store", []byte("this is the secret stuff"))
 var state State
 
 func listHandler(w http.ResponseWriter, req *http.Request) {
