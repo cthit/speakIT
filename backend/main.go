@@ -7,14 +7,14 @@ import (
 	"github.com/gorilla/context"
 	"github.com/gorilla/sessions"
 	"github.com/rs/cors"
+	"github.com/tejpbit/talarlista/backend/backend"
 	"log"
 	"net/http"
-	"github.com/tejpbit/talarlista/backend/backend"
 )
 
 type State struct {
 	Users        map[uuid.UUID]*backend.User `json:"users"`         // All participators at the student division meeting.
-	SpeakerLists []*backend.SpeakerList           `json:"speakersLists"` // A list of speakerLists where each index is a list of sessions in queue to speak
+	SpeakerLists []*backend.SpeakerList      `json:"speakersLists"` // A list of speakerLists where each index is a list of sessions in queue to speak
 }
 
 type User struct {
@@ -278,11 +278,10 @@ func main() {
 
 	state.SpeakerLists = []*backend.SpeakerList{
 		{
-			Title: "Main list",
+			Title:        "Main list",
 			SpeakerQueue: make([]*backend.User, 0),
-			Id: uuid.New(),
+			Id:           uuid.New(),
 		},
-
 	}
 	state.Users = make(map[uuid.UUID]*backend.User)
 
@@ -296,15 +295,13 @@ func main() {
 
 	c := cors.New(cors.Options{
 		//Debug: true,
-		AllowedOrigins: []string{"http://localhost:3000"},
+		AllowedOrigins:   []string{"http://localhost:3000"},
 		AllowCredentials: true,
-		AllowedMethods: []string{"GET", "POST", "DELETE"},
+		AllowedMethods:   []string{"GET", "POST", "DELETE"},
 	})
 	handler = c.Handler(handler)
 
 	handler = context.ClearHandler(handler)
-
-
 
 	log.Print("About to listen on 3001. Go to http://127.0.0.1:3001/")
 	//err := http.ListenAndServeTLS(":3001", "cert.pem", "key.pem", nil)
