@@ -53,16 +53,12 @@ class Admin extends Component {
   }
 
   attemptAuth() {
-    postJson("/admin", { code: this.state.authCode })
+    postJson("/admin", { password: this.state.authCode })
       .then(resp => {
-        if (resp.status === 200) {
-          toast.success("Authorization successfull!");
-          this.setState({ isAdmin: true });
-        } else {
-          toast.error("Could not authorize, code not accepted.");
-        }
+        toast.success("Authorization successfull!");
+        this.setState({ isAdmin: true });
       })
-      .catch(err => toast.error("Not connected..."));
+      .catch(err => toast.error(err.msg));
   }
 
   handleNickToRemoveChange(event) {

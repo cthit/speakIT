@@ -6,6 +6,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/gorilla/context"
 	"github.com/gorilla/sessions"
+	garbler "github.com/michaelbironneau/garbler/lib"
 	"github.com/rs/cors"
 	"github.com/tejpbit/talarlista/backend/backend"
 	"log"
@@ -27,11 +28,23 @@ type JsonMessage struct {
 	Message string `json:"msg"`
 }
 
+type AuthenticationRequest struct {
+	Password string `json:"password"'`
+}
+
+const (
+	NoUserForSession = "The provided session have no corresponding user in the state."
+	NoUUIDInSession  = "The provided session does not contain a UUID for the user."
+	NoUserForUUID = "The UUID provided from the session does not correspond to a user in the state."
+	UserIsNotAdmin = "User is not admin"
+)
+
 const SESSION_KEY = "talarlista_session"
 const UUID_KEY = "uuid"
 
 var store = sessions.NewFilesystemStore("store", []byte("this is the secret stuff"))
 var state State
+var oneTimePasswords []string
 
 func listHandler(w http.ResponseWriter, req *http.Request) {
 	session, err := store.Get(req, SESSION_KEY)
@@ -78,7 +91,7 @@ func sendResponseWithCode(w http.ResponseWriter, details JsonMessage, code int) 
 func getUUIDfromSession(session *sessions.Session) (uuid.UUID, error) {
 	storedValue, ok := session.Values[UUID_KEY]
 	if !ok {
-		return uuid.UUID{}, errors.New("Could not find user from session-stored UUID")
+		return uuid.UUID{}, errors.New(NoUUIDInSession)
 	}
 
 	stringId, ok := storedValue.(string)
@@ -92,6 +105,15 @@ func getUUIDfromSession(session *sessions.Session) (uuid.UUID, error) {
 	}
 
 	return id, nil
+}
+
+func (s State) getUserFromRequest(req *http.Request) (*backend.User, error) {
+	session, err := store.Get(req, SESSION_KEY)
+	if err != nil {
+		log.Print()
+		return nil, errors.New("Could not get session from storage")
+	}
+	return s.getUserFromSession(session)
 }
 
 func (s State) getUserFromSession(session *sessions.Session) (*backend.User, error) {
@@ -108,7 +130,7 @@ func (s State) getUser(id uuid.UUID) (*backend.User, error) {
 	user, ok := s.Users[id]
 
 	if !ok {
-		return nil, errors.New("Could not find user")
+		return nil, errors.New(NoUserForUUID)
 	}
 	return user, nil
 }
@@ -127,14 +149,14 @@ func (s *State) updateUser(session *sessions.Session, user User) error {
 	id, err := getUUIDfromSession(session)
 
 	if err != nil {
-		log.Printf("Could not get UUID from session %v\n", err)
-		return errors.New("Session has no UUID")
+		log.Printf("%s: %v\n", NoUUIDInSession, err)
+		return errors.New(NoUUIDInSession)
 	}
 
 	storedUser, ok := s.Users[id]
 	if !ok {
 		log.Printf("Could not find user when updating: sessionId: \"%s\"", id)
-		return errors.New("No user for that session")
+		return errors.New(NoUserForUUID)
 	}
 	storedUser.Nick = user.Nick
 
@@ -175,9 +197,35 @@ func listDelete(w http.ResponseWriter, user *backend.User) {
 }
 
 func adminHandler(w http.ResponseWriter, req *http.Request) {
+	user, err := state.getUserFromRequest(req)
+	if err != nil {
+		sendResponseWithCode(w, JsonMessage{err.Error()}, http.StatusUnauthorized)
+		return
+	}
 
-	w.Header().Set("Content-Type", "text/plain")
-	w.Write([]byte("helo\n"))
+	var authReq AuthenticationRequest
+
+	err = json.NewDecoder(req.Body).Decode(&authReq)
+	if err != nil {
+		sendResponseWithCode(w, JsonMessage{err.Error()}, http.StatusBadRequest)
+		return
+	}
+
+	passwordIndex := -1
+	for i, k := range oneTimePasswords {
+		if k == authReq.Password {
+			passwordIndex = i
+			break
+		}
+	}
+
+	if passwordIndex != -1 {
+		user.IsAdmin = true
+		oneTimePasswords = append(oneTimePasswords[:passwordIndex], oneTimePasswords[passwordIndex+1:]...)
+		sendUserReponse(w, user)
+	} else {
+		sendResponseWithCode(w, JsonMessage{"Wrong password"}, http.StatusUnauthorized)
+	}
 }
 
 func userHandler(w http.ResponseWriter, req *http.Request) {
@@ -188,7 +236,7 @@ func userHandler(w http.ResponseWriter, req *http.Request) {
 	}
 
 	if req.Method == http.MethodGet {
-		respondWithUser(w, session)
+		respondWithUserFromSession(w, session)
 	} else if req.Method == http.MethodPost {
 
 		var dat User
@@ -204,12 +252,21 @@ func userHandler(w http.ResponseWriter, req *http.Request) {
 			log.Print("Could not update user data")
 			sendResponseWithCode(w, JsonMessage{err.Error()}, http.StatusUnauthorized)
 		} else {
-			respondWithUser(w, session)
+			respondWithUserFromSession(w, session)
 		}
 	}
 }
 
-func respondWithUser(w http.ResponseWriter, session *sessions.Session) {
+func sendUserReponse(w http.ResponseWriter, user *backend.User) {
+	resp, err := json.Marshal(user)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	} else {
+		w.Write(resp)
+	}
+}
+
+func respondWithUserFromSession(w http.ResponseWriter, session *sessions.Session) {
 	user, err := state.getUserFromSession(session)
 	if err != nil {
 		log.Printf("Could not get user from session: %v\n", err)
@@ -217,12 +274,7 @@ func respondWithUser(w http.ResponseWriter, session *sessions.Session) {
 		return
 	}
 
-	bytes, err := json.Marshal(user)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-	} else {
-		w.Write(bytes)
-	}
+	sendUserReponse(w, user)
 }
 
 type UserMiddleware struct {
@@ -274,6 +326,19 @@ func (u *UserMiddleware) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 }
 
 func main() {
+	reqs := garbler.PasswordStrengthRequirements{
+		MinimumTotalLength: 8,
+		MaximumTotalLength: 8,
+		Uppercase:          3,
+		Digits:             2,
+	}
+	if initialPassword, err := garbler.NewPassword(&reqs); err != nil {
+		log.Panicf("Could not generate initial password: %v", err)
+	} else {
+		oneTimePasswords = append(oneTimePasswords, initialPassword)
+		log.Printf("First admin password is: %s", oneTimePasswords[0])
+	}
+
 	log.SetFlags(log.Lshortfile)
 
 	state.SpeakerLists = []*backend.SpeakerList{
