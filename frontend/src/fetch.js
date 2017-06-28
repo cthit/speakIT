@@ -37,9 +37,8 @@ export const sendDelete = (path, body) => {
 	return myFetch(path, {
 		method: "DELETE",
 		headers: {
-			"Access-Control-Allow-Methods": "GET,POST,DELETE",
 			"Content-Type": "application/json"
 		},
-		body: body.json()
+		body: JSON.stringify(body)
 	}).then(checkResponse);
 };
