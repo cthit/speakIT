@@ -9,11 +9,12 @@ import (
 	"github.com/rs/cors"
 	"log"
 	"net/http"
+	"github.com/tejpbit/talarlista/backend/backend"
 )
 
 type State struct {
-	Users        map[uuid.UUID]*User `json:"users"`         // All participators at the student division meeting.
-	SpeakerLists [][]*User           `json:"speakersLists"` // A list of speakerLists where each index is a list of sessions in queue to speak
+	Users        map[uuid.UUID]*backend.User `json:"users"`         // All participators at the student division meeting.
+	SpeakerLists []*backend.SpeakerList           `json:"speakersLists"` // A list of speakerLists where each index is a list of sessions in queue to speak
 }
 
 type User struct {
@@ -22,7 +23,7 @@ type User struct {
 	id      uuid.UUID
 }
 
-type JsonError struct {
+type JsonMessage struct {
 	Message string `json:"msg"`
 }
 
@@ -44,7 +45,7 @@ func listHandler(w http.ResponseWriter, req *http.Request) {
 	user, err := state.getUserFromSession(session)
 	if err != nil {
 		log.Printf("listHandler: Could not get user from session %v\n", err)
-		sendErrorResponse(w, JsonError{"Could not find the sessions corresponding user."}, http.StatusInternalServerError)
+		sendResponseWithCode(w, JsonMessage{"Could not find the sessions corresponding user."}, http.StatusInternalServerError)
 		return
 	}
 	log.Printf("User: %v\n", user)
@@ -61,7 +62,11 @@ func listHandler(w http.ResponseWriter, req *http.Request) {
 	}
 }
 
-func sendErrorResponse(w http.ResponseWriter, details JsonError, code int) {
+func sendSuccessResponse(w http.ResponseWriter, details JsonMessage) {
+	sendResponseWithCode(w, details, http.StatusOK)
+}
+
+func sendResponseWithCode(w http.ResponseWriter, details JsonMessage, code int) {
 	content, err := json.Marshal(details)
 	if err != nil {
 		log.Printf("Could not marshal error response: %v", err)
@@ -89,7 +94,7 @@ func getUUIDfromSession(session *sessions.Session) (uuid.UUID, error) {
 	return id, nil
 }
 
-func (s State) getUserFromSession(session *sessions.Session) (*User, error) {
+func (s State) getUserFromSession(session *sessions.Session) (*backend.User, error) {
 	id, err := getUUIDfromSession(session)
 
 	if err != nil {
@@ -99,7 +104,7 @@ func (s State) getUserFromSession(session *sessions.Session) (*User, error) {
 	return s.getUser(id)
 }
 
-func (s State) getUser(id uuid.UUID) (*User, error) {
+func (s State) getUser(id uuid.UUID) (*backend.User, error) {
 	user, ok := s.Users[id]
 
 	if !ok {
@@ -108,12 +113,12 @@ func (s State) getUser(id uuid.UUID) (*User, error) {
 	return user, nil
 }
 
-func (s State) addUser(user *User) bool {
-	_, ok := s.Users[user.id]
+func (s State) addUser(user *backend.User) bool {
+	_, ok := s.Users[user.Id]
 	if ok {
 		return false
 	}
-	s.Users[user.id] = user
+	s.Users[user.Id] = user
 	return true
 }
 
@@ -145,53 +150,28 @@ func listGet(w http.ResponseWriter) {
 	w.Write(b)
 }
 
-func listPost(w http.ResponseWriter, user *User) {
+func listPost(w http.ResponseWriter, user *backend.User) {
 	currentSpeakerList := state.SpeakerLists[len(state.SpeakerLists)-1]
 
-	if isRegistered(user, currentSpeakerList) {
-		http.Error(w, "{\"status\": \"already registered\"}", http.StatusUnprocessableEntity)
-		return
-	}
-	// TODO check for name. A user needs a unique name to get to participate in a speakerList
-	state.SpeakerLists[len(state.SpeakerLists)-1] = append(currentSpeakerList, user)
-	w.Write([]byte("{\"status\": \"added\"}"))
+	ok := currentSpeakerList.AddUser(user)
 
+	if ok {
+		sendSuccessResponse(w, JsonMessage{"User added to list"})
+	} else {
+		sendResponseWithCode(w, JsonMessage{"User already in list. Cannot be added twice."}, http.StatusUnprocessableEntity)
+	}
 }
 
-func listDelete(w http.ResponseWriter, user *User) {
+func listDelete(w http.ResponseWriter, user *backend.User) {
 	currentSpeakerList := state.SpeakerLists[len(state.SpeakerLists)-1]
-	if isRegistered(user, currentSpeakerList) {
-		state.SpeakerLists[len(state.SpeakerLists)-1] = removeUserFromList(user, currentSpeakerList)
-		w.Write([]byte("{\"status\": \"removed\"}"))
+	ok := currentSpeakerList.RemoveUser(user)
+
+	if ok {
+		sendSuccessResponse(w, JsonMessage{"User removed from list"})
 	} else {
-		http.Error(w, "{\"status\": \"not in a list\"}", http.StatusUnprocessableEntity)
-		return
-	}
-}
-
-func isRegistered(currentUser *User, speakersList []*User) bool {
-	for _, user := range speakersList {
-		if currentUser.id == user.id {
-			return true
-		}
-	}
-	return false
-}
-
-func removeUserFromList(user *User, userList []*User) []*User {
-	userIndex := -1
-	for i, s := range userList {
-		if user.id == s.id {
-			userIndex = i
-			break
-		}
+		sendResponseWithCode(w, JsonMessage{"User not in current list"}, http.StatusUnprocessableEntity)
 	}
 
-	if userIndex == -1 {
-		return userList
-	} else {
-		return append(userList[:userIndex], userList[userIndex+1:]...)
-	}
 }
 
 func adminHandler(w http.ResponseWriter, req *http.Request) {
@@ -215,14 +195,14 @@ func userHandler(w http.ResponseWriter, req *http.Request) {
 		decodeErr := json.NewDecoder(req.Body).Decode(&dat)
 		if decodeErr != nil {
 			log.Printf("Could not decode data %v\n", decodeErr)
-			sendErrorResponse(w, JsonError{decodeErr.Error()}, http.StatusBadRequest)
+			sendResponseWithCode(w, JsonMessage{decodeErr.Error()}, http.StatusBadRequest)
 			return
 		}
 
 		err := state.updateUser(session, dat)
 		if err != nil {
 			log.Print("Could not update user data")
-			sendErrorResponse(w, JsonError{err.Error()}, http.StatusUnauthorized)
+			sendResponseWithCode(w, JsonMessage{err.Error()}, http.StatusUnauthorized)
 		} else {
 			respondWithUser(w, session)
 		}
@@ -233,7 +213,7 @@ func respondWithUser(w http.ResponseWriter, session *sessions.Session) {
 	user, err := state.getUserFromSession(session)
 	if err != nil {
 		log.Printf("Could not get user from session: %v\n", err)
-		sendErrorResponse(w, JsonError{"No user for that session. Try clearing your cookies."}, http.StatusInternalServerError)
+		sendResponseWithCode(w, JsonMessage{"No user for that session. Try clearing your cookies."}, http.StatusInternalServerError)
 		return
 	}
 
@@ -267,7 +247,7 @@ func (u *UserMiddleware) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 
 		log.Printf("New user id: %v\n", id)
 
-		u.state.addUser(&User{"", false, id})
+		u.state.addUser(&backend.User{"", false, id})
 
 		session.Options = &sessions.Options{
 			MaxAge:   86400,
@@ -286,7 +266,7 @@ func (u *UserMiddleware) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	_, err = state.getUserFromSession(session)
 	if err != nil {
 		log.Printf("User not found in middleware: %v\n", err)
-		sendErrorResponse(w, JsonError{"No user for this session. Clear your cookies to get a new session."}, http.StatusUnauthorized)
+		sendResponseWithCode(w, JsonMessage{"No user for this session. Clear your cookies to get a new session."}, http.StatusUnauthorized)
 	} else {
 		u.handler.ServeHTTP(w, req)
 	}
@@ -296,8 +276,15 @@ func (u *UserMiddleware) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 func main() {
 	log.SetFlags(log.Lshortfile)
 
-	state.SpeakerLists = append(state.SpeakerLists, []*User{})
-	state.Users = make(map[uuid.UUID]*User)
+	state.SpeakerLists = []*backend.SpeakerList{
+		{
+			Title: "Main list",
+			SpeakerQueue: make([]*backend.User, 0),
+			Id: uuid.New(),
+		},
+
+	}
+	state.Users = make(map[uuid.UUID]*backend.User)
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", listHandler)
