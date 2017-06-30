@@ -42,3 +42,7 @@ export const sendDelete = (path, body) => {
 		body: JSON.stringify(body)
 	}).then(checkResponse);
 };
+
+export const getUser = () => {
+	return getJson("/me");
+};

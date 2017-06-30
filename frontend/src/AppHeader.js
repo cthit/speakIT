@@ -97,6 +97,9 @@ const NavigationItem = styled(Link)`
   :hover {
     background-color: #E4E4E4;
   }
+  :active {
+    background-color: #D4D4D4; 
+  }
 `;
 
 export default AppHeader;
