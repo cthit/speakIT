@@ -5,29 +5,30 @@ import { Link } from "react-router-dom";
 import itlogo from "./itlogo.svg";
 
 class AppHeader extends Component {
-	render() {
-		return (
-			<Banner>
-				<HeaderContainer>
-					<Header>
-						<Title>
-							speakIT <SmallTitle>digital talarlista</SmallTitle>
-						</Title>
-						<ITLogo src={itlogo} />
-					</Header>
-				</HeaderContainer>
-				{/*<Nick nick={this.state.nick} onNickChange={this.updateNick} />*/}
-				<NavigationContainer>
-					<Navigation>
-						<NavigationItem to="/user">Användare</NavigationItem>
-						<NavigationItem to="/list">Listor</NavigationItem>
-						<NavigationItem to="/admin">Admin</NavigationItem>
-					</Navigation>
-				</NavigationContainer>
+  render() {
+    return (
+      <Banner>
 
-			</Banner>
-		);
-	}
+        <HeaderContainer>
+          <Header>
+            <Title>
+              speakIT <SmallTitle>digital talarlista</SmallTitle>
+            </Title>
+            <ITLogo src={itlogo} />
+          </Header>
+        </HeaderContainer>
+
+        <NavigationContainer>
+          <Navigation>
+            <NavigationItem to="/user">Användare</NavigationItem>
+            <NavigationItem to="/list">Listor</NavigationItem>
+            <NavigationItem to="/admin">Admin</NavigationItem>
+          </Navigation>
+        </NavigationContainer>
+
+      </Banner>
+    );
+  }
 }
 
 const HeaderContainer = styled.div`
