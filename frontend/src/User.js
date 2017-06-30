@@ -1,9 +1,18 @@
 import React, { Component } from "react";
-import styled from "styled-components";
 
 import { toast } from "react-toastify";
 
 import { getJson, postJson } from "./fetch";
+
+import {
+  ItemTitle,
+  Container,
+  SubContainer,
+  Row,
+  RowContent,
+  Input,
+  SubmitButton
+} from "./SharedComponents.js";
 
 class User extends Component {
   constructor(props) {
@@ -60,8 +69,7 @@ class User extends Component {
 
     return (
       <Container>
-        <UserContainer>
-
+        <SubContainer>
           <Row>
             <RowContent>
               <ItemTitle>User:</ItemTitle>
@@ -95,67 +103,10 @@ class User extends Component {
               />
             </RowContent>
           </Row>
-        </UserContainer>
+        </SubContainer>
       </Container>
     );
   }
 }
-
-const ItemTitle = styled.div`
-  width: 5rem;
-  align-content: right;
-  display: flex;
-  justify-content: flex-end;
-`;
-
-const Container = styled.div`
-  display: flex;
-  justify-content: center;
-`;
-
-const UserContainer = styled.div`
-  display: flex;
-  justify-content: space-around;
-  flex-direction: column;
-  width: 600px;
-  height: 287.6px;
-  background-color: #ffffff;
-  box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.5);
-`;
-
-const Row = styled.div`
-  display: flex;
-  justify-content: space-around;
-`;
-
-const RowContent = styled.div`
-  display: flex;
-`;
-
-const Input = styled.input`
-  border: 0;
-  outline: 0;
-  background: transparent;
-  border-bottom: 1px solid #4a4a4a;
-  margin-left: 20px;
-  width: 370px;
-`;
-
-const SubmitButton = styled.input`
-  
-  background-color: #7ed321;
-  border: none;
-  outline: none;
-  padding: 15px 45px;
-  :hover {
-    background-color: #a4e063;
-  }
-  :active {
-    background-color: #71bd1d;
-  }
-  :disabled {
-    background-color: #c4c4c4; 
-  }
-`;
 
 export default User;
