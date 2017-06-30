@@ -1,9 +1,9 @@
 import React, { Component } from "react";
 import styled from "styled-components";
 
-import toast from "react-toastify";
+import { toast } from "react-toastify";
 
-import { getJson } from "./fetch";
+import { getJson, postJson } from "./fetch";
 
 class User extends Component {
   constructor(props) {
@@ -35,6 +35,26 @@ class User extends Component {
     this.setState({ newNick: event.target.value });
   };
 
+  handleKeyPress = event => {
+    if (event.key === "Enter") {
+      const { user: { nick }, newNick } = this.state;
+      if (nick !== newNick) {
+        this.onSave(newNick);
+      }
+    }
+  };
+
+  onSave = newNick => {
+    postJson("/me", { nick: newNick })
+      .then(resp => {
+        this.setState({ user: resp });
+        toast.success("User updated.");
+      })
+      .catch(err =>
+        toast.error(`Could not update nick, not connected to server: ${err}`)
+      );
+  };
+
   render() {
     const { user: { nick, id, isAdmin }, newNick } = this.state;
 
@@ -45,7 +65,12 @@ class User extends Component {
           <Row>
             <RowContent>
               <ItemTitle>User:</ItemTitle>
-              <Input type="text" onChange={this.handleChange} value={newNick} />
+              <Input
+                type="text"
+                onChange={this.handleChange}
+                onKeyPress={this.handleKeyPress}
+                value={newNick}
+              />
             </RowContent>
           </Row>
           <Row>
@@ -66,6 +91,7 @@ class User extends Component {
                 type="button"
                 value="Spara"
                 disabled={nick === newNick ? "disabled" : ""}
+                onClick={() => this.onSave(newNick)}
               />
             </RowContent>
           </Row>
@@ -126,6 +152,9 @@ const SubmitButton = styled.input`
   }
   :active {
     background-color: #71bd1d;
+  }
+  :disabled {
+    background-color: #c4c4c4; 
   }
 `;
 
