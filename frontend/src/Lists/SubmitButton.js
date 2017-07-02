@@ -27,6 +27,7 @@ export const StyledSubmitButton = styled.input`
   outline: none;
   padding: 15px 45px;
   font-weight: bold;
+  font-size: 1.1em;
   :hover {
     cursor: pointer;
     background-color: #a4e063;

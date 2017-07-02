@@ -44,7 +44,9 @@ class ListsView extends Component {
         </Row>
 
         <ListsContainer>
-          {speakerLists.map(list => <List key={list.id} list={list} />)}
+          {speakerLists.map(list =>
+            <List key={list.id} list={list} user={user} />
+          )}
         </ListsContainer>
 
       </ListViewContainer>

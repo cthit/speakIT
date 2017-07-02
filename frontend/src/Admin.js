@@ -18,7 +18,6 @@ class Admin extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      isAdmin: false,
       showPassword: false,
       authCode: "",
       nickToRemove: ""
@@ -63,7 +62,7 @@ class Admin extends Component {
     postJson("/admin", { password: this.state.authCode })
       .then(resp => {
         toast.success("Authorization successfull!");
-        this.setState({ isAdmin: true });
+        this.props.updateUser();
       })
       .catch(err => toast.error(err.msg));
   };

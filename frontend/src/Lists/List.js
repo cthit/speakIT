@@ -2,10 +2,11 @@ import React, { Component } from "react";
 
 import styled from "styled-components";
 import FontAwesome from "react-fontawesome";
+import { toast } from "react-toastify";
 
 import SubmitButton from "./SubmitButton.js";
 import { postJson, sendDelete } from "../fetch.js";
-import { toast } from "react-toastify";
+import AdminToolBar from "./AdminToolBar.js";
 
 const createSpeakerRow = (user, index) => {
 	return (
@@ -66,8 +67,23 @@ class List extends Component {
 			});
 	}
 
+	toggleDiscussionStatus = listId => {
+		console.log("helo", listId);
+		// TODO discussion status is not supported in the backend yet.
+	};
+
+	renderAdminTools = (debateIsOpen, listId) => {
+		return (
+			<AdminToolBar
+				debateIsOpen={debateIsOpen}
+				toggleDiscussionStatus={this.toggleDiscussionStatus}
+				listId={listId}
+			/>
+		);
+	};
+
 	render() {
-		const { list, status } = this.props;
+		const { list, status, user } = this.props;
 
 		return (
 			<ListContainer key={list.id}>
@@ -78,6 +94,10 @@ class List extends Component {
 						unregisterTalkRequest={this.unregisterTalkRequest}
 						registerTalkRequest={this.registerTalkRequest}
 					/>
+					{user.isAdmin && this.renderAdminTools(true, list.id)}
+					{/*
+					TODO update this when discussion status is supported in the
+					backend*/}
 				</ListHeader>
 
 				<ListTitle>Första talarlista</ListTitle>

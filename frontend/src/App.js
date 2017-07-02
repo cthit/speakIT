@@ -59,7 +59,10 @@ class App extends Component {
           <AppHeader />
           <Route exact path="/" render={this.renderList} />
           <Route path="/list" render={this.renderList} />
-          <Route path="/admin" render={() => <Admin user={user} />} />
+          <Route
+            path="/admin"
+            render={() => <Admin user={user} updateUser={this.getUser} />}
+          />
           <Route
             path="/user"
             render={() => <User user={user} updateUser={this.updateUserNick} />}
