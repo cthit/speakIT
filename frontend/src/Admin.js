@@ -2,7 +2,7 @@ import React, { Component } from "react";
 import { toast } from "react-toastify";
 import FontAwesome from "react-fontawesome";
 
-import { getJson, postJson, sendDelete } from "./fetch.js";
+import { postJson, sendDelete } from "./fetch.js";
 import {
   ItemTitle,
   Container,
@@ -76,23 +76,14 @@ class Admin extends Component {
     this.setState({ authCode: event.target.value });
   };
 
-  getIsAdmin = () => {
-    getJson("/me")
-      .then(resp => {
-        console.log("data", resp);
-        this.setState({ isAdmin: resp.isAdmin });
-      })
-      .catch(err => {
-        toast.error(`Error getting admin status: ${err}`);
-      });
+  toggleShowPassword = () => {
+    this.setState({ showPassword: !this.state.showPassword });
   };
 
-  toggleShowPassword = () => {
-    this.setState({showPassword: !this.state.showPassword})
-  }
-
   render() {
-    if (this.state.isAdmin) {
+    const { user } = this.props;
+
+    if (user.isAdmin) {
       return (
         <Container>
           <SubContainer>
@@ -163,9 +154,9 @@ class Admin extends Component {
                   value={this.state.authCode}
                   onChange={this.handleAuthCodeChange}
                 />
-                 <FontAwesome
+                <FontAwesome
                   name={this.state.showPassword ? "eye-slash" : "eye"}
-                  style={{"cursor": "pointer"}}
+                  style={{ cursor: "pointer" }}
                   onClick={this.toggleShowPassword}
                 />
 

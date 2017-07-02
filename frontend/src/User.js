@@ -1,9 +1,5 @@
 import React, { Component } from "react";
 
-import { toast } from "react-toastify";
-
-import { getJson, postJson } from "./fetch";
-
 import {
   ItemTitle,
   Container,
@@ -18,27 +14,9 @@ class User extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      user: {},
       newNick: ""
     };
   }
-
-  componentWillMount() {
-    this.updateUser();
-  }
-
-  updateUser = user => {
-    getJson("/me")
-      .then(resp => {
-        this.setState({
-          user: resp,
-          newNick: resp.nick
-        });
-      })
-      .catch(err => {
-        toast.error(`Could not get user: ${err.msg}`);
-      });
-  };
 
   handleChange = event => {
     this.setState({ newNick: event.target.value });
@@ -46,26 +24,17 @@ class User extends Component {
 
   handleKeyPress = event => {
     if (event.key === "Enter") {
-      const { user: { nick }, newNick } = this.state;
+      const { newNick } = this.state;
+      const { user: { nick } } = this.props;
       if (nick !== newNick) {
-        this.onSave(newNick);
+        this.props.updateUser(newNick);
       }
     }
   };
 
-  onSave = newNick => {
-    postJson("/me", { nick: newNick })
-      .then(resp => {
-        this.setState({ user: resp });
-        toast.success("User updated.");
-      })
-      .catch(err =>
-        toast.error(`Could not update nick, not connected to server: ${err}`)
-      );
-  };
-
   render() {
-    const { user: { nick, id, isAdmin }, newNick } = this.state;
+    const { newNick } = this.state;
+    const { user: { nick, id, isAdmin }, updateUser } = this.props;
 
     return (
       <Container>
@@ -99,7 +68,7 @@ class User extends Component {
                 type="button"
                 value="Spara"
                 disabled={nick === newNick ? "disabled" : ""}
-                onClick={() => this.onSave(newNick)}
+                onClick={() => updateUser(newNick)}
               />
             </RowContent>
           </Row>
