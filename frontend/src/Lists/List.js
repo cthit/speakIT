@@ -79,6 +79,7 @@ class List extends Component {
 						registerTalkRequest={this.registerTalkRequest}
 					/>
 				</ListHeader>
+
 				<ListTitle>Första talarlista</ListTitle>
 				{list.speakersQueue
 					.map((user, index) => createSpeakerRow(user, index))
@@ -116,13 +117,9 @@ const ListContainer = styled.div`
 `;
 
 const ListHeader = styled.div`
-  height: 98px;
-  border: solid 1px #979797;
   background-color: #efeeee;
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  align-items: center;
 `;
 
 const ListTitle = styled.div`
@@ -137,6 +134,9 @@ const ListTitle = styled.div`
 const DiscussionTitle = styled.div`
   font-family: Helvetica Neue,Helvetica,Roboto,Arial,sans-serif;
   font-size: 2em;
+  height: 2em;
+  line-height: 2em;
+  text-align: center;
   font-weight: bold;
   color: #4a4a4a;
 `;
