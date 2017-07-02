@@ -3,6 +3,10 @@ import React, { Component } from "react";
 import styled from "styled-components";
 import FontAwesome from "react-fontawesome";
 
+import SubmitButton from "./SubmitButton.js";
+import { postJson, sendDelete } from "../fetch.js";
+import { toast } from "react-toastify";
+
 const createSpeakerRow = (user, index) => {
 	return (
 		<SpeakerRow key={user.id}>
@@ -15,13 +19,65 @@ const createSpeakerRow = (user, index) => {
 };
 
 class List extends Component {
+	constructor(props) {
+		super(props);
+
+		this.statics = {
+			notRegistered: "notRegistered",
+			waiting: "waiting",
+			registered: "registered"
+		};
+
+		this.state = {
+			status: this.statics.notRegistered
+		};
+	}
+
+	registerTalkRequest = () => {
+		console.log("raise hand");
+
+		postJson("/list")
+			.then(resp => {
+				this.setState({ status: this.statics.registered });
+			})
+			.then(this.updateSpeakersList)
+			.catch(err => {
+				console.error("Could not register to the speakers list.", err);
+			});
+	};
+
+	unregisterTalkRequest() {
+		console.log("lower hand");
+		this.setState({ status: this.statics.notRegistered });
+
+		sendDelete("/list")
+			.then(resp => {
+				this.setState({ status: this.statics.notRegistered });
+			})
+			.then(this.updateSpeakersList)
+			.catch(err => {
+				console.error(
+					"Could not unregister from the speakers list.",
+					err
+				);
+				toast.error(
+					`Could not unregister from the speakers list: ${err}`
+				);
+			});
+	}
+
 	render() {
-		const { list } = this.props;
+		const { list, status } = this.props;
 
 		return (
 			<ListContainer key={list.id}>
 				<ListHeader>
 					<DiscussionTitle>{list.title}</DiscussionTitle>
+					<SubmitButton
+						isRegistered={status === this.statics.registered}
+						unregisterTalkRequest={this.unregisterTalkRequest}
+						registerTalkRequest={this.registerTalkRequest}
+					/>
 				</ListHeader>
 				<ListTitle>Första talarlista</ListTitle>
 				{list.speakersQueue
