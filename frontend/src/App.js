@@ -4,7 +4,7 @@ import { BrowserRouter as Router, Route } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.min.css";
 
-import List from "./List.js";
+import ListsView from "./Lists/ListsView.js";
 import User from "./User.js";
 import Admin from "./Admin.js";
 import AppHeader from "./AppHeader.js";
@@ -16,8 +16,8 @@ class App extends Component {
         <div className="App">
           <ToastContainer />
           <AppHeader />
-          <Route exact path="/" component={List} />
-          <Route path="/list" component={List} />
+          <Route exact path="/" component={ListsView} />
+          <Route path="/list" component={ListsView} />
           <Route path="/admin" component={Admin} />
           <Route path="/user" component={User} />
         </div>
