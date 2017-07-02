@@ -1,21 +1,28 @@
 import React, { Component } from "react";
 import { toast } from "react-toastify";
+import FontAwesome from "react-fontawesome";
 
 import { getJson, postJson, sendDelete } from "./fetch.js";
+import {
+  ItemTitle,
+  Container,
+  SubContainer,
+  Row,
+  RowContent,
+  Input,
+  SubmitButton,
+  Title
+} from "./SharedComponents.js";
 
 class Admin extends Component {
   constructor(props) {
     super(props);
     this.state = {
       isAdmin: false,
+      showPassword: false,
       authCode: "",
       nickToRemove: ""
     };
-    this.handleAuthCodeChange = this.handleAuthCodeChange.bind(this);
-    this.handleNickToRemoveChange = this.handleNickToRemoveChange.bind(this);
-    this.removeUser = this.removeUser.bind(this);
-    this.attemptAuth = this.attemptAuth.bind(this);
-    this.getIsAdmin = this.getIsAdmin.bind(this);
   }
 
   newDiscussion() {
@@ -38,7 +45,7 @@ class Admin extends Component {
       });
   }
 
-  removeUser() {
+  removeUser = () => {
     sendDelete("/admin/user", { nick: this.state.nickToRemove })
       .then(resp => {
         if (resp.status === 200) {
@@ -50,26 +57,26 @@ class Admin extends Component {
           `Could not remove '${this.state.nickToRemove}' from discussion`
         );
       });
-  }
+  };
 
-  attemptAuth() {
+  attemptAuth = () => {
     postJson("/admin", { password: this.state.authCode })
       .then(resp => {
         toast.success("Authorization successfull!");
         this.setState({ isAdmin: true });
       })
       .catch(err => toast.error(err.msg));
-  }
+  };
 
-  handleNickToRemoveChange(event) {
+  handleNickToRemoveChange = event => {
     this.setState({ nickToRemove: event.target.value });
-  }
+  };
 
-  handleAuthCodeChange(event) {
+  handleAuthCodeChange = event => {
     this.setState({ authCode: event.target.value });
-  }
+  };
 
-  getIsAdmin() {
+  getIsAdmin = () => {
     getJson("/me")
       .then(resp => {
         console.log("data", resp);
@@ -78,42 +85,103 @@ class Admin extends Component {
       .catch(err => {
         toast.error(`Error getting admin status: ${err}`);
       });
+  };
+
+  toggleShowPassword = () => {
+    this.setState({showPassword: !this.state.showPassword})
   }
 
   render() {
     if (this.state.isAdmin) {
       return (
-        <div>
-          <input
-            type="submit"
-            value="Start new discussion"
-            onClick={this.newDiscussion}
-          />
-          <input
-            type="submit"
-            value="End current discussion"
-            onClick={this.endDiscussion}
-          />
-          <textarea
-            value={this.state.nickToRemove}
-            onChange={this.handleNickToRemoveChange}
-          />
-          <input type="submit" value="Remove user" onClick={this.removeUser} />
-        </div>
+        <Container>
+          <SubContainer>
+            <Row>
+              <RowContent>
+                <ItemTitle>Authenticate:</ItemTitle>
+                <Input
+                  type={"text"}
+                  onKeyPress={this.handleKeyPress}
+                  value={this.state.authCode}
+                  onChange={this.handleAuthCodeChange}
+                />
+              </RowContent>
+            </Row>
+            <Row>
+              <RowContent>
+                <SubmitButton
+                  type="button"
+                  value="Start new discussion"
+                  onClick={this.newDiscussion}
+                />
+              </RowContent>
+            </Row>
+            <Row>
+              <RowContent>
+                <SubmitButton
+                  type="button"
+                  value="End current discussion"
+                  onClick={this.endDiscussion}
+                />
+              </RowContent>
+            </Row>
+            <Row>
+              <RowContent>
+                <ItemTitle>Remove nick from list</ItemTitle>
+                <Input
+                  type={"text"}
+                  onKeyPress={this.handleKeyPress}
+                  value={this.state.nickToRemove}
+                  onChange={this.handleNickToRemoveChange}
+                />
+              </RowContent>
+            </Row>
+            <Row>
+              <RowContent>
+                <SubmitButton
+                  type="button"
+                  value="Remove User"
+                  onClick={this.removeUser}
+                />
+              </RowContent>
+            </Row>
+          </SubContainer>
+        </Container>
       );
     } else {
       return (
-        <div>
-          <textarea
-            value={this.state.authCode}
-            onChange={this.handleAuthCodeChange}
-          />
-          <input
-            type="submit"
-            value="Attempt authorization"
-            onClick={this.attemptAuth}
-          />
-        </div>
+        <Container>
+          <SubContainer>
+            <Row>
+              <Title>Authenticate</Title>
+            </Row>
+            <Row>
+              <RowContent>
+                <Input
+                  type={this.state.showPassword ? "text" : "password"}
+                  onKeyPress={this.handleKeyPress}
+                  value={this.state.authCode}
+                  onChange={this.handleAuthCodeChange}
+                />
+                 <FontAwesome
+                  name={this.state.showPassword ? "eye-slash" : "eye"}
+                  style={{"cursor": "pointer"}}
+                  onClick={this.toggleShowPassword}
+                />
+
+              </RowContent>
+            </Row>
+            <Row>
+              <RowContent>
+                <SubmitButton
+                  type="button"
+                  value="Send"
+                  onClick={this.attemptAuth}
+                />
+              </RowContent>
+            </Row>
+          </SubContainer>
+        </Container>
       );
     }
   }
