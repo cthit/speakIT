@@ -1,17 +1,27 @@
 import React, { Component } from "react";
 import { toast } from "react-toastify";
 import styled from "styled-components";
-import "whatwg-fetch";
+import FontAwesome from "react-fontawesome";
 
 import { getJson, postJson, sendDelete } from "./fetch.js";
 
 import {
   Container,
-  Title,
   Row,
   RowContent,
   SubmitButton
 } from "./SharedComponents.js";
+
+const createSpeakerRow = (user, index) => {
+  return (
+    <SpeakerRow>
+      {index === 0
+        ? <CurrentSpeakerArrow name="angle-right" />
+        : <PlaceHolder name="angle-right" />}
+      <Speaker key={user.id}>{user.nick}</Speaker>
+    </SpeakerRow>
+  );
+};
 
 class List extends Component {
   constructor(props) {
@@ -82,42 +92,66 @@ class List extends Component {
               <SubmitButton
                 type="button"
                 value={
-                  status === this.statics.notRegistered
-                    ? "I want to talk"
-                    : "I don't want to talk"
+                  status === this.statics.registered
+                    ? "Ta bort mig"
+                    : "Lägg till mig"
                 }
                 onClick={
-                  status === this.statics.notRegistered
-                    ? () => this.registerTalkRequest()
-                    : () => this.unregisterTalkRequest()
+                  status === this.statics.registered
+                    ? () => this.unregisterTalkRequest()
+                    : () => this.registerTalkRequest()
                 }
               />
             </RowContent>
           </Row>
-          <ListsContainer>
-            {speakerLists.map(list => {
-              return (
-                <ListContainer key={list.id}>
-                  <ListHeader>
-                    <ListTitle>{list.title}</ListTitle>
-                  </ListHeader>
-                  <Title>First speaker list</Title>
-                  {list.speakersQueue.map(user => {
-                    return <Speaker key={user.id}>{user.nick}</Speaker>;
-                  })}
-                  <Title>Second speaker list</Title>
-                  {list.speakersQueue.map(user => {
-                    return <Speaker key={user.id}>{user.nick}</Speaker>;
-                  })}
-                </ListContainer>
-              );
-            })}
-          </ListsContainer>
+
+          <Lists>
+            <ListsContainer>
+              {speakerLists.map(list => {
+                return (
+                  <ListContainer key={list.id}>
+                    <ListHeader>
+                      <DiscussionTitle>{list.title}</DiscussionTitle>
+                    </ListHeader>
+                    <ListTitle>Första talarlista</ListTitle>
+                    {list.speakersQueue
+                      .map((user, index) => createSpeakerRow(user, index))
+                      .reduce(
+                        (acc, item, i) =>
+                          acc.concat(i === 0 ? [item] : [<HR />, item]),
+                        []
+                      )}
+
+                    <ListTitle>Andra talarlista</ListTitle>
+                    {list.speakersQueue
+                      .map((user, index) => createSpeakerRow(user, index))
+                      .reduce(
+                        (acc, item, i) =>
+                          acc.concat(i === 0 ? [item] : [<HR />, item]),
+                        []
+                      )}
+                  </ListContainer>
+                );
+              })}
+            </ListsContainer>
+          </Lists>
+
         </SubContainer>
+
       </Container>
     );
   }
 }
+
+const HR = styled.hr`
+  width: 18em;
+  border: none;
+  border-top: 1px solid #979797;
+`;
+
+const Lists = styled(Row)`
+  padding-top: 2em;
+`;
 
 const ListHeader = styled.div`
   height: 98px;
@@ -129,12 +163,20 @@ const ListHeader = styled.div`
   align-items: center;
 `;
 
-const ListTitle = styled.div`
+const DiscussionTitle = styled.div`
   font-family: Helvetica Neue,Helvetica,Roboto,Arial,sans-serif;
-  font-size: 2rem;
+  font-size: 2em;
   font-weight: bold;
   color: #4a4a4a;
-  background-color: #efeeee;
+`;
+
+const ListTitle = styled.div`
+  font-family: Helvetica Neue,Helvetica,Roboto,Arial,sans-serif;
+  font-size: 1.25em;
+  font-weight: bold;
+  color: #4a4a4a;
+  padding-top: 0.5em;
+  padding-left: 1em;
 `;
 
 const SubContainer = styled.div`
@@ -153,14 +195,29 @@ const ListContainer = styled.div`
   display: flex;
   justify-content: space-between;
   flex-direction: column;
-  width: 300px;
+  width: 20em;
   background-color: #ffffff;
   box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.5);
 `;
 
 const Speaker = styled.div`
-  font-size: 2rem;
-  margin-left: 68px;
+  font-size: 1.5em;
+  padding: 1em 0;
+`;
+
+const SpeakerRow = styled.div`
+  display: flex;
+`;
+
+const CurrentSpeakerArrow = styled(FontAwesome)`
+  color: green;
+  padding 1em;
+  padding-left: 1.5em;
+  font-size: 1.5em;
+`;
+
+const PlaceHolder = styled(CurrentSpeakerArrow)`
+  opacity: 0;
 `;
 
 export default List;
