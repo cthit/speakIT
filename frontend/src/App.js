@@ -47,6 +47,8 @@ class App extends Component {
       );
   };
 
+  renderList = () => <ListsView user={this.state.user} />;
+
   render() {
     const { user } = this.state;
 
@@ -55,8 +57,8 @@ class App extends Component {
         <div className="App">
           <ToastContainer />
           <AppHeader />
-          <Route exact path="/" component={ListsView} />
-          <Route path="/list" component={ListsView} />
+          <Route exact path="/" render={this.renderList} />
+          <Route path="/list" render={this.renderList} />
           <Route path="/admin" render={() => <Admin user={user} />} />
           <Route
             path="/user"

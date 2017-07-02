@@ -31,14 +31,15 @@ class ListsView extends Component {
   }
 
   render() {
-    let { speakerLists } = this.state;
+    const { speakerLists } = this.state;
+    const { user } = this.props;
 
     console.log(speakerLists);
     return (
       <ListViewContainer>
         <Row>
           <RowContent>
-            Du är: Tejp
+            Du är: {user.nick}
           </RowContent>
         </Row>
 
