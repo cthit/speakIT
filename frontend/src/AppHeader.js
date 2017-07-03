@@ -73,7 +73,9 @@ const SmallTitle = styled.small`
 `;
 
 const NavigationContainer = styled.div`
-  height: 0;
+  height: 3em;
+  box-shadow: 0 5px 5px 0 rgba(0, 0, 0, 0.3);
+  background-color: #c4c4c4;
   display: flex;
   justify-content: space-around;
 `;
@@ -84,7 +86,6 @@ const Navigation = styled.nav`
 
 const NavigationItem = styled(Link)`
   width: 200px;
-  height: 50px;
   display: flex;
   align-items: center;
   justify-content: space-around;
@@ -98,7 +99,7 @@ const NavigationItem = styled(Link)`
     background-color: #E4E4E4;
   }
   :active {
-    background-color: #D4D4D4; 
+    background-color: #D4D4D4;
   }
 `;
 
