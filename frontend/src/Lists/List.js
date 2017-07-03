@@ -3,10 +3,12 @@ import React, { Component } from "react";
 import styled from "styled-components";
 import FontAwesome from "react-fontawesome";
 import { toast } from "react-toastify";
+import ScrollArea from "react-scrollbar";
 
 import SubmitButton from "./SubmitButton.js";
 import { postJson, sendDelete } from "../fetch.js";
 import AdminToolBar from "./AdminToolBar.js";
+import AdminFooter from "./AdminFooter.js";
 
 const createSpeakerRow = (user, index) => {
 	return (
@@ -82,6 +84,10 @@ class List extends Component {
 		);
 	};
 
+	renderAdminFooter = () => {
+		return <AdminFooter />;
+	};
+
 	render() {
 		const { list, status, user } = this.props;
 
@@ -100,31 +106,43 @@ class List extends Component {
 					backend*/}
 				</ListHeader>
 
-				<ListTitle>Första talarlista</ListTitle>
-				{list.speakersQueue
-					.map((user, index) => createSpeakerRow(user, index))
-					.reduce(
-						(acc, item, i) =>
-							acc.concat(
-								i === 0 ? [item] : [<HR key={i} />, item]
-							),
-						[]
-					)}
+				<Scroll speed={0.8} horizontal={false} minScrollSize={1}>
 
-				<ListTitle>Andra talarlista</ListTitle>
-				{list.speakersQueue
-					.map((user, index) => createSpeakerRow(user, index))
-					.reduce(
-						(acc, item, i) =>
-							acc.concat(
-								i === 0 ? [item] : [<HR key={i} />, item]
-							),
-						[]
-					)}
+					<ListTitle>
+						Första talarlista ({list.speakersQueue.length})
+					</ListTitle>
+					{list.speakersQueue
+						.map((user, index) => createSpeakerRow(user, index))
+						.reduce(
+							(acc, item, i) =>
+								acc.concat(
+									i === 0 ? [item] : [<HR key={i} />, item]
+								),
+							[]
+						)}
+
+					<ListTitle>
+						Andra talarlista ({list.speakersQueue.length})
+					</ListTitle>
+					{list.speakersQueue
+						.map((user, index) => createSpeakerRow(user, index))
+						.reduce(
+							(acc, item, i) =>
+								acc.concat(
+									i === 0 ? [item] : [<HR key={i} />, item]
+								),
+							[]
+						)}
+				</Scroll>
+				{user.isAdmin && this.renderAdminFooter()}
 			</ListContainer>
 		);
 	}
 }
+
+const Scroll = styled(ScrollArea)`
+	height: 20em;
+`;
 
 const ListContainer = styled.div`
   display: flex;
