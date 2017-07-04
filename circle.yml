@@ -1,7 +1,7 @@
 version: 2
 jobs:
   build-backend:
-    working_directory: /go/src/github.com/tejpbit/talarlista/backend
+    working_directory: /go/src/github.com/tejpbit/talarlista/
     docker:
       - image: circleci/golang:1.8
     steps:
