@@ -5,6 +5,7 @@ import (
 	"errors"
 	"github.com/google/uuid"
 	"github.com/gorilla/context"
+	"github.com/gorilla/mux"
 	"github.com/gorilla/sessions"
 	garbler "github.com/michaelbironneau/garbler/lib"
 	"github.com/rs/cors"
@@ -29,14 +30,17 @@ type JsonMessage struct {
 }
 
 type AuthenticationRequest struct {
-	Password string `json:"password"'`
+	Password string `json:"password"`
 }
 
 const (
-	NoUserForSession = "The provided session have no corresponding user in the state."
-	NoUUIDInSession  = "The provided session does not contain a UUID for the user."
-	NoUserForUUID = "The UUID provided from the session does not correspond to a user in the state."
-	UserIsNotAdmin = "User is not admin"
+	NoUserForSession   = "The provided session have no corresponding user in the state."
+	NoUUIDInSession    = "The provided session does not contain a UUID for the user."
+	NoUserForUUID      = "The UUID provided from the session does not correspond to a user in the state."
+	UserIsNotAdmin     = "User is not admin"
+	UserAlreadyInList  = "User already in list. Cannot be added twice."
+	UserNotFoundInList = "User not in current list"
+	NoListForUUID      = "The UUID does not correspond to any list"
 )
 
 const SESSION_KEY = "talarlista_session"
@@ -47,6 +51,7 @@ var state State
 var oneTimePasswords []string
 
 func listHandler(w http.ResponseWriter, req *http.Request) {
+	log.Print("In List handler")
 	session, err := store.Get(req, SESSION_KEY)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -72,6 +77,53 @@ func listHandler(w http.ResponseWriter, req *http.Request) {
 	default:
 		w.Write([]byte("List unsupported method.\n"))
 		log.Print("Unsupported method")
+	}
+}
+
+func listWithIdHandler(w http.ResponseWriter, req *http.Request) {
+	session, err := store.Get(req, SESSION_KEY)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+
+	user, err := state.getUserFromSession(session)
+	if err != nil {
+		log.Printf("listHandler: Could not get user from session %v\n", err)
+		sendResponseWithCode(w, JsonMessage{"Could not find the sessions corresponding user."}, http.StatusInternalServerError)
+		return
+	}
+
+	vars := mux.Vars(req)
+	listId := vars["id"]
+	log.Printf("List id from params %v", listId)
+	log.Printf("List query from params %v", req.URL.Query())
+	list, err := state.getListByString(listId)
+	if err != nil {
+		sendResponseWithCode(w, JsonMessage{err.Error()}, http.StatusNotFound)
+	}
+
+	switch req.Method {
+	case http.MethodGet:
+		sendListResponse(w, list)
+	case http.MethodPost:
+		ok := list.AddUser(user)
+		if ok {
+			sendListResponse(w, list)
+		} else {
+			sendResponseWithCode(w, JsonMessage{UserAlreadyInList}, http.StatusUnprocessableEntity)
+		}
+	case http.MethodDelete:
+		ok := list.RemoveUser(user)
+		if ok {
+			sendListResponse(w, list)
+		} else {
+			sendResponseWithCode(w, JsonMessage{UserNotFoundInList}, http.StatusUnprocessableEntity)
+		}
+	default:
+		sendResponseWithCode(w, JsonMessage{"Bad method"}, http.StatusMethodNotAllowed)
 	}
 }
 
@@ -105,6 +157,25 @@ func getUUIDfromSession(session *sessions.Session) (uuid.UUID, error) {
 	}
 
 	return id, nil
+}
+
+func (s *State) getListByString(id string) (*backend.SpeakerList, error) {
+	parsedUUID, err := uuid.Parse(id)
+	if err != nil {
+		return nil, err
+	}
+
+	return s.getList(parsedUUID)
+}
+
+func (s *State) getList(id uuid.UUID) (*backend.SpeakerList, error) {
+
+	for _, list := range s.SpeakerLists {
+		if id == list.Id {
+			return list, nil
+		}
+	}
+	return nil, errors.New(NoListForUUID)
 }
 
 func (s State) getUserFromRequest(req *http.Request) (*backend.User, error) {
@@ -257,10 +328,24 @@ func userHandler(w http.ResponseWriter, req *http.Request) {
 	}
 }
 
+func notFound(w http.ResponseWriter, req *http.Request) {
+	log.Print("In not found")
+	http.Error(w, "Not found", http.StatusNotFound)
+}
+
 func sendUserReponse(w http.ResponseWriter, user *backend.User) {
 	resp, err := json.Marshal(user)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
+	} else {
+		w.Write(resp)
+	}
+}
+
+func sendListResponse(w http.ResponseWriter, list *backend.SpeakerList) {
+	resp, err := json.Marshal(list)
+	if err != nil {
+		sendResponseWithCode(w, JsonMessage{err.Error()}, http.StatusInternalServerError)
 	} else {
 		w.Write(resp)
 	}
@@ -350,13 +435,17 @@ func main() {
 	}
 	state.Users = make(map[uuid.UUID]*backend.User)
 
-	mux := http.NewServeMux()
-	mux.HandleFunc("/", listHandler)
-	mux.HandleFunc("/list", listHandler)
-	mux.HandleFunc("/admin", adminHandler)
-	mux.HandleFunc("/me", userHandler)
+	r := mux.NewRouter()
+	r.StrictSlash(true)
+	r.HandleFunc("/", notFound)
+	r.HandleFunc("/lists", listHandler)
+	r.HandleFunc("/lists/{id}", listWithIdHandler)
+	r.HandleFunc("/admin", adminHandler)
+	r.HandleFunc("/me", userHandler)
+	serverMux := http.NewServeMux()
+	serverMux.Handle("/", r)
 
-	handler := http.Handler(createUserMiddleware(mux, &state))
+	handler := http.Handler(createUserMiddleware(serverMux, &state))
 
 	c := cors.New(cors.Options{
 		//Debug: true,
