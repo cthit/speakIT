@@ -9,9 +9,13 @@ import User from "./User.js";
 import Admin from "./Admin.js";
 import AppHeader from "./AppHeader.js";
 
-import { getJson, postJson } from "./fetch.js";
+import { postJson } from "./fetch.js";
 
 import backend from "./backend.js";
+
+import { Provider, connect } from "react-redux";
+import store from "./store.js";
+import { requestUserUpdate } from "./actions.js";
 
 class App extends Component {
   constructor(props) {
@@ -20,38 +24,13 @@ class App extends Component {
     this.state = {
       user: {}
     };
-
-    backend.connect("ws://localhost:3001/ws").then(() => {
-      backend.socket.send(
-        JSON.stringify({
-          header: {
-            type: "CLIENT_HELO"
-          },
-          content: {
-            nick: "tejp",
-            isAdmin: false,
-            id: "eb3d3083-ebad-410d-8f84-df04d36726e8"
-          }
-        })
-      );
-    });
   }
 
   componentWillMount() {
-    this.getUser();
+    backend.connect("ws://localhost:3001/ws").then(() => {
+      requestUserUpdate();
+    });
   }
-
-  getUser = () => {
-    getJson("/me")
-      .then(resp => {
-        this.setState({
-          user: resp
-        });
-      })
-      .catch(err => {
-        toast.error(`Could not get user: ${err.msg}`);
-      });
-  };
 
   updateUserNick = newNick => {
     postJson("/me", { nick: newNick })
@@ -67,7 +46,7 @@ class App extends Component {
   renderList = () => <ListsView user={this.state.user} />;
 
   render() {
-    const { user } = this.state;
+    const { user } = this.props;
 
     return (
       <Router>
@@ -80,14 +59,20 @@ class App extends Component {
             path="/admin"
             render={() => <Admin user={user} updateUser={this.getUser} />}
           />
-          <Route
-            path="/user"
-            render={() => <User user={user} updateUser={this.updateUserNick} />}
-          />
+          <Route path="/user" render={() => <User user={user} />} />
         </div>
       </Router>
     );
   }
 }
 
-export default App;
+const ConnectedApp = connect(state => ({
+  user: state.user
+}))(App);
+
+const ProviderApp = () =>
+  <Provider store={store}>
+    <ConnectedApp />
+  </Provider>;
+
+export default ProviderApp;

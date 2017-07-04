@@ -13,7 +13,7 @@ import (
 	"github.com/tejpbit/talarlista/backend/backend"
 	"log"
 	"net/http"
-	"time"
+	"strings"
 )
 
 type State struct {
@@ -217,21 +217,21 @@ func (s State) addUser(user *backend.User) bool {
 	return true
 }
 
-func (s *State) updateUser(session *sessions.Session, user User) error {
-
-	id, err := getUUIDfromSession(session)
+func (s *State) updateUser(req *http.Request, user User) error {
+	oldUser, err := state.getUserFromRequest(req)
 
 	if err != nil {
 		log.Printf("%s: %v\n", NoUUIDInSession, err)
-		return errors.New(NoUUIDInSession)
+		return err
 	}
 
-	storedUser, ok := s.Users[id]
+	oldUser.Nick = user.Nick
+	/*storedUser, ok := s.Users[oldUser.Id]
 	if !ok {
-		log.Printf("Could not find user when updating: sessionId: \"%s\"", id)
+		log.Printf("Could not find user when updating: sessionId: \"%s\"", oldUser.Id)
 		return errors.New(NoUserForUUID)
 	}
-	storedUser.Nick = user.Nick
+	storedUser.Nick = user.Nick*/
 
 	return nil
 }
@@ -269,7 +269,7 @@ func listDelete(w http.ResponseWriter, user *backend.User) {
 
 }
 
-func adminHandler(w http.ResponseWriter, req *http.Request) {
+/*func adminHandler(w http.ResponseWriter, req *http.Request) {
 	user, err := state.getUserFromRequest(req)
 	if err != nil {
 		sendResponseWithCode(w, JsonMessage{err.Error()}, http.StatusUnauthorized)
@@ -299,9 +299,9 @@ func adminHandler(w http.ResponseWriter, req *http.Request) {
 	} else {
 		sendResponseWithCode(w, JsonMessage{"Wrong password"}, http.StatusUnauthorized)
 	}
-}
+}*/
 
-func userHandler(w http.ResponseWriter, req *http.Request) {
+/*func userHandler(w http.ResponseWriter, req *http.Request) {
 	session, err := store.Get(req, SESSION_KEY)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -328,19 +328,26 @@ func userHandler(w http.ResponseWriter, req *http.Request) {
 			respondWithUserFromSession(w, session)
 		}
 	}
-}
+}*/
 
 func notFound(w http.ResponseWriter, req *http.Request) {
 	log.Print("In not found")
 	http.Error(w, "Not found", http.StatusNotFound)
 }
 
-func sendUserReponse(w http.ResponseWriter, user *backend.User) {
-	resp, err := json.Marshal(user)
+func sendUserReponse(conn *websocket.Conn, r *http.Request) {
+	user, err := state.getUserFromRequest(r)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		log.Printf("Could not get user %v", err)
+		sendError(conn, err.Error())
+	}
+
+	userObj, err := json.Marshal(user)
+	if err != nil {
+		sendError(conn, err.Error())
 	} else {
-		w.Write(resp)
+		resp := append([]byte(USER_UPDATE + " "), userObj...)
+		conn.WriteMessage(websocket.TextMessage, resp)
 	}
 }
 
@@ -353,16 +360,16 @@ func sendListResponse(w http.ResponseWriter, list *backend.SpeakerList) {
 	}
 }
 
-func respondWithUserFromSession(w http.ResponseWriter, session *sessions.Session) {
-	user, err := state.getUserFromSession(session)
-	if err != nil {
-		log.Printf("Could not get user from session: %v\n", err)
-		sendResponseWithCode(w, JsonMessage{"No user for that session. Try clearing your cookies."}, http.StatusInternalServerError)
-		return
-	}
-
-	sendUserReponse(w, user)
-}
+//func respondWithUserFromSession(w http.ResponseWriter, session *sessions.Session) {
+//	user, err := state.getUserFromSession(session)
+//	if err != nil {
+//		log.Printf("Could not get user from session: %v\n", err)
+//		sendResponseWithCode(w, JsonMessage{"No user for that session. Try clearing your cookies."}, http.StatusInternalServerError)
+//		return
+//	}
+//
+//	sendUserReponse(w, user)
+//}
 
 type UserMiddleware struct {
 	handler http.Handler
@@ -433,40 +440,32 @@ func serveWs(w http.ResponseWriter, r *http.Request) {
 	}
 	log.Printf("Client subscribed: %v", user.Id)
 
-	timeout := time.NewTicker(time.Second * 5)
-
 	fromClient := make(chan MessageHeader, 1)
 	go func() {
-		var message map[string]*json.RawMessage
+		//var message map[string]*json.RawMessage
 		for {
 			_, receivedBytes, err := conn.ReadMessage()
-			json.Unmarshal(receivedBytes, &message)
 			if err != nil {
-				log.Printf("Could not read json %v \n", err)
+				log.Printf("Could not read message %v", err)
 			}
-			log.Printf("Partial parse: %v", message)
-
-			var messageHeader MessageHeader
-			err = json.Unmarshal(*message["header"], &messageHeader)
-			if err != nil {
-				log.Printf("Could not parse header %v \n", err)
+			parts := strings.Split(string(receivedBytes), " ")
+			if len(parts) < 1 || len(parts) > 2 {
+				log.Printf("Wrong numer of parts, Expected 2 got %v", len(parts))
 			}
+			messageType := parts[0]
 
-			log.Printf("MessageHeader %v", messageHeader.MessageType)
-
-			asd := uuid.New()
-			u := User{"tejp", true, asd}
-			log.Print(u.id)
-			b, _ := json.Marshal(u)
-			log.Print(b)
-			if messageHeader.MessageType == "CLIENT_HELO" {
-				var user User
-				err = json.Unmarshal(b, &user)
+			if messageType == USER_GET {
+				sendUserReponse(conn, r)
+			} else if messageType == USER_UPDATE {
 				if err != nil {
-					log.Printf("Could not decode user %v", err)
+					log.Printf("Could not get user %v", err)
+					sendError(conn, err.Error())
+					continue
 				}
-				log.Printf("User from json. %v\n", user)
-				log.Printf("User from json. %v\n", user.id)
+				var receivedUser User
+				json.Unmarshal([]byte(parts[1]), &receivedUser)
+				state.updateUser(r, receivedUser)
+				sendUserReponse(conn, r)
 			}
 		}
 	}()
@@ -475,11 +474,36 @@ func serveWs(w http.ResponseWriter, r *http.Request) {
 		select {
 		case msg := <-fromClient:
 			log.Printf("Message! %v", msg)
-		case <-timeout.C:
-			log.Print("Timeout")
 		}
 	}
 }
+
+func sendError(conn *websocket.Conn, message string) {
+	respObj, err := json.Marshal(JsonMessage{message})
+	if err != nil {
+		log.Printf("Could not marshal error message: %v", err)
+	}
+	resp := append([]byte(ERROR+" "), respObj...)
+
+	conn.WriteMessage(websocket.TextMessage, resp)
+}
+
+const (
+	USER_GET = "USER_GET"
+	USER_UPDATE = "USER_UPDATE"
+	USER_DELETE = "USER_DELETE"
+
+	LIST_NEW         = "LIST_NEW"
+	LIST_DELETE      = "LIST_NEW"
+	LIST_UPDATE      = "LIST_UPDATE"
+	LIST_ADD_USER    = "LIST_ADD_USER"
+	LIST_REMOVE_USER = "LIST_REMOVE_USER"
+	LIST_FETCH       = "LIST_FETCH"
+
+	ADMIN_AUTHORIZE = "ADMIN_AUTHORIZE"
+
+	ERROR = "ERROR"
+)
 
 type MessageHeader struct {
 	MessageType string `json:"type"`

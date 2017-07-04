@@ -10,11 +10,13 @@ import {
   SubmitButton
 } from "./SharedComponents.js";
 
+import { requestUserUpdate } from "./actions.js";
+
 class User extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      newNick: ""
+      newNick: props.user.nick || ""
     };
   }
 
@@ -25,16 +27,20 @@ class User extends Component {
   handleKeyPress = event => {
     if (event.key === "Enter") {
       const { newNick } = this.state;
-      const { user: { nick } } = this.props;
+      const { user, user: { nick } } = this.props;
       if (nick !== newNick) {
-        this.props.updateUser(newNick);
+        requestUserUpdate({ ...user, nick: newNick });
       }
     }
   };
 
   render() {
+    if (!this.props.user) {
+      return <div>nope</div>;
+    }
+
     const { newNick } = this.state;
-    const { user: { nick, id, isAdmin }, updateUser } = this.props;
+    const { user, user: { nick, id, isAdmin } } = this.props;
 
     return (
       <Container>
@@ -68,7 +74,7 @@ class User extends Component {
                 type="button"
                 value="Spara"
                 disabled={nick === newNick ? "disabled" : ""}
-                onClick={() => updateUser(newNick)}
+                onClick={() => requestUserUpdate({ ...user, nick: newNick })}
               />
             </RowContent>
           </Row>
