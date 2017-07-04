@@ -11,6 +11,8 @@ import AppHeader from "./AppHeader.js";
 
 import { getJson, postJson } from "./fetch.js";
 
+import backend from "./backend.js";
+
 class App extends Component {
   constructor(props) {
     super(props);
@@ -18,6 +20,21 @@ class App extends Component {
     this.state = {
       user: {}
     };
+
+    backend.connect("ws://localhost:3001/ws").then(() => {
+      backend.socket.send(
+        JSON.stringify({
+          header: {
+            type: "CLIENT_HELO"
+          },
+          content: {
+            nick: "tejp",
+            isAdmin: false,
+            id: "eb3d3083-ebad-410d-8f84-df04d36726e8"
+          }
+        })
+      );
+    });
   }
 
   componentWillMount() {

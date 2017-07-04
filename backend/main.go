@@ -7,11 +7,13 @@ import (
 	"github.com/gorilla/context"
 	"github.com/gorilla/mux"
 	"github.com/gorilla/sessions"
+	"github.com/gorilla/websocket"
 	garbler "github.com/michaelbironneau/garbler/lib"
 	"github.com/rs/cors"
 	"github.com/tejpbit/talarlista/backend/backend"
 	"log"
 	"net/http"
+	"time"
 )
 
 type State struct {
@@ -410,6 +412,79 @@ func (u *UserMiddleware) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 
 }
 
+var upgrader = websocket.Upgrader{
+	ReadBufferSize:  1024,
+	WriteBufferSize: 1024,
+	CheckOrigin: func(r *http.Request) bool {
+		return true
+	},
+}
+
+func serveWs(w http.ResponseWriter, r *http.Request) {
+	conn, err := upgrader.Upgrade(w, r, nil)
+	if err != nil {
+		log.Println(err)
+		return
+	}
+
+	user, err := state.getUserFromRequest(r)
+	if err != nil {
+		log.Printf("Could not get user from request: %v", err)
+	}
+	log.Printf("Client subscribed: %v", user.Id)
+
+	timeout := time.NewTicker(time.Second * 5)
+
+	fromClient := make(chan MessageHeader, 1)
+	go func() {
+		var message map[string]*json.RawMessage
+		for {
+			_, receivedBytes, err := conn.ReadMessage()
+			json.Unmarshal(receivedBytes, &message)
+			if err != nil {
+				log.Printf("Could not read json %v \n", err)
+			}
+			log.Printf("Partial parse: %v", message)
+
+			var messageHeader MessageHeader
+			err = json.Unmarshal(*message["header"], &messageHeader)
+			if err != nil {
+				log.Printf("Could not parse header %v \n", err)
+			}
+
+			log.Printf("MessageHeader %v", messageHeader.MessageType)
+
+			asd := uuid.New()
+			u := User{"tejp", true, asd}
+			log.Print(u.id)
+			b, _ := json.Marshal(u)
+			log.Print(b)
+			if messageHeader.MessageType == "CLIENT_HELO" {
+				var user User
+				err = json.Unmarshal(b, &user)
+				if err != nil {
+					log.Printf("Could not decode user %v", err)
+				}
+				log.Printf("User from json. %v\n", user)
+				log.Printf("User from json. %v\n", user.id)
+			}
+		}
+	}()
+
+	for {
+		select {
+		case msg := <-fromClient:
+			log.Printf("Message! %v", msg)
+		case <-timeout.C:
+			log.Print("Timeout")
+		}
+	}
+}
+
+type MessageHeader struct {
+	MessageType string `json:"type"`
+}
+
 func main() {
 	reqs := garbler.PasswordStrengthRequirements{
 		MinimumTotalLength: 8,
@@ -439,23 +514,19 @@ func main() {
 	}
 	state.Users = make(map[uuid.UUID]*backend.User)
 
-	r := mux.NewRouter()
-	r.StrictSlash(true)
-	r.HandleFunc("/", notFound)
-	r.HandleFunc("/lists", listHandler)
-	r.HandleFunc("/lists/{id}", listWithIdHandler)
-	r.HandleFunc("/admin", adminHandler)
-	r.HandleFunc("/me", userHandler)
-	serverMux := http.NewServeMux()
-	serverMux.Handle("/", r)
+	mux := http.NewServeMux()
 
-	handler := http.Handler(createUserMiddleware(serverMux, &state))
+	mux.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
+		serveWs(w, r)
+	})
+
+	handler := http.Handler(createUserMiddleware(mux, &state))
 
 	c := cors.New(cors.Options{
-		//Debug: true,
-		AllowedOrigins:   []string{"http://localhost:3000"},
-		AllowCredentials: true,
-		AllowedMethods:   []string{"GET", "POST", "DELETE"},
+	//Debug: true,
+	//AllowedOrigins:   []string{"http://localhost:3000"},
+	//AllowCredentials: true,
+	//AllowedMethods:   []string{"GET", "POST", "DELETE"},
 	})
 	handler = c.Handler(handler)
 
