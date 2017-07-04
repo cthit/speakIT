@@ -431,6 +431,10 @@ func main() {
 			Title:        "Main list",
 			SpeakerQueue: make([]*backend.User, 0),
 			Id:           uuid.New(),
+		}, {
+			Title:        "Subdiscussion",
+			SpeakerQueue: make([]*backend.User, 0),
+			Id:           uuid.New(),
 		},
 	}
 	state.Users = make(map[uuid.UUID]*backend.User)
