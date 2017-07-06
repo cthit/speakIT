@@ -498,6 +498,6 @@ func main() {
 	n.UseHandler(r)
 	handler := context.ClearHandler(n)
 	log.Print("About to listen on 3001. Go to http://127.0.0.1:3001/")
-	http.ListenAndServe(":3001", handler)
-
+	err := http.ListenAndServe(":3001", handler)
+	log.Fatal(err)
 }
