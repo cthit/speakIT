@@ -14,6 +14,8 @@ import {
   Title
 } from "./SharedComponents.js";
 
+import { requestAdminLogin } from "./actions.js";
+
 class Admin extends Component {
   constructor(props) {
     super(props);
@@ -59,12 +61,7 @@ class Admin extends Component {
   };
 
   attemptAuth = () => {
-    postJson("/admin", { password: this.state.authCode })
-      .then(resp => {
-        toast.success("Authorization successfull!");
-        this.props.updateUser();
-      })
-      .catch(err => toast.error(err.msg));
+    requestAdminLogin(this.state.authCode);
   };
 
   handleNickToRemoveChange = event => {

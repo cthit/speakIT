@@ -7,22 +7,18 @@ import (
 	"github.com/gorilla/context"
 	"github.com/gorilla/mux"
 	"github.com/gorilla/sessions"
+	"github.com/gorilla/websocket"
 	garbler "github.com/michaelbironneau/garbler/lib"
-	"github.com/rs/cors"
 	"github.com/tejpbit/talarlista/backend/backend"
+	"github.com/urfave/negroni"
 	"log"
 	"net/http"
+	"strings"
 )
 
 type State struct {
 	Users        map[uuid.UUID]*backend.User `json:"users"`         // All participators at the student division meeting.
 	SpeakerLists []*backend.SpeakerList      `json:"speakersLists"` // A list of speakerLists where each index is a list of sessions in queue to speak
-}
-
-type User struct {
-	Nick    string `json:"nick"`
-	IsAdmin bool   `json:"isAdmin"`
-	id      uuid.UUID
 }
 
 type JsonMessage struct {
@@ -215,22 +211,15 @@ func (s State) addUser(user *backend.User) bool {
 	return true
 }
 
-func (s *State) updateUser(session *sessions.Session, user User) error {
-
-	id, err := getUUIDfromSession(session)
+func (s *State) updateUser(req *http.Request, user backend.User) error {
+	oldUser, err := state.getUserFromRequest(req)
 
 	if err != nil {
 		log.Printf("%s: %v\n", NoUUIDInSession, err)
-		return errors.New(NoUUIDInSession)
+		return err
 	}
 
-	storedUser, ok := s.Users[id]
-	if !ok {
-		log.Printf("Could not find user when updating: sessionId: \"%s\"", id)
-		return errors.New(NoUserForUUID)
-	}
-	storedUser.Nick = user.Nick
-
+	oldUser.Nick = user.Nick
 	return nil
 }
 
@@ -267,21 +256,7 @@ func listDelete(w http.ResponseWriter, user *backend.User) {
 
 }
 
-func adminHandler(w http.ResponseWriter, req *http.Request) {
-	user, err := state.getUserFromRequest(req)
-	if err != nil {
-		sendResponseWithCode(w, JsonMessage{err.Error()}, http.StatusUnauthorized)
-		return
-	}
-
-	var authReq AuthenticationRequest
-
-	err = json.NewDecoder(req.Body).Decode(&authReq)
-	if err != nil {
-		sendResponseWithCode(w, JsonMessage{err.Error()}, http.StatusBadRequest)
-		return
-	}
-
+func (s *State) tryAdminLogin(user *backend.User, authReq AuthenticationRequest) bool {
 	passwordIndex := -1
 	for i, k := range oneTimePasswords {
 		if k == authReq.Password {
@@ -290,42 +265,12 @@ func adminHandler(w http.ResponseWriter, req *http.Request) {
 		}
 	}
 
-	if passwordIndex != -1 {
+	ok := passwordIndex != -1
+	if ok {
 		user.IsAdmin = true
 		oneTimePasswords = append(oneTimePasswords[:passwordIndex], oneTimePasswords[passwordIndex+1:]...)
-		sendUserReponse(w, user)
-	} else {
-		sendResponseWithCode(w, JsonMessage{"Wrong password"}, http.StatusUnauthorized)
 	}
-}
-
-func userHandler(w http.ResponseWriter, req *http.Request) {
-	session, err := store.Get(req, SESSION_KEY)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	if req.Method == http.MethodGet {
-		respondWithUserFromSession(w, session)
-	} else if req.Method == http.MethodPost {
-
-		var dat User
-		decodeErr := json.NewDecoder(req.Body).Decode(&dat)
-		if decodeErr != nil {
-			log.Printf("Could not decode data %v\n", decodeErr)
-			sendResponseWithCode(w, JsonMessage{decodeErr.Error()}, http.StatusBadRequest)
-			return
-		}
-
-		err := state.updateUser(session, dat)
-		if err != nil {
-			log.Print("Could not update user data")
-			sendResponseWithCode(w, JsonMessage{err.Error()}, http.StatusUnauthorized)
-		} else {
-			respondWithUserFromSession(w, session)
-		}
-	}
+	return ok
 }
 
 func notFound(w http.ResponseWriter, req *http.Request) {
@@ -333,12 +278,24 @@ func notFound(w http.ResponseWriter, req *http.Request) {
 	http.Error(w, "Not found", http.StatusNotFound)
 }
 
-func sendUserReponse(w http.ResponseWriter, user *backend.User) {
-	resp, err := json.Marshal(user)
+func sendListsResponse(conn *websocket.Conn, lists []*backend.SpeakerList) {
+	listsObj, err := json.Marshal(lists)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		sendError(conn, err.Error())
 	} else {
-		w.Write(resp)
+		resp := append([]byte(LISTS_UPDATE+" "), listsObj...)
+		conn.WriteMessage(websocket.TextMessage, resp)
+	}
+
+}
+
+func sendUserResponse(conn *websocket.Conn, user *backend.User) {
+	userObj, err := json.Marshal(user)
+	if err != nil {
+		sendError(conn, err.Error())
+	} else {
+		resp := append([]byte(USER_UPDATE+" "), userObj...)
+		conn.WriteMessage(websocket.TextMessage, resp)
 	}
 }
 
@@ -351,32 +308,131 @@ func sendListResponse(w http.ResponseWriter, list *backend.SpeakerList) {
 	}
 }
 
-func respondWithUserFromSession(w http.ResponseWriter, session *sessions.Session) {
-	user, err := state.getUserFromSession(session)
+var upgrader = websocket.Upgrader{
+	ReadBufferSize:  1024,
+	WriteBufferSize: 1024,
+	CheckOrigin: func(r *http.Request) bool {
+		return true
+	},
+}
+
+func serveWs(w http.ResponseWriter, r *http.Request, _ http.HandlerFunc) {
+	conn, err := upgrader.Upgrade(w, r, w.Header())
 	if err != nil {
-		log.Printf("Could not get user from session: %v\n", err)
-		sendResponseWithCode(w, JsonMessage{"No user for that session. Try clearing your cookies."}, http.StatusInternalServerError)
+		log.Println(err)
 		return
 	}
 
-	sendUserReponse(w, user)
+	user, err := state.getUserFromRequest(r)
+	if err != nil {
+		sendError(conn, err.Error())
+		conn.Close()
+		return
+	}
+
+	go func() {
+		for {
+			_, receivedBytes, err := conn.ReadMessage()
+			if err != nil {
+				if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway) {
+					log.Printf("error: %v", err)
+				}
+				break
+			}
+			parts := strings.Split(string(receivedBytes), " ")
+			if len(parts) < 1 || len(parts) > 2 {
+				log.Printf("Wrong numer of parts, Expected 2 got %v", len(parts))
+			}
+			messageType := parts[0]
+
+			if messageType == CLIENT_HELO {
+				sendUserResponse(conn, user)
+				sendListsResponse(conn, state.SpeakerLists)
+			} else if messageType == USER_GET {
+				sendUserResponse(conn, user)
+			} else if messageType == USER_UPDATE {
+				var receivedUser backend.User
+				err = json.Unmarshal([]byte(parts[1]), &receivedUser)
+				if err != nil {
+					log.Printf("Could not unmarshal user %v", err)
+					sendError(conn, err.Error())
+					continue
+				}
+				state.updateUser(r, receivedUser)
+				sendSuccess(conn, "User updated")
+				sendUserResponse(conn, user)
+			} else if messageType == ADMIN_LOGIN {
+				var authRequest AuthenticationRequest
+				err = json.Unmarshal([]byte(parts[1]), &authRequest)
+				if err != nil {
+					sendError(conn, err.Error())
+					continue
+				}
+				ok := state.tryAdminLogin(user, authRequest)
+				if ok {
+					sendSuccess(conn, "Login successful.")
+					sendUserResponse(conn, user)
+				} else {
+					sendError(conn, "Login failed.")
+				}
+
+			} else if messageType == LISTS_GET {
+				sendListsResponse(conn, state.SpeakerLists)
+			}
+		}
+	}()
+
 }
 
-type UserMiddleware struct {
-	handler http.Handler
-	state   *State
+func sendNotification(conn *websocket.Conn, topic, message string) {
+	respObj, err := json.Marshal(JsonMessage{message})
+	if err != nil {
+		log.Printf("Could not marshal error message: %v", err)
+	}
+	resp := append([]byte(topic+" "), respObj...)
+	conn.WriteMessage(websocket.TextMessage, resp)
 }
 
-func createUserMiddleware(handler http.Handler, state *State) *UserMiddleware {
-	return &UserMiddleware{handler, state}
+func sendError(conn *websocket.Conn, message string) {
+	sendNotification(conn, ERROR, message)
 }
 
-func (u *UserMiddleware) ServeHTTP(w http.ResponseWriter, req *http.Request) {
+func sendSuccess(conn *websocket.Conn, message string) {
+	sendNotification(conn, SUCCESS, message)
+}
+
+const (
+	CLIENT_HELO = "CLIENT_HELO"
+	USER_GET    = "USER_GET"
+	USER_UPDATE = "USER_UPDATE"
+	USER_DELETE = "USER_DELETE"
+
+	LIST_NEW         = "LIST_NEW"
+	LIST_DELETE      = "LIST_NEW"
+	LISTS_UPDATE     = "LISTS_UPDATE"
+	LIST_ADD_USER    = "LIST_ADD_USER"
+	LIST_REMOVE_USER = "LIST_REMOVE_USER"
+	LISTS_GET        = "LISTS_GET"
+
+	ADMIN_LOGIN = "ADMIN_LOGIN"
+
+	ERROR   = "ERROR"
+	SUCCESS = "SUCCESS"
+)
+
+type MessageHeader struct {
+	MessageType string `json:"type"`
+}
+
+func userWithSession(w http.ResponseWriter, req *http.Request, next http.HandlerFunc) {
+
 	session, err := store.Get(req, SESSION_KEY)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+
+	log.Printf("Requested url %s", req.URL)
 
 	if session.IsNew {
 		var id = uuid.New()
@@ -384,7 +440,8 @@ func (u *UserMiddleware) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 
 		log.Printf("New user id: %v\n", id)
 
-		u.state.addUser(&backend.User{"", false, id})
+		state.addUser(&backend.User{"", false, id})
+		log.Printf("State after new user: %v", state.Users)
 
 		session.Options = &sessions.Options{
 			MaxAge:   86400,
@@ -398,16 +455,7 @@ func (u *UserMiddleware) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 		}
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-
-	_, err = state.getUserFromSession(session)
-	if err != nil {
-		log.Printf("User not found in middleware: %v\n", err)
-		sendResponseWithCode(w, JsonMessage{"No user for this session. Clear your cookies to get a new session."}, http.StatusUnauthorized)
-	} else {
-		u.handler.ServeHTTP(w, req)
-	}
-
+	next(w, req)
 }
 
 func main() {
@@ -439,30 +487,17 @@ func main() {
 	}
 	state.Users = make(map[uuid.UUID]*backend.User)
 
+	n := negroni.Classic()
+
 	r := mux.NewRouter()
-	r.StrictSlash(true)
-	r.HandleFunc("/", notFound)
-	r.HandleFunc("/lists", listHandler)
-	r.HandleFunc("/lists/{id}", listWithIdHandler)
-	r.HandleFunc("/admin", adminHandler)
-	r.HandleFunc("/me", userHandler)
-	serverMux := http.NewServeMux()
-	serverMux.Handle("/", r)
-
-	handler := http.Handler(createUserMiddleware(serverMux, &state))
-
-	c := cors.New(cors.Options{
-		//Debug: true,
-		AllowedOrigins:   []string{"http://localhost:3000"},
-		AllowCredentials: true,
-		AllowedMethods:   []string{"GET", "POST", "DELETE"},
+	r.Handle("/ws", negroni.New(negroni.HandlerFunc(userWithSession), negroni.HandlerFunc(serveWs)))
+	r.HandleFunc("/", func(rw http.ResponseWriter, r *http.Request) {
+		log.Printf("helo")
+		rw.Write([]byte("Helohelo /"))
 	})
-	handler = c.Handler(handler)
-
-	handler = context.ClearHandler(handler)
-
+	n.UseHandler(r)
+	handler := context.ClearHandler(n)
 	log.Print("About to listen on 3001. Go to http://127.0.0.1:3001/")
-	//err := http.ListenAndServeTLS(":3001", "cert.pem", "key.pem", nil)
-	err := http.ListenAndServe(":3001", handler)
-	log.Fatal(err)
+	http.ListenAndServe(":3001", handler)
+
 }

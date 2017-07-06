@@ -5,6 +5,8 @@ import { getJson } from "../fetch.js";
 
 import { Container, Row, RowContent } from "../SharedComponents.js";
 
+import Loading from "../loading.js";
+
 import List from "./List.js";
 
 class ListsView extends Component {
@@ -31,10 +33,12 @@ class ListsView extends Component {
   }
 
   render() {
-    const { speakerLists } = this.state;
-    const { user } = this.props;
+    const { user, lists, loading } = this.props;
 
-    console.log(speakerLists);
+    if (loading) {
+      return <Loading />;
+    }
+
     return (
       <ListViewContainer>
         <Row>
@@ -44,9 +48,7 @@ class ListsView extends Component {
         </Row>
 
         <ListsContainer>
-          {speakerLists.map(list =>
-            <List key={list.id} list={list} user={user} />
-          )}
+          {lists.map(list => <List key={list.id} list={list} user={user} />)}
         </ListsContainer>
 
       </ListViewContainer>

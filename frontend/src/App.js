@@ -9,7 +9,13 @@ import User from "./User.js";
 import Admin from "./Admin.js";
 import AppHeader from "./AppHeader.js";
 
-import { getJson, postJson } from "./fetch.js";
+import { postJson } from "./fetch.js";
+
+import backend from "./backend.js";
+
+import { Provider, connect } from "react-redux";
+import store from "./store.js";
+import { sendClientHello } from "./actions.js";
 
 class App extends Component {
   constructor(props) {
@@ -21,20 +27,17 @@ class App extends Component {
   }
 
   componentWillMount() {
-    this.getUser();
-  }
-
-  getUser = () => {
-    getJson("/me")
-      .then(resp => {
-        this.setState({
-          user: resp
-        });
+    window.backend = backend;
+    backend
+      .connect("ws://localhost:3001/ws")
+      .then(() => {
+        sendClientHello();
       })
       .catch(err => {
-        toast.error(`Could not get user: ${err.msg}`);
+        console.log(err);
+        toast.error(`Error: ${err}`);
       });
-  };
+  }
 
   updateUserNick = newNick => {
     postJson("/me", { nick: newNick })
@@ -47,10 +50,13 @@ class App extends Component {
       );
   };
 
-  renderList = () => <ListsView user={this.state.user} />;
+  renderList = () => {
+    const { user, lists, listsGetWaiting } = this.props;
+    return <ListsView user={user} lists={lists} loading={listsGetWaiting} />;
+  };
 
   render() {
-    const { user } = this.state;
+    const { user, userGetWaiting } = this.props;
 
     return (
       <Router>
@@ -59,13 +65,10 @@ class App extends Component {
           <AppHeader />
           <Route exact path="/" render={this.renderList} />
           <Route path="/list" render={this.renderList} />
-          <Route
-            path="/admin"
-            render={() => <Admin user={user} updateUser={this.getUser} />}
-          />
+          <Route path="/admin" render={() => <Admin user={user} />} />
           <Route
             path="/user"
-            render={() => <User user={user} updateUser={this.updateUserNick} />}
+            render={() => <User user={user} loading={userGetWaiting} />}
           />
         </div>
       </Router>
@@ -73,4 +76,16 @@ class App extends Component {
   }
 }
 
-export default App;
+const ConnectedApp = connect(state => ({
+  user: state.user,
+  userGetWaiting: state.userGetWaiting,
+  lists: state.lists,
+  listsGetWaiting: state.listsGetWaiting
+}))(App);
+
+const ProviderApp = () =>
+  <Provider store={store}>
+    <ConnectedApp />
+  </Provider>;
+
+export default ProviderApp;

@@ -6,9 +6,13 @@
     "react": "^15.6.0",
     "react-dom": "^15.6.0",
     "react-fontawesome": "^1.6.1",
+    "react-loading": "^0.1.4",
+    "react-redux": "^5.0.5",
     "react-router-dom": "^4.1.1",
     "react-scrollbar": "^0.5.1",
     "react-toastify": "^1.7.0",
+    "redux": "^3.7.1",
+    "redux-devtools": "^3.4.0",
     "styled-components": "^2.1.0"
   },
   "devDependencies": {
