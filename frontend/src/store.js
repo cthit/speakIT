@@ -3,13 +3,15 @@ import {
 	USER_UPDATE,
 	USER_GET_WAITING,
 	LISTS_UPDATE,
-	LISTS_GET_WAITING
+	LISTS_GET_WAITING,
+	LIST_WAITING
 } from "./actions.js";
 
 const initialState = {
 	user: {},
 	listsGetWaiting: true,
-	userGetWaiting: true
+	userGetWaiting: true,
+	lists: []
 };
 
 function speakersList(state = initialState, action) {
@@ -23,11 +25,29 @@ function speakersList(state = initialState, action) {
 			};
 		case USER_GET_WAITING:
 			return { ...state, userGetWaiting: true };
+
 		case LISTS_UPDATE:
 			const { lists } = action;
 			return { ...state, lists, listsGetWaiting: false };
+
 		case LISTS_GET_WAITING:
 			return { ...state, listsGetWaiting: true };
+
+		case LIST_WAITING:
+			const { id } = action;
+
+			const updatedLists = state.lists.map(list => {
+				if (list.id === id) {
+					list.updating = true;
+				}
+				return list;
+			});
+
+			return {
+				...state,
+				lists: updatedLists
+			};
+
 		default:
 			return state;
 	}

@@ -16,14 +16,17 @@ export const ADMIN_LOGIN = "ADMIN_LOGIN";
 export const LISTS_GET = "LISTS_GET";
 export const LISTS_UPDATE = "LISTS_UPDATE";
 export const LISTS_GET_WAITING = "LISTS_GET_WAITING";
+export const LIST_ADD_USER = "LIST_ADD_USER";
+export const LIST_REMOVE_USER = "LIST_REMOVE_USER";
+export const LIST_WAITING = "LIST_WAITING";
+
 /*
 const USER_DELETE = "USER_DELETE";
 
 const LIST_NEW = "LIST_NEW";
 const LIST_DELETE = "LIST_NEW";
 
-const LIST_ADD_USER = "LIST_ADD_USER";
-const LIST_REMOVE_USER = "LIST_REMOVE_USER";
+
 const LIST_FETCH = "LIST_FETCH";
 
 
@@ -59,6 +62,18 @@ export const updateUser = user => {
 
 export const updateLists = lists => {
 	return { type: LISTS_UPDATE, lists };
+};
+
+export const requestAddUserToList = listId => {
+	backend.socket.send(LIST_ADD_USER + " " + JSON.stringify({ id: listId }));
+	return { type: LIST_WAITING, id: listId };
+};
+
+export const requestRemoveUserFromList = listId => {
+	backend.socket.send(
+		LIST_REMOVE_USER + " " + JSON.stringify({ id: listId })
+	);
+	return { type: LIST_WAITING, id: listId };
 };
 
 export const dispatchActionFromTopic = (topic, obj) => {

@@ -6,9 +6,11 @@ import { toast } from "react-toastify";
 import ScrollArea from "react-scrollbar";
 
 import SubmitButton from "./SubmitButton.js";
-import { postJson, sendDelete } from "../fetch.js";
 import AdminToolBar from "./AdminToolBar.js";
 import AdminFooter from "./AdminFooter.js";
+
+import store from "../store.js";
+import { requestAddUserToList, requestRemoveUserFromList } from "../actions.js";
 
 const createSpeakerRow = (user, index) => {
 	return (
@@ -22,52 +24,13 @@ const createSpeakerRow = (user, index) => {
 };
 
 class List extends Component {
-	constructor(props) {
-		super(props);
-
-		this.statics = {
-			notRegistered: "notRegistered",
-			waiting: "waiting",
-			registered: "registered"
-		};
-
-		this.state = {
-			status: this.statics.notRegistered
-		};
-	}
-
 	registerTalkRequest = () => {
-		console.log("raise hand");
-
-		postJson("/list")
-			.then(resp => {
-				this.setState({ status: this.statics.registered });
-			})
-			.then(this.updateSpeakersList)
-			.catch(err => {
-				console.error("Could not register to the speakers list.", err);
-			});
+		store.dispatch(requestAddUserToList(this.props.list.id));
 	};
 
-	unregisterTalkRequest() {
-		console.log("lower hand");
-		this.setState({ status: this.statics.notRegistered });
-
-		sendDelete("/list")
-			.then(resp => {
-				this.setState({ status: this.statics.notRegistered });
-			})
-			.then(this.updateSpeakersList)
-			.catch(err => {
-				console.error(
-					"Could not unregister from the speakers list.",
-					err
-				);
-				toast.error(
-					`Could not unregister from the speakers list: ${err}`
-				);
-			});
-	}
+	unregisterTalkRequest = () => {
+		store.dispatch(requestRemoveUserFromList(this.props.list.id));
+	};
 
 	toggleDiscussionStatus = listId => {
 		console.log("helo", listId);
@@ -89,14 +52,17 @@ class List extends Component {
 	};
 
 	render() {
-		const { list, status, user } = this.props;
+		const { list, user } = this.props;
+
+		const userIsPresent = list.speakersQueue.some(u => u.id === user.id);
 
 		return (
 			<ListContainer key={list.id}>
 				<ListHeader>
 					<DiscussionTitle>{list.title}</DiscussionTitle>
 					<SubmitButton
-						isRegistered={status === this.statics.registered}
+						disabled={list.updating}
+						isRegistered={userIsPresent}
 						unregisterTalkRequest={this.unregisterTalkRequest}
 						registerTalkRequest={this.registerTalkRequest}
 					/>
@@ -107,7 +73,6 @@ class List extends Component {
 				</ListHeader>
 
 				<Scroll speed={0.8} horizontal={false} minScrollSize={1}>
-
 					<ListTitle>
 						Första talarlista ({list.speakersQueue.length})
 					</ListTitle>

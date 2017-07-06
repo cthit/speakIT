@@ -378,10 +378,81 @@ func serveWs(w http.ResponseWriter, r *http.Request, _ http.HandlerFunc) {
 
 			} else if messageType == LISTS_GET {
 				sendListsResponse(conn, state.SpeakerLists)
+			} else if messageType == LIST_ADD_USER {
+				var listAction ListActionData
+				err := json.Unmarshal([]byte(parts[1]), &listAction)
+				if err != nil {
+					sendError(conn, err.Error())
+					continue
+				}
+				err = state.addUserToList(listAction.Id, user)
+				if err != nil {
+					sendError(conn, err.Error())
+					continue
+				}
+				sendSuccess(conn, "User added to list")
+				sendListsResponse(conn, state.SpeakerLists)
+
+			} else if messageType == LIST_REMOVE_USER {
+				var listAction ListActionData
+				err := json.Unmarshal([]byte(parts[1]), &listAction)
+				if err != nil {
+					sendError(conn, err.Error())
+					continue
+				}
+				err = state.removeUserFromList(listAction.Id, user)
+				if err != nil {
+					sendError(conn, err.Error())
+					continue
+				}
+				sendSuccess(conn, "User removed from list")
+				sendListsResponse(conn, state.SpeakerLists)
 			}
 		}
 	}()
 
+}
+
+func (s *State) addUserToList(id uuid.UUID, user *backend.User) error {
+	listIndex := -1
+	for i, list := range state.SpeakerLists {
+		if list.Id == id {
+			listIndex = i
+			break
+		}
+	}
+	if listIndex == -1 {
+		return errors.New("Could not find list for provided id")
+	}
+	list := state.SpeakerLists[listIndex]
+	ok := list.AddUser(user)
+	if !ok {
+		return errors.New("User already in list")
+	}
+	return nil
+}
+
+func (s *State) removeUserFromList(id uuid.UUID, user *backend.User) error {
+	listIndex := -1
+	for i, list := range state.SpeakerLists {
+		if list.Id == id {
+			listIndex = i
+			break
+		}
+	}
+	if listIndex == -1 {
+		return errors.New("Could not find list for provided id")
+	}
+	list := state.SpeakerLists[listIndex]
+	ok := list.RemoveUser(user)
+	if !ok {
+		return errors.New("User not in list")
+	}
+	return nil
+}
+
+type ListActionData struct {
+	Id uuid.UUID `json:"id"`
 }
 
 func sendNotification(conn *websocket.Conn, topic, message string) {

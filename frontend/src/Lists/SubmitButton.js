@@ -6,11 +6,13 @@ class SubmitButton extends Component {
 		const {
 			isRegistered,
 			unregisterTalkRequest,
-			registerTalkRequest
+			registerTalkRequest,
+			disabled
 		} = this.props;
 
 		return (
 			<StyledSubmitButton
+				disabled={disabled}
 				type="button"
 				value={isRegistered ? "Stryk mig" : "Skriv upp mig"}
 				onClick={
