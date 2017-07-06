@@ -278,7 +278,18 @@ func notFound(w http.ResponseWriter, req *http.Request) {
 	http.Error(w, "Not found", http.StatusNotFound)
 }
 
-func sendUserReponse(conn *websocket.Conn, user *backend.User) {
+func sendListsResponse(conn *websocket.Conn, lists []*backend.SpeakerList) {
+	listsObj, err := json.Marshal(lists)
+	if err != nil {
+		sendError(conn, err.Error())
+	} else {
+		resp := append([]byte(LISTS_UPDATE+" "), listsObj...)
+		conn.WriteMessage(websocket.TextMessage, resp)
+	}
+
+}
+
+func sendUserResponse(conn *websocket.Conn, user *backend.User) {
 	userObj, err := json.Marshal(user)
 	if err != nil {
 		sendError(conn, err.Error())
@@ -334,8 +345,11 @@ func serveWs(w http.ResponseWriter, r *http.Request, _ http.HandlerFunc) {
 			}
 			messageType := parts[0]
 
-			if messageType == USER_GET {
-				sendUserReponse(conn, user)
+			if messageType == CLIENT_HELO {
+				sendUserResponse(conn, user)
+				sendListsResponse(conn, state.SpeakerLists)
+			} else if messageType == USER_GET {
+				sendUserResponse(conn, user)
 			} else if messageType == USER_UPDATE {
 				var receivedUser backend.User
 				err = json.Unmarshal([]byte(parts[1]), &receivedUser)
@@ -345,7 +359,8 @@ func serveWs(w http.ResponseWriter, r *http.Request, _ http.HandlerFunc) {
 					continue
 				}
 				state.updateUser(r, receivedUser)
-				sendUserReponse(conn, user)
+				sendSuccess(conn, "User updated")
+				sendUserResponse(conn, user)
 			} else if messageType == ADMIN_LOGIN {
 				var authRequest AuthenticationRequest
 				err = json.Unmarshal([]byte(parts[1]), &authRequest)
@@ -356,11 +371,13 @@ func serveWs(w http.ResponseWriter, r *http.Request, _ http.HandlerFunc) {
 				ok := state.tryAdminLogin(user, authRequest)
 				if ok {
 					sendSuccess(conn, "Login successful.")
-					sendUserReponse(conn, user)
+					sendUserResponse(conn, user)
 				} else {
 					sendError(conn, "Login failed.")
 				}
 
+			} else if messageType == LISTS_GET {
+				sendListsResponse(conn, state.SpeakerLists)
 			}
 		}
 	}()
@@ -385,20 +402,21 @@ func sendSuccess(conn *websocket.Conn, message string) {
 }
 
 const (
+	CLIENT_HELO = "CLIENT_HELO"
 	USER_GET    = "USER_GET"
 	USER_UPDATE = "USER_UPDATE"
 	USER_DELETE = "USER_DELETE"
 
 	LIST_NEW         = "LIST_NEW"
 	LIST_DELETE      = "LIST_NEW"
-	LIST_UPDATE      = "LIST_UPDATE"
+	LISTS_UPDATE     = "LISTS_UPDATE"
 	LIST_ADD_USER    = "LIST_ADD_USER"
 	LIST_REMOVE_USER = "LIST_REMOVE_USER"
-	LIST_FETCH       = "LIST_FETCH"
+	LISTS_GET        = "LISTS_GET"
 
 	ADMIN_LOGIN = "ADMIN_LOGIN"
 
-	ERROR = "ERROR"
+	ERROR   = "ERROR"
 	SUCCESS = "SUCCESS"
 )
 

@@ -1,5 +1,4 @@
 import React, { Component } from "react";
-import ReactLoading from "react-loading";
 
 import {
   ItemTitle,
@@ -11,6 +10,8 @@ import {
   SubmitButton
 } from "./SharedComponents.js";
 
+import Loading from "./loading.js";
+
 import { requestUserUpdate } from "./actions.js";
 import store from "./store.js";
 
@@ -18,7 +19,7 @@ class User extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      newNick: props.user.nick || ""
+      newNick: null
     };
   }
 
@@ -41,15 +42,7 @@ class User extends Component {
     const { loading, user, user: { nick, id, isAdmin } } = this.props;
 
     if (loading) {
-      return (
-        <Container>
-          <SubContainer>
-            <Row>
-              <ReactLoading type="spinningBubbles" color="#c4c4c4" />
-            </Row>
-          </SubContainer>
-        </Container>
-      );
+      return <Loading />;
     }
 
     return (
@@ -62,7 +55,7 @@ class User extends Component {
                 type="text"
                 onChange={this.handleChange}
                 onKeyPress={this.handleKeyPress}
-                value={newNick}
+                value={newNick == null ? nick : newNick}
               />
             </RowContent>
           </Row>
@@ -83,7 +76,11 @@ class User extends Component {
               <SubmitButton
                 type="button"
                 value="Spara"
-                disabled={nick === newNick ? "disabled" : ""}
+                disabled={
+                  newNick === null || newNick === "" || nick === newNick
+                    ? "disabled"
+                    : ""
+                }
                 onClick={() => requestUserUpdate({ ...user, nick: newNick })}
               />
             </RowContent>

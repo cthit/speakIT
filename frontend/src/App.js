@@ -15,7 +15,7 @@ import backend from "./backend.js";
 
 import { Provider, connect } from "react-redux";
 import store from "./store.js";
-import { requestUser } from "./actions.js";
+import { sendClientHello } from "./actions.js";
 
 class App extends Component {
   constructor(props) {
@@ -31,7 +31,7 @@ class App extends Component {
     backend
       .connect("ws://localhost:3001/ws")
       .then(() => {
-        requestUser();
+        sendClientHello();
       })
       .catch(err => {
         console.log(err);
@@ -50,7 +50,10 @@ class App extends Component {
       );
   };
 
-  renderList = () => <ListsView user={this.state.user} />;
+  renderList = () => {
+    const { user, lists, listsGetWaiting } = this.props;
+    return <ListsView user={user} lists={lists} loading={listsGetWaiting} />;
+  };
 
   render() {
     const { user, userGetWaiting } = this.props;
@@ -75,7 +78,9 @@ class App extends Component {
 
 const ConnectedApp = connect(state => ({
   user: state.user,
-  userGetWaiting: state.userGetWaiting
+  userGetWaiting: state.userGetWaiting,
+  lists: state.lists,
+  listsGetWaiting: state.listsGetWaiting
 }))(App);
 
 const ProviderApp = () =>

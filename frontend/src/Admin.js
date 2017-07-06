@@ -14,7 +14,6 @@ import {
   Title
 } from "./SharedComponents.js";
 
-import store from "./store.js";
 import { requestAdminLogin } from "./actions.js";
 
 class Admin extends Component {
