@@ -21,12 +21,6 @@ type State struct {
 	SpeakerLists []*backend.SpeakerList      `json:"speakersLists"` // A list of speakerLists where each index is a list of sessions in queue to speak
 }
 
-type User struct {
-	Nick    string `json:"nick"`
-	IsAdmin bool   `json:"isAdmin"`
-	id      uuid.UUID
-}
-
 type JsonMessage struct {
 	Message string `json:"msg"`
 }
@@ -217,7 +211,7 @@ func (s State) addUser(user *backend.User) bool {
 	return true
 }
 
-func (s *State) updateUser(req *http.Request, user User) error {
+func (s *State) updateUser(req *http.Request, user backend.User) error {
 	oldUser, err := state.getUserFromRequest(req)
 
 	if err != nil {
@@ -262,21 +256,7 @@ func listDelete(w http.ResponseWriter, user *backend.User) {
 
 }
 
-/*func adminHandler(w http.ResponseWriter, req *http.Request) {
-	user, err := state.getUserFromRequest(req)
-	if err != nil {
-		sendResponseWithCode(w, JsonMessage{err.Error()}, http.StatusUnauthorized)
-		return
-	}
-
-	var authReq AuthenticationRequest
-
-	err = json.NewDecoder(req.Body).Decode(&authReq)
-	if err != nil {
-		sendResponseWithCode(w, JsonMessage{err.Error()}, http.StatusBadRequest)
-		return
-	}
-
+func (s *State) tryAdminLogin(user *backend.User, authReq AuthenticationRequest) bool {
 	passwordIndex := -1
 	for i, k := range oneTimePasswords {
 		if k == authReq.Password {
@@ -285,57 +265,20 @@ func listDelete(w http.ResponseWriter, user *backend.User) {
 		}
 	}
 
-	if passwordIndex != -1 {
+	ok := passwordIndex != -1
+	if ok {
 		user.IsAdmin = true
 		oneTimePasswords = append(oneTimePasswords[:passwordIndex], oneTimePasswords[passwordIndex+1:]...)
-		sendUserReponse(w, user)
-	} else {
-		sendResponseWithCode(w, JsonMessage{"Wrong password"}, http.StatusUnauthorized)
 	}
-}*/
-
-/*func userHandler(w http.ResponseWriter, req *http.Request) {
-	session, err := store.Get(req, SESSION_KEY)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	if req.Method == http.MethodGet {
-		respondWithUserFromSession(w, session)
-	} else if req.Method == http.MethodPost {
-
-		var dat User
-		decodeErr := json.NewDecoder(req.Body).Decode(&dat)
-		if decodeErr != nil {
-			log.Printf("Could not decode data %v\n", decodeErr)
-			sendResponseWithCode(w, JsonMessage{decodeErr.Error()}, http.StatusBadRequest)
-			return
-		}
-
-		err := state.updateUser(session, dat)
-		if err != nil {
-			log.Print("Could not update user data")
-			sendResponseWithCode(w, JsonMessage{err.Error()}, http.StatusUnauthorized)
-		} else {
-			respondWithUserFromSession(w, session)
-		}
-	}
-}*/
+	return ok
+}
 
 func notFound(w http.ResponseWriter, req *http.Request) {
 	log.Print("In not found")
 	http.Error(w, "Not found", http.StatusNotFound)
 }
 
-func sendUserReponse(conn *websocket.Conn, r *http.Request) {
-	user, err := state.getUserFromRequest(r)
-	if err != nil {
-		log.Printf("Could not get user %v", err)
-		sendError(conn, err.Error())
-		return
-	}
-
+func sendUserReponse(conn *websocket.Conn, user *backend.User) {
 	userObj, err := json.Marshal(user)
 	if err != nil {
 		sendError(conn, err.Error())
@@ -369,6 +312,13 @@ func serveWs(w http.ResponseWriter, r *http.Request, _ http.HandlerFunc) {
 		return
 	}
 
+	user, err := state.getUserFromRequest(r)
+	if err != nil {
+		sendError(conn, err.Error())
+		conn.Close()
+		return
+	}
+
 	go func() {
 		for {
 			_, receivedBytes, err := conn.ReadMessage()
@@ -385,9 +335,9 @@ func serveWs(w http.ResponseWriter, r *http.Request, _ http.HandlerFunc) {
 			messageType := parts[0]
 
 			if messageType == USER_GET {
-				sendUserReponse(conn, r)
+				sendUserReponse(conn, user)
 			} else if messageType == USER_UPDATE {
-				var receivedUser User
+				var receivedUser backend.User
 				err = json.Unmarshal([]byte(parts[1]), &receivedUser)
 				if err != nil {
 					log.Printf("Could not unmarshal user %v", err)
@@ -395,21 +345,43 @@ func serveWs(w http.ResponseWriter, r *http.Request, _ http.HandlerFunc) {
 					continue
 				}
 				state.updateUser(r, receivedUser)
-				sendUserReponse(conn, r)
+				sendUserReponse(conn, user)
+			} else if messageType == ADMIN_LOGIN {
+				var authRequest AuthenticationRequest
+				err = json.Unmarshal([]byte(parts[1]), &authRequest)
+				if err != nil {
+					sendError(conn, err.Error())
+					continue
+				}
+				ok := state.tryAdminLogin(user, authRequest)
+				if ok {
+					sendSuccess(conn, "Login successful.")
+					sendUserReponse(conn, user)
+				} else {
+					sendError(conn, "Login failed.")
+				}
+
 			}
 		}
 	}()
 
 }
 
-func sendError(conn *websocket.Conn, message string) {
+func sendNotification(conn *websocket.Conn, topic, message string) {
 	respObj, err := json.Marshal(JsonMessage{message})
 	if err != nil {
 		log.Printf("Could not marshal error message: %v", err)
 	}
-	resp := append([]byte(ERROR+" "), respObj...)
-
+	resp := append([]byte(topic+" "), respObj...)
 	conn.WriteMessage(websocket.TextMessage, resp)
+}
+
+func sendError(conn *websocket.Conn, message string) {
+	sendNotification(conn, ERROR, message)
+}
+
+func sendSuccess(conn *websocket.Conn, message string) {
+	sendNotification(conn, SUCCESS, message)
 }
 
 const (
@@ -424,9 +396,10 @@ const (
 	LIST_REMOVE_USER = "LIST_REMOVE_USER"
 	LIST_FETCH       = "LIST_FETCH"
 
-	ADMIN_AUTHORIZE = "ADMIN_AUTHORIZE"
+	ADMIN_LOGIN = "ADMIN_LOGIN"
 
 	ERROR = "ERROR"
+	SUCCESS = "SUCCESS"
 )
 
 type MessageHeader struct {
@@ -464,15 +437,7 @@ func userWithSession(w http.ResponseWriter, req *http.Request, next http.Handler
 		}
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-
-	_, err = state.getUserFromSession(session)
-	if err != nil {
-		log.Printf("User not found in middleware: %v\n", err)
-		sendResponseWithCode(w, JsonMessage{"No user for this session. Clear your cookies to get a new session."}, http.StatusUnauthorized)
-	} else {
-		next(w, req)
-	}
+	next(w, req)
 }
 
 func main() {

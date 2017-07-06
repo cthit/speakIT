@@ -1,4 +1,5 @@
 import React, { Component } from "react";
+import ReactLoading from "react-loading";
 
 import {
   ItemTitle,
@@ -11,6 +12,7 @@ import {
 } from "./SharedComponents.js";
 
 import { requestUserUpdate } from "./actions.js";
+import store from "./store.js";
 
 class User extends Component {
   constructor(props) {
@@ -29,18 +31,26 @@ class User extends Component {
       const { newNick } = this.state;
       const { user, user: { nick } } = this.props;
       if (nick !== newNick) {
-        requestUserUpdate({ ...user, nick: newNick });
+        store.dispatch(requestUserUpdate({ ...user, nick: newNick }));
       }
     }
   };
 
   render() {
-    if (!this.props.user) {
-      return <div>nope</div>;
-    }
-
     const { newNick } = this.state;
-    const { user, user: { nick, id, isAdmin } } = this.props;
+    const { loading, user, user: { nick, id, isAdmin } } = this.props;
+
+    if (loading) {
+      return (
+        <Container>
+          <SubContainer>
+            <Row>
+              <ReactLoading type="spinningBubbles" color="#c4c4c4" />
+            </Row>
+          </SubContainer>
+        </Container>
+      );
+    }
 
     return (
       <Container>

@@ -15,7 +15,7 @@ import backend from "./backend.js";
 
 import { Provider, connect } from "react-redux";
 import store from "./store.js";
-import { requestUserUpdate } from "./actions.js";
+import { requestUser } from "./actions.js";
 
 class App extends Component {
   constructor(props) {
@@ -27,9 +27,16 @@ class App extends Component {
   }
 
   componentWillMount() {
-    backend.connect("ws://localhost:3001/ws").then(() => {
-      requestUserUpdate();
-    });
+    window.backend = backend;
+    backend
+      .connect("ws://localhost:3001/ws")
+      .then(() => {
+        requestUser();
+      })
+      .catch(err => {
+        console.log(err);
+        toast.error(`Error: ${err}`);
+      });
   }
 
   updateUserNick = newNick => {
@@ -46,7 +53,7 @@ class App extends Component {
   renderList = () => <ListsView user={this.state.user} />;
 
   render() {
-    const { user } = this.props;
+    const { user, userGetWaiting } = this.props;
 
     return (
       <Router>
@@ -55,11 +62,11 @@ class App extends Component {
           <AppHeader />
           <Route exact path="/" render={this.renderList} />
           <Route path="/list" render={this.renderList} />
+          <Route path="/admin" render={() => <Admin user={user} />} />
           <Route
-            path="/admin"
-            render={() => <Admin user={user} updateUser={this.getUser} />}
+            path="/user"
+            render={() => <User user={user} loading={userGetWaiting} />}
           />
-          <Route path="/user" render={() => <User user={user} />} />
         </div>
       </Router>
     );
@@ -67,7 +74,8 @@ class App extends Component {
 }
 
 const ConnectedApp = connect(state => ({
-  user: state.user
+  user: state.user,
+  userGetWaiting: state.userGetWaiting
 }))(App);
 
 const ProviderApp = () =>

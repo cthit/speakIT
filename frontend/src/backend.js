@@ -13,9 +13,10 @@ class Backend {
 	}
 
 	_messageReceive = event => {
-		const parts = event.data.split(" ");
-		const parsed = JSON.parse(parts[1]);
-		dispatchActionFromTopic(parts[0], parsed);
+		const s = event.data;
+		const type = s.substr(0, s.indexOf(" "));
+		const content = s.substr(s.indexOf(" ") + 1);
+		dispatchActionFromTopic(type, JSON.parse(content));
 	};
 
 	socketClosed = event => {

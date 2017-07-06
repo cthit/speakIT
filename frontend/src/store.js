@@ -1,5 +1,5 @@
 import { createStore } from "redux";
-import { USER_UPDATE } from "./actions.js";
+import { USER_UPDATE, USER_GET_WAITING } from "./actions.js";
 
 function speakersList(state = { user: {} }, action) {
 	switch (action.type) {
@@ -7,8 +7,11 @@ function speakersList(state = { user: {} }, action) {
 			const { user } = action;
 			return {
 				...state,
-				user
+				user,
+				userGetWaiting: false
 			};
+		case USER_GET_WAITING:
+			return { ...state, userGetWaiting: true };
 		default:
 			return state;
 	}
