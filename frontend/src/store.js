@@ -4,7 +4,8 @@ import {
 	USER_GET_WAITING,
 	LISTS_UPDATE,
 	LISTS_GET_WAITING,
-	LIST_WAITING
+	LIST_WAITING,
+	LIST_UPDATE
 } from "./actions.js";
 
 const initialState = {
@@ -29,6 +30,20 @@ function speakersList(state = initialState, action) {
 		case LISTS_UPDATE:
 			const { lists } = action;
 			return { ...state, lists, listsGetWaiting: false };
+
+		case LIST_UPDATE:
+			const { list } = action;
+
+			const newLists = state.lists.map(l => {
+				if (l.id === list.id) {
+					list.updating = false;
+					return list;
+				} else {
+					return l;
+				}
+			});
+
+			return { ...state, lists: newLists };
 
 		case LISTS_GET_WAITING:
 			return { ...state, listsGetWaiting: true };

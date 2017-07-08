@@ -19,6 +19,7 @@ export const LISTS_GET_WAITING = "LISTS_GET_WAITING";
 export const LIST_ADD_USER = "LIST_ADD_USER";
 export const LIST_REMOVE_USER = "LIST_REMOVE_USER";
 export const LIST_WAITING = "LIST_WAITING";
+export const LIST_UPDATE = "LIST_UPDATE";
 
 /*
 const USER_DELETE = "USER_DELETE";
@@ -64,6 +65,10 @@ export const updateLists = lists => {
 	return { type: LISTS_UPDATE, lists };
 };
 
+export const updateList = list => {
+	return { type: LIST_UPDATE, list };
+};
+
 export const requestAddUserToList = listId => {
 	backend.socket.send(LIST_ADD_USER + " " + JSON.stringify({ id: listId }));
 	return { type: LIST_WAITING, id: listId };
@@ -83,6 +88,9 @@ export const dispatchActionFromTopic = (topic, obj) => {
 			break;
 		case LISTS_UPDATE:
 			store.dispatch(updateLists(obj));
+			break;
+		case LIST_UPDATE:
+			store.dispatch(updateList(obj));
 			break;
 		case ERROR:
 			toast.error(`Error report: ${obj.msg}`);
