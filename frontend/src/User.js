@@ -43,7 +43,7 @@ class User extends Component {
 
   render() {
     const { newNick } = this.state;
-    const { loading, user, user: { nick, id, isAdmin } } = this.props;
+    const { loading, user: { nick, id, isAdmin } } = this.props;
 
     if (loading) {
       return <Loading />;

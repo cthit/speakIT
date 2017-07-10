@@ -2,7 +2,6 @@ import React, { Component } from "react";
 
 import styled from "styled-components";
 import FontAwesome from "react-fontawesome";
-import { toast } from "react-toastify";
 import ScrollArea from "react-scrollbar";
 
 import SubmitButton from "./SubmitButton.js";
