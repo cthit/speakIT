@@ -29,11 +29,15 @@ class User extends Component {
 
   handleKeyPress = event => {
     if (event.key === "Enter") {
-      const { newNick } = this.state;
-      const { user, user: { nick } } = this.props;
-      if (nick !== newNick) {
-        store.dispatch(requestUserUpdate({ ...user, nick: newNick }));
-      }
+      this.dispatchUserUpdate();
+    }
+  };
+
+  dispatchUserUpdate = () => {
+    const { newNick } = this.state;
+    const { user, user: { nick } } = this.props;
+    if (nick !== newNick) {
+      store.dispatch(requestUserUpdate({ user: { ...user, nick: newNick } }));
     }
   };
 
@@ -81,7 +85,7 @@ class User extends Component {
                     ? "disabled"
                     : ""
                 }
-                onClick={() => requestUserUpdate({ ...user, nick: newNick })}
+                onClick={this.dispatchUserUpdate}
               />
             </RowContent>
           </Row>

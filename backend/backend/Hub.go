@@ -3,6 +3,7 @@ package backend
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"github.com/google/uuid"
 	"github.com/gorilla/sessions"
 	"github.com/gorilla/websocket"
@@ -10,8 +11,6 @@ import (
 	"github.com/tejpbit/talarlista/backend/backend/messages"
 	"log"
 	"net/http"
-	"strings"
-	"time"
 )
 
 const SESSION_KEY = "talarlista_session"
@@ -27,30 +26,13 @@ const (
 	NoListForUUID      = "The UUID does not correspond to any list"
 )
 
-const (
-	CLIENT_HELO = "CLIENT_HELO"
-	USER_GET    = "USER_GET"
-	USER_UPDATE = "USER_UPDATE"
-	USER_DELETE = "USER_DELETE"
-
-	LIST_NEW         = "LIST_NEW"
-	LIST_DELETE      = "LIST_NEW"
-	LISTS_UPDATE     = "LISTS_UPDATE"
-	LIST_UPDATE     = "LIST_UPDATE"
-	LIST_ADD_USER    = "LIST_ADD_USER"
-	LIST_REMOVE_USER = "LIST_REMOVE_USER"
-	LISTS_GET        = "LISTS_GET"
-
-	ADMIN_LOGIN = "ADMIN_LOGIN"
-
-	ERROR   = "ERROR"
-	SUCCESS = "SUCCESS"
-)
-
 type Hub struct {
-	Users            map[uuid.UUID]*User `json:"users"`         // All participators at the student division meeting.
-	SpeakerLists     []*SpeakerList      `json:"speakersLists"` // A list of speakerLists where each index is a list of sessions in queue to speak
+	Users            map[uuid.UUID]*User
+	SpeakerLists     []*SpeakerList
+	connectedUsers   map[uuid.UUID]*User
 	oneTimePasswords []string
+	hubInput         chan UserEvent
+	messageHandlers  map[string]MessageHandler
 }
 
 var store = sessions.NewFilesystemStore("store", []byte("this is the secret stuff"))
@@ -80,10 +62,45 @@ func CreateHub() Hub {
 		log.Panicf("Could not generate initial password: %v", err)
 	}
 
-	return Hub{
+	hub := Hub{
 		Users:            make(map[uuid.UUID]*User),
 		SpeakerLists:     speakerLists,
+		connectedUsers:   make(map[uuid.UUID]*User),
 		oneTimePasswords: []string{initialPassword},
+	}
+	hub.messageHandlers = CreateHandlers(&hub)
+	return hub
+}
+
+func (h *Hub) Start() error {
+	if h.hubInput != nil {
+		return errors.New("Hub already running")
+	}
+	h.hubInput = make(chan UserEvent, 10)
+	for _, user := range h.Users {
+		user.hubChannel = h.hubInput
+	}
+
+	go h.listenForUserEvents()
+	return nil
+}
+
+func (h *Hub) Broadcast(sendEvent messages.SendEvent) {
+	for _, user := range h.Users {
+		user.input <- sendEvent
+	}
+}
+
+func (h *Hub) listenForUserEvents() {
+	for {
+		event := <-h.hubInput
+		handler, ok := h.messageHandlers[event.messageType]
+		if !ok {
+			sendError(event.user.input, fmt.Sprintf("No handler for the topic '%s'.", event.messageType))
+			log.Printf("No handler for the topic '%s'", event.messageType)
+			continue
+		}
+		handler.handle(event)
 	}
 }
 
@@ -171,22 +188,10 @@ func (s Hub) addUser(user *User) bool {
 	return true
 }
 
-func (s *Hub) updateUser(req *http.Request, user User) error {
-	oldUser, err := s.getUserFromRequest(req)
-
-	if err != nil {
-		log.Printf("%s: %v\n", NoUUIDInSession, err)
-		return err
-	}
-
-	oldUser.Nick = user.Nick
-	return nil
-}
-
-func (s *Hub) tryAdminLogin(user *User, authReq messages.AuthenticationRequest) bool {
+func (s *Hub) tryAdminLogin(user *User, password string) bool {
 	passwordIndex := -1
 	for i, k := range s.oneTimePasswords {
-		if k == authReq.Password {
+		if k == password {
 			passwordIndex = i
 			break
 		}
@@ -232,7 +237,7 @@ func (hub *Hub) ServeWs(w http.ResponseWriter, r *http.Request) {
 
 		log.Printf("New user id: %v\n", id)
 
-		hub.addUser(&User{"", false, id})
+		hub.addUser(&User{"", false, id, hub.hubInput, nil})
 
 		session.Options = &sessions.Options{
 			MaxAge:   86400,
@@ -254,151 +259,54 @@ func (hub *Hub) ServeWs(w http.ResponseWriter, r *http.Request) {
 
 	user, err := hub.getUserFromRequest(r)
 	if err != nil {
-		sendError(conn, err.Error())
+		errorResp, err := json.Marshal(messages.JsonMessage{Message: err.Error()})
+
+		if err != nil {
+			errorEvent := messages.SendEvent{Topic: messages.ERROR, Content: []byte(err.Error())}
+			conn.WriteMessage(websocket.TextMessage, []byte(errorEvent.String()))
+		} else {
+			errorEvent := messages.SendEvent{Topic: messages.ERROR, Content: errorResp}
+			conn.WriteMessage(websocket.TextMessage, []byte(errorEvent.String()))
+		}
 		conn.Close()
 		return
 	}
 
-	go func() {
-		for {
-			_, receivedBytes, err := conn.ReadMessage()
-			if err != nil {
-				if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway) {
-					log.Printf("error: %v", err)
-				}
-				break
-			}
-			parts := strings.Split(string(receivedBytes), " ")
-			if len(parts) < 1 || len(parts) > 2 {
-				log.Printf("Wrong numer of parts, Expected 2 got %v", len(parts))
-			}
-			messageType := parts[0]
-
-			if messageType == CLIENT_HELO {
-				sendUserResponse(conn, user)
-				sendListsResponse(conn, hub.SpeakerLists)
-			} else if messageType == USER_GET {
-				sendUserResponse(conn, user)
-			} else if messageType == USER_UPDATE {
-				var receivedUser User
-				err = json.Unmarshal([]byte(parts[1]), &receivedUser)
-				if err != nil {
-					log.Printf("Could not unmarshal user %v", err)
-					sendError(conn, err.Error())
-					continue
-				}
-				hub.updateUser(r, receivedUser)
-				sendSuccess(conn, "User updated")
-				sendUserResponse(conn, user)
-			} else if messageType == ADMIN_LOGIN {
-				var authRequest messages.AuthenticationRequest
-				err = json.Unmarshal([]byte(parts[1]), &authRequest)
-				if err != nil {
-					sendError(conn, err.Error())
-					continue
-				}
-				ok := hub.tryAdminLogin(user, authRequest)
-				if ok {
-					sendSuccess(conn, "Login successful.")
-					sendUserResponse(conn, user)
-				} else {
-					sendError(conn, "Login failed.")
-				}
-
-			} else if messageType == LISTS_GET {
-				sendListsResponse(conn, hub.SpeakerLists)
-			} else if messageType == LIST_ADD_USER {
-				time.Sleep(time.Second)
-				var listAction messages.ListActionData
-				err := json.Unmarshal([]byte(parts[1]), &listAction)
-				if err != nil {
-					sendError(conn, err.Error())
-					continue
-				}
-
-				list, err := hub.getList(listAction.Id)
-				if err != nil {
-					sendError(conn, err.Error())
-					continue
-				}
-				ok := list.AddUser(user)
-				if !ok {
-					sendError(conn, UserAlreadyInList)
-					continue
-				}
-
-				sendSuccess(conn, "User added to list")
-				sendListResponse(conn, list)
-
-			} else if messageType == LIST_REMOVE_USER {
-				time.Sleep(time.Second)
-				var listAction messages.ListActionData
-				err := json.Unmarshal([]byte(parts[1]), &listAction)
-				if err != nil {
-					sendError(conn, err.Error())
-					continue
-				}
-				list, err := hub.getList(listAction.Id)
-				if err != nil {
-					sendError(conn, err.Error())
-					continue
-				}
-				list.RemoveUser(user)
-
-				sendSuccess(conn, "User removed from list")
-				sendListResponse(conn, list)
-			}
-		}
-	}()
-
+	user.ServeWS(conn)
 }
 
-func sendListsResponse(conn *websocket.Conn, lists []*SpeakerList) {
+func createListsResponse(lists []*SpeakerList) (messages.SendEvent, error) {
 	listsObj, err := json.Marshal(lists)
 	if err != nil {
-		sendError(conn, err.Error())
+		return messages.SendEvent{}, err
 	} else {
-		resp := append([]byte(LISTS_UPDATE+" "), listsObj...)
-		conn.WriteMessage(websocket.TextMessage, resp)
+		return messages.SendEvent{messages.LISTS_UPDATE, listsObj}, nil
 	}
-
 }
 
-func sendListResponse(conn *websocket.Conn, list *SpeakerList) {
+func sendListResponse(userChannel chan messages.SendEvent, list *SpeakerList) {
 	listObj, err := json.Marshal(list)
 	if err != nil {
-		sendError(conn, err.Error())
+		sendError(userChannel, err.Error())
 	} else {
-		resp := append([]byte(LIST_UPDATE+" "), listObj...)
-		conn.WriteMessage(websocket.TextMessage, resp)
+		userChannel <- messages.SendEvent{messages.LIST_UPDATE, listObj}
 	}
 }
 
-func sendUserResponse(conn *websocket.Conn, user *User) {
-	userObj, err := json.Marshal(user)
-	if err != nil {
-		sendError(conn, err.Error())
-	} else {
-		resp := append([]byte(USER_UPDATE+" "), userObj...)
-		conn.WriteMessage(websocket.TextMessage, resp)
-	}
-}
-
-func sendNotification(conn *websocket.Conn, topic, message string) {
+func sendNotification(userChannel chan messages.SendEvent, topic, message string) {
 	respObj, err := json.Marshal(messages.JsonMessage{message})
 	if err != nil {
 		log.Printf("Could not marshal error message: %v", err)
 	}
-	resp := append([]byte(topic+" "), respObj...)
-	conn.WriteMessage(websocket.TextMessage, resp)
+	userChannel <- messages.SendEvent{topic, respObj}
 }
 
-func sendError(conn *websocket.Conn, message string) {
-	sendNotification(conn, ERROR, message)
+func sendError(userChannel chan messages.SendEvent, message string) {
+	sendNotification(userChannel, messages.ERROR, message)
 }
 
-func sendSuccess(conn *websocket.Conn, message string) {
-	sendNotification(conn, SUCCESS, message)
+func sendSuccess(userChannel chan messages.SendEvent, message string) {
+	sendNotification(userChannel, messages.SUCCESS, message)
 }
 
 var upgrader = websocket.Upgrader{

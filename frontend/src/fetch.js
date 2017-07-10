@@ -1,4 +1,4 @@
-const BASE_URL = "http://83.254.25.245:3001";
+const BASE_URL = "http://localhost:3001";
 
 const myFetch = (path, args) => {
 	return fetch(BASE_URL + path, {

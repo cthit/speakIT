@@ -52,6 +52,7 @@ var hub backend.Hub
 func main() {
 	log.SetFlags(log.Lshortfile)
 	hub = backend.CreateHub()
+	hub.Start()
 
 	n := negroni.Classic()
 
