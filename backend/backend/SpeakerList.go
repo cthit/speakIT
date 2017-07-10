@@ -3,9 +3,17 @@ package backend
 import "github.com/google/uuid"
 
 type SpeakerList struct {
-	Title string `json:"title"`
-	SpeakerQueue []*User `json:"speakersQueue"`
-	Id uuid.UUID `json:"id"`
+	Title        string    `json:"title"`
+	SpeakerQueue []*User   `json:"speakersQueue"`
+	Id           uuid.UUID `json:"id"`
+}
+
+func CreateSpeakerList(title string) SpeakerList {
+	return SpeakerList{
+		Title:        title,
+		SpeakerQueue: make([]*User, 0),
+		Id:           uuid.New(),
+	}
 }
 
 func (list *SpeakerList) RemoveUser(user *User) bool {

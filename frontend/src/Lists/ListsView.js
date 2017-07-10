@@ -8,6 +8,7 @@ import { Container, Row, RowContent } from "../SharedComponents.js";
 import Loading from "../loading.js";
 
 import List from "./List.js";
+import CreateList from "./CreateList.js";
 
 class ListsView extends Component {
   constructor(props) {
@@ -49,6 +50,7 @@ class ListsView extends Component {
 
         <ListsContainer>
           {lists.map(list => <List key={list.id} list={list} user={user} />)}
+          {user.isAdmin && <CreateList />}
         </ListsContainer>
 
       </ListViewContainer>

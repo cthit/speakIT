@@ -3,6 +3,7 @@ package backend
 import (
 	"github.com/google/uuid"
 	"github.com/tejpbit/talarlista/backend/backend/messages"
+	"fmt"
 )
 
 type MessageHandler interface {
@@ -34,6 +35,9 @@ type UserConnectionOpened struct {
 type UserConnectionClosed struct {
 	hub *Hub
 }
+type ListCreate struct {
+	hub *Hub
+}
 
 func CreateHandlers(hub *Hub) map[string]MessageHandler {
 	return map[string]MessageHandler{
@@ -46,6 +50,7 @@ func CreateHandlers(hub *Hub) map[string]MessageHandler {
 		messages.LIST_REMOVE_USER:       ListRemoveUser{hub},
 		messages.USER_CONNECTION_OPENED: UserConnectionOpened{hub},
 		messages.USER_CONNECTION_CLOSED: UserConnectionClosed{hub},
+		messages.LIST_CREATE:            ListCreate{hub},
 	}
 }
 
@@ -146,6 +151,25 @@ func (m UserConnectionOpened) handle(UserEvent UserEvent) {
 func (m UserConnectionClosed) handle(UserEvent UserEvent) {
 	delete(m.hub.connectedUsers, UserEvent.user.Id)
 
+}
+
+func (m ListCreate) handle(userEvent UserEvent) {
+	if !userEvent.user.IsAdmin {
+		sendError(userEvent.user.input, "Unauthorized biatch!")
+		return
+	}
+	if userEvent.List.Title == "" {
+		sendError(userEvent.user.input, "Can not create discussion with empty title")
+		return
+	}
+	newList := CreateSpeakerList(userEvent.List.Title)
+	m.hub.SpeakerLists = append(m.hub.SpeakerLists, &newList)
+	resp, err := createListsResponse(m.hub.SpeakerLists)
+	if err != nil {
+	    sendError(userEvent.user.input, fmt.Sprintf("Could not create new discussion, %v", err.Error()))
+	} else {
+		m.hub.Broadcast(resp)
+	}
 }
 
 func sendListsResponse(userChannel chan messages.SendEvent, lists []*SpeakerList) {

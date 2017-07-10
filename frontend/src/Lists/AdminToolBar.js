@@ -4,14 +4,19 @@ import FontAwesome from "react-fontawesome";
 
 class AdminToolBar extends Component {
 	render() {
-		const { listId, debateIsOpen, toggleDiscussionStatus } = this.props;
+		const {
+			listId,
+			debateIsOpen,
+			toggleDiscussionStatus,
+			className
+		} = this.props;
 
 		const debateBackground = debateIsOpen
 			? {}
 			: { "background-color": "#d8d8d8" };
 
 		return (
-			<ToolBar>
+			<ToolBar className={className}>
 				<ToolBarItem>
 					<FontAwesome
 						name="stack-overflow"

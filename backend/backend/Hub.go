@@ -45,22 +45,13 @@ func CreateHub() Hub {
 		Digits:             2,
 	}
 
-	speakerLists := []*SpeakerList{
-		{
-			Title:        "Main list",
-			SpeakerQueue: make([]*User, 0),
-			Id:           uuid.New(),
-		}, {
-			Title:        "Subdiscussion",
-			SpeakerQueue: make([]*User, 0),
-			Id:           uuid.New(),
-		},
-	}
+	speakerLists := []*SpeakerList{}
 
 	initialPassword, err := garbler.NewPassword(&reqs)
 	if err != nil {
 		log.Panicf("Could not generate initial password: %v", err)
 	}
+	log.Printf("Generated password: %s", initialPassword)
 
 	hub := Hub{
 		Users:            make(map[uuid.UUID]*User),

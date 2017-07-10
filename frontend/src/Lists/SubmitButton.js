@@ -4,20 +4,20 @@ import styled from "styled-components";
 class SubmitButton extends Component {
 	render() {
 		const {
-			isRegistered,
-			unregisterTalkRequest,
-			registerTalkRequest,
-			disabled
+			isShowingPositive,
+			onNegativeClick,
+			onPositiveClick,
+			disabled,
+			positiveText,
+			negativeText
 		} = this.props;
 
 		return (
 			<StyledSubmitButton
 				disabled={disabled}
 				type="button"
-				value={isRegistered ? "Stryk mig" : "Skriv upp mig"}
-				onClick={
-					isRegistered ? unregisterTalkRequest : registerTalkRequest
-				}
+				value={isShowingPositive ? positiveText : negativeText}
+				onClick={isShowingPositive ? onPositiveClick : onNegativeClick}
 			/>
 		);
 	}

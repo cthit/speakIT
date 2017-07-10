@@ -12,6 +12,7 @@ export const USER_UPDATE = "USER_UPDATE";
 export const USER_GET_WAITING = "USER_GET_WAITING";
 
 export const ADMIN_LOGIN = "ADMIN_LOGIN";
+export const ADMIN_LOGIN_WAITING = "ADMIN_LOGIN_WAITING";
 
 export const LISTS_GET = "LISTS_GET";
 export const LISTS_UPDATE = "LISTS_UPDATE";
@@ -20,18 +21,10 @@ export const LIST_ADD_USER = "LIST_ADD_USER";
 export const LIST_REMOVE_USER = "LIST_REMOVE_USER";
 export const LIST_WAITING = "LIST_WAITING";
 export const LIST_UPDATE = "LIST_UPDATE";
-
+export const LIST_CREATE = "LIST_CREATE";
+export const LIST_DELETE = "LIST_DELETE";
 /*
 const USER_DELETE = "USER_DELETE";
-
-const LIST_NEW = "LIST_NEW";
-const LIST_DELETE = "LIST_NEW";
-
-
-const LIST_FETCH = "LIST_FETCH";
-
-
-
 */
 
 export const sendClientHello = () => {
@@ -50,6 +43,7 @@ export const requestUserUpdate = user => {
 
 export const requestAdminLogin = password => {
 	backend.socket.send(ADMIN_LOGIN + " " + JSON.stringify({ password }));
+	return { type: ADMIN_LOGIN_WAITING };
 };
 
 export const requestLists = () => {
@@ -79,6 +73,13 @@ export const requestRemoveUserFromList = listId => {
 		LIST_REMOVE_USER + " " + JSON.stringify({ id: listId })
 	);
 	return { type: LIST_WAITING, id: listId };
+};
+
+export const requestCreateList = listName => {
+	backend.socket.send(
+		LIST_CREATE + " " + JSON.stringify({ list: { title: listName } })
+	);
+	return { type: LIST_WAITING };
 };
 
 export const dispatchActionFromTopic = (topic, obj) => {

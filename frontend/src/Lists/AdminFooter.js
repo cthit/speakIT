@@ -4,8 +4,14 @@ import styled from "styled-components";
 
 class AdminFooter extends Component {
 	render() {
+		const { className, listId } = this.props;
 		return (
-			<Footer>Avsluta diskussionen <FontAwesome name="trash" /></Footer>
+			<Footer
+				className={className}
+				onClick={() => this.endDiscussion(listId)}
+			>
+				Avsluta diskussionen <FontAwesome name="trash" />
+			</Footer>
 		);
 	}
 }

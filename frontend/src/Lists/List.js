@@ -46,8 +46,8 @@ class List extends Component {
 		);
 	};
 
-	renderAdminFooter = () => {
-		return <AdminFooter />;
+	renderAdminFooter = listId => {
+		return <AdminFooter listId={listId} />;
 	};
 
 	render() {
@@ -61,9 +61,11 @@ class List extends Component {
 					<DiscussionTitle>{list.title}</DiscussionTitle>
 					<SubmitButton
 						disabled={list.updating}
-						isRegistered={userIsPresent}
-						unregisterTalkRequest={this.unregisterTalkRequest}
-						registerTalkRequest={this.registerTalkRequest}
+						isShowingPositive={!userIsPresent}
+						onNegativeClick={this.unregisterTalkRequest}
+						onPositiveClick={this.registerTalkRequest}
+						positiveText="Skriv upp mig"
+						negativeText="Stryk mig"
 					/>
 					{user.isAdmin && this.renderAdminTools(true, list.id)}
 					{/*
@@ -98,7 +100,7 @@ class List extends Component {
 							[]
 						)}
 				</Scroll>
-				{user.isAdmin && this.renderAdminFooter()}
+				{user.isAdmin && this.renderAdminFooter(list.Id)}
 			</ListContainer>
 		);
 	}
