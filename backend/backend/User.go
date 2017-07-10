@@ -38,9 +38,9 @@ func (u *User) receiveFromWebsocket(conn *websocket.Conn) {
 			break
 		}
 
-		parts := strings.Split(string(receivedBytes), " ")
-		if len(parts) < 1 || len(parts) > 2 {
-			log.Printf("Wrong numer of parts, Expected 2 got %v", len(parts))
+		parts := strings.SplitN(string(receivedBytes), " ", 2)
+		if len(parts) < 1 {
+			log.Printf("Wrong numer of parts, expected more than 1  and less than two, got %v", len(parts))
 			sendError(u.input, fmt.Sprintf("Malformed request: '%v'", string(receivedBytes)))
 			continue
 		}

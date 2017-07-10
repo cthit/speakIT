@@ -3,7 +3,6 @@ package backend
 import (
 	"github.com/google/uuid"
 	"github.com/tejpbit/talarlista/backend/backend/messages"
-	"log"
 )
 
 type MessageHandler interface {
@@ -60,10 +59,7 @@ func (m UserGet) handle(userEvent UserEvent) {
 }
 
 func (m UserUpdate) handle(userEvent UserEvent) {
-	log.Print(userEvent.user)
-	log.Print(userEvent.ReceivedUser)
 	userEvent.user.Nick = userEvent.ReceivedUser.Nick
-	log.Printf("UserHandle: %v | %v	", userEvent.user.Nick, userEvent.ReceivedUser.Nick)
 	sendUserResponse(userEvent.user.input, userEvent.user)
 	resp, err := createListsResponse(m.hub.SpeakerLists)
 	if err != nil {
