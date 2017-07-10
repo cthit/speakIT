@@ -1,6 +1,7 @@
 import React, { Component } from "react";
 import { toast } from "react-toastify";
 import FontAwesome from "react-fontawesome";
+import styled from "styled-components";
 
 import { postJson, sendDelete } from "./fetch.js";
 import {
@@ -83,95 +84,56 @@ class Admin extends Component {
       return (
         <Container>
           <SubContainer>
-            <Row>
-              <RowContent>
-                <ItemTitle>Authenticate:</ItemTitle>
-                <Input
-                  type={"text"}
-                  onKeyPress={this.handleKeyPress}
-                  value={this.state.authCode}
-                  onChange={this.handleAuthCodeChange}
-                />
-              </RowContent>
-            </Row>
-            <Row>
-              <RowContent>
-                <SubmitButton
-                  type="button"
-                  value="Start new discussion"
-                  onClick={this.newDiscussion}
-                />
-              </RowContent>
-            </Row>
-            <Row>
-              <RowContent>
-                <SubmitButton
-                  type="button"
-                  value="End current discussion"
-                  onClick={this.endDiscussion}
-                />
-              </RowContent>
-            </Row>
-            <Row>
-              <RowContent>
-                <ItemTitle>Remove nick from list</ItemTitle>
-                <Input
-                  type={"text"}
-                  onKeyPress={this.handleKeyPress}
-                  value={this.state.nickToRemove}
-                  onChange={this.handleNickToRemoveChange}
-                />
-              </RowContent>
-            </Row>
-            <Row>
-              <RowContent>
-                <SubmitButton
-                  type="button"
-                  value="Remove User"
-                  onClick={this.removeUser}
-                />
-              </RowContent>
-            </Row>
-          </SubContainer>
-        </Container>
-      );
-    } else {
-      return (
-        <Container>
-          <SubContainer>
-            <Row>
-              <Title>Authenticate</Title>
-            </Row>
-            <Row>
-              <RowContent>
-                <Input
-                  type={this.state.showPassword ? "text" : "password"}
-                  onKeyPress={this.handleKeyPress}
-                  value={this.state.authCode}
-                  onChange={this.handleAuthCodeChange}
-                />
-                <FontAwesome
-                  name={this.state.showPassword ? "eye-slash" : "eye"}
-                  style={{ cursor: "pointer" }}
-                  onClick={this.toggleShowPassword}
-                />
-
-              </RowContent>
-            </Row>
-            <Row>
-              <RowContent>
-                <SubmitButton
-                  type="button"
-                  value="Send"
-                  onClick={this.attemptAuth}
-                />
-              </RowContent>
-            </Row>
+            <LoggedIn>
+              Du är inloggad.
+            </LoggedIn>
           </SubContainer>
         </Container>
       );
     }
+
+    return (
+      <Container>
+        <SubContainer>
+          <Row>
+            <Title>Authenticate</Title>
+          </Row>
+          <Row>
+            <RowContent>
+              <Input
+                type={this.state.showPassword ? "text" : "password"}
+                onKeyPress={this.handleKeyPress}
+                value={this.state.authCode}
+                onChange={this.handleAuthCodeChange}
+              />
+              <FontAwesome
+                name={this.state.showPassword ? "eye-slash" : "eye"}
+                style={{ cursor: "pointer" }}
+                onClick={this.toggleShowPassword}
+              />
+
+            </RowContent>
+          </Row>
+          <Row>
+            <RowContent>
+              <SubmitButton
+                type="button"
+                value="Send"
+                onClick={this.attemptAuth}
+              />
+            </RowContent>
+          </Row>
+        </SubContainer>
+      </Container>
+    );
   }
 }
 
 export default Admin;
+
+const LoggedIn = styled(Row)`
+  color: #7ed321;
+  font-size: 36px;
+  font-weight: bold;
+  text-align: center;
+`;
