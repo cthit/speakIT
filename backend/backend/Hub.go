@@ -284,12 +284,12 @@ func createListsResponse(lists []*SpeakerList) (messages.SendEvent, error) {
 	}
 }
 
-func sendListResponse(userChannel chan messages.SendEvent, list *SpeakerList) {
+func createListResponse(list *SpeakerList) (messages.SendEvent, error) {
 	listObj, err := json.Marshal(list)
 	if err != nil {
-		sendError(userChannel, err.Error())
+		return messages.SendEvent{}, err
 	} else {
-		userChannel <- messages.SendEvent{messages.LIST_UPDATE, listObj}
+		return messages.SendEvent{messages.LIST_UPDATE, listObj}, nil
 	}
 }
 

@@ -106,8 +106,12 @@ func (m ListAddUser) handle(userEvent UserEvent) {
 		return
 	}
 
-	sendSuccess(userEvent.user.input, "User added to list")
-	sendListResponse(userEvent.user.input, list)
+	resp, err := createListResponse(list)
+	if err != nil {
+		sendError(userEvent.user.input, err.Error())
+	} else {
+		m.hub.Broadcast(resp)
+	}
 }
 
 func (m ListRemoveUser) handle(userEvent UserEvent) {
@@ -127,8 +131,12 @@ func (m ListRemoveUser) handle(userEvent UserEvent) {
 		return
 	}
 
-	sendSuccess(userEvent.user.input, "User removed from list")
-	sendListResponse(userEvent.user.input, list)
+	resp, err := createListResponse(list)
+	if err != nil {
+		sendError(userEvent.user.input, err.Error())
+	} else {
+		m.hub.Broadcast(resp)
+	}
 }
 
 func (m UserConnectionOpened) handle(UserEvent UserEvent) {
