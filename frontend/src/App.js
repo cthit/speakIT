@@ -9,8 +9,6 @@ import User from "./User.js";
 import Admin from "./Admin.js";
 import AppHeader from "./AppHeader.js";
 
-import { postJson } from "./fetch.js";
-
 import backend from "./backend.js";
 
 import { Provider, connect } from "react-redux";
@@ -18,18 +16,10 @@ import store from "./store.js";
 import { sendClientHello } from "./actions.js";
 
 class App extends Component {
-  constructor(props) {
-    super(props);
-
-    this.state = {
-      user: {}
-    };
-  }
-
   componentWillMount() {
     window.backend = backend;
     backend
-      .connect("ws://localhost:3001/ws")
+      .connect("ws://tejp.xyz:3001/ws")
       .then(() => {
         sendClientHello();
       })
@@ -38,17 +28,6 @@ class App extends Component {
         toast.error(`Error: ${err}`);
       });
   }
-
-  updateUserNick = newNick => {
-    postJson("/me", { nick: newNick })
-      .then(resp => {
-        this.setState({ user: resp });
-        toast.success("User updated.");
-      })
-      .catch(err =>
-        toast.error(`Could not update nick, not connected to server: ${err}`)
-      );
-  };
 
   renderList = () => {
     const { user, lists, listsGetWaiting } = this.props;
