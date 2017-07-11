@@ -133,6 +133,23 @@ func (s *Hub) removeUserFromList(id uuid.UUID, user *User) error {
 	return nil
 }
 
+func (h *Hub) deleteList(id uuid.UUID) error {
+	i := -1
+	for index, list := range h.SpeakerLists {
+		if list.Id == id {
+			i = index
+		}
+	}
+	if i == -1 {
+	    return errors.New("List not found")
+	}
+
+	copy(h.SpeakerLists[i:], h.SpeakerLists[i+1:])
+	h.SpeakerLists[len(h.SpeakerLists)-1] = nil
+	h.SpeakerLists = h.SpeakerLists[:len(h.SpeakerLists)-1]
+	return nil
+}
+
 func (s *Hub) getList(id uuid.UUID) (*SpeakerList, error) {
 
 	for _, list := range s.SpeakerLists {

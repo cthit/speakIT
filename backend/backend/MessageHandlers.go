@@ -38,6 +38,9 @@ type UserConnectionClosed struct {
 type ListCreate struct {
 	hub *Hub
 }
+type ListDelete struct {
+	hub *Hub
+}
 
 func CreateHandlers(hub *Hub) map[string]MessageHandler {
 	return map[string]MessageHandler{
@@ -51,6 +54,7 @@ func CreateHandlers(hub *Hub) map[string]MessageHandler {
 		messages.USER_CONNECTION_OPENED: UserConnectionOpened{hub},
 		messages.USER_CONNECTION_CLOSED: UserConnectionClosed{hub},
 		messages.LIST_CREATE:            ListCreate{hub},
+		messages.LIST_DELETE:            ListDelete{hub},
 	}
 }
 
@@ -169,6 +173,25 @@ func (m ListCreate) handle(userEvent UserEvent) {
 	    sendError(userEvent.user.input, fmt.Sprintf("Could not create new discussion, %v", err.Error()))
 	} else {
 		m.hub.Broadcast(resp)
+	}
+}
+
+func (m ListDelete) handle(userEvent UserEvent) {
+	if !userEvent.user.IsAdmin {
+		sendError(userEvent.user.input, "Unauthorized biatch!")
+		return
+	}
+	id, err := uuid.Parse(userEvent.Id)
+	if err != nil {
+	    sendError(userEvent.user.input, err.Error())
+		return
+	}
+
+	err = m.hub.deleteList(id)
+	if err != nil {
+		sendError(userEvent.user.input, err.Error())
+	} else {
+		sendListsResponse(userEvent.user.input, m.hub.SpeakerLists)
 	}
 }
 

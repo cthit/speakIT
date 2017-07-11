@@ -9,7 +9,11 @@ import AdminToolBar from "./AdminToolBar.js";
 import AdminFooter from "./AdminFooter.js";
 
 import store from "../store.js";
-import { requestAddUserToList, requestRemoveUserFromList } from "../actions.js";
+import {
+	requestAddUserToList,
+	requestRemoveUserFromList,
+	requestDeleteList
+} from "../actions.js";
 
 const createSpeakerRow = (user, index) => {
 	return (
@@ -36,6 +40,11 @@ class List extends Component {
 		// TODO discussion status is not supported in the backend yet.
 	};
 
+	deleteList = () => {
+		const { list: { id } } = this.props;
+		store.dispatch(requestDeleteList(id));
+	};
+
 	renderAdminTools = (debateIsOpen, listId) => {
 		return (
 			<AdminToolBar
@@ -47,7 +56,7 @@ class List extends Component {
 	};
 
 	renderAdminFooter = listId => {
-		return <AdminFooter listId={listId} />;
+		return <AdminFooter onClick={this.deleteList} />;
 	};
 
 	render() {

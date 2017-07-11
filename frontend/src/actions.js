@@ -82,6 +82,11 @@ export const requestCreateList = listName => {
 	return { type: LIST_WAITING };
 };
 
+export const requestDeleteList = listId => {
+	backend.socket.send(LIST_DELETE + " " + JSON.stringify({ id: listId }));
+	return { type: LIST_WAITING };
+};
+
 export const dispatchActionFromTopic = (topic, obj) => {
 	switch (topic) {
 		case USER_UPDATE:
