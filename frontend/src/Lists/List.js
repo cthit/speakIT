@@ -12,7 +12,8 @@ import store from "../store.js";
 import {
 	requestAddUserToList,
 	requestRemoveUserFromList,
-	requestDeleteList
+	requestDeleteList,
+	requestPopList
 } from "../actions.js";
 
 const createSpeakerRow = (user, index) => {
@@ -45,12 +46,17 @@ class List extends Component {
 		store.dispatch(requestDeleteList(id));
 	};
 
+	nextSpeaker = () => {
+		store.dispatch(requestPopList(this.props.list.id));
+	};
+
 	renderAdminTools = (debateIsOpen, listId) => {
 		return (
 			<AdminToolBar
 				debateIsOpen={debateIsOpen}
 				toggleDiscussionStatus={this.toggleDiscussionStatus}
 				listId={listId}
+				onNextClick={this.nextSpeaker}
 			/>
 		);
 	};
@@ -97,9 +103,9 @@ class List extends Component {
 						)}
 
 					<ListTitle>
-						Andra talarlista ({list.speakersQueue.length})
+						Andra talarlista ({list.secondSpeakersQueue.length})
 					</ListTitle>
-					{list.speakersQueue
+					{list.secondSpeakersQueue
 						.map((user, index) => createSpeakerRow(user, index))
 						.reduce(
 							(acc, item, i) =>

@@ -1,9 +1,9 @@
 package backend
 
 import (
+	"fmt"
 	"github.com/google/uuid"
 	"github.com/tejpbit/talarlista/backend/backend/messages"
-	"fmt"
 )
 
 type MessageHandler interface {
@@ -41,6 +41,9 @@ type ListCreate struct {
 type ListDelete struct {
 	hub *Hub
 }
+type ListPop struct {
+	hub *Hub
+}
 
 func CreateHandlers(hub *Hub) map[string]MessageHandler {
 	return map[string]MessageHandler{
@@ -55,6 +58,7 @@ func CreateHandlers(hub *Hub) map[string]MessageHandler {
 		messages.USER_CONNECTION_CLOSED: UserConnectionClosed{hub},
 		messages.LIST_CREATE:            ListCreate{hub},
 		messages.LIST_DELETE:            ListDelete{hub},
+		messages.LIST_POP:               ListPop{hub},
 	}
 }
 
@@ -170,7 +174,7 @@ func (m ListCreate) handle(userEvent UserEvent) {
 	m.hub.SpeakerLists = append(m.hub.SpeakerLists, &newList)
 	resp, err := createListsResponse(m.hub.SpeakerLists)
 	if err != nil {
-	    sendError(userEvent.user.input, fmt.Sprintf("Could not create new discussion, %v", err.Error()))
+		sendError(userEvent.user.input, fmt.Sprintf("Could not create new discussion, %v", err.Error()))
 	} else {
 		m.hub.Broadcast(resp)
 	}
@@ -183,16 +187,51 @@ func (m ListDelete) handle(userEvent UserEvent) {
 	}
 	id, err := uuid.Parse(userEvent.Id)
 	if err != nil {
-	    sendError(userEvent.user.input, err.Error())
+		sendError(userEvent.user.input, err.Error())
 		return
 	}
 
 	err = m.hub.deleteList(id)
 	if err != nil {
 		sendError(userEvent.user.input, err.Error())
-	} else {
-		sendListsResponse(userEvent.user.input, m.hub.SpeakerLists)
+		return
 	}
+
+	resp, err := createListsResponse(m.hub.SpeakerLists)
+	if err != nil {
+		sendError(userEvent.user.input, err.Error())
+		return
+	}
+	m.hub.Broadcast(resp)
+}
+
+func (m ListPop) handle(userEvent UserEvent) {
+	if !userEvent.user.IsAdmin {
+		sendError(userEvent.user.input, "Unauthorized biatch!")
+		return
+	}
+	id, err := uuid.Parse(userEvent.Id)
+	if err != nil {
+		sendError(userEvent.user.input, err.Error())
+		return
+	}
+
+	list, err := m.hub.getList(id)
+	if err != nil {
+	    	sendError(userEvent.user.input, err.Error())
+		return
+	}
+	_, err = list.Pop()
+	if err != nil {
+		sendError(userEvent.user.input, err.Error())
+	}
+	resp, err := createListResponse(list)
+	if err != nil {
+		sendError(userEvent.user.input, err.Error())
+		return
+	}
+	m.hub.Broadcast(resp)
+
 }
 
 func sendListsResponse(userChannel chan messages.SendEvent, lists []*SpeakerList) {

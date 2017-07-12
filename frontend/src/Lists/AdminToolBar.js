@@ -8,6 +8,7 @@ class AdminToolBar extends Component {
 			listId,
 			debateIsOpen,
 			toggleDiscussionStatus,
+			onNextClick,
 			className
 		} = this.props;
 
@@ -17,7 +18,7 @@ class AdminToolBar extends Component {
 
 		return (
 			<ToolBar className={className}>
-				<ToolBarItem>
+				<ToolBarItem onClick={onNextClick}>
 					<FontAwesome
 						name="stack-overflow"
 						size="2x"
