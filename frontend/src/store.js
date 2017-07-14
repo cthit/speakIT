@@ -1,14 +1,19 @@
-import { createStore } from "redux";
+import { compose, createStore } from "redux";
 import {
 	USER_UPDATE,
 	USER_GET_WAITING,
 	LISTS_UPDATE,
 	LISTS_GET_WAITING,
 	LIST_WAITING,
-	LIST_UPDATE
+	LIST_UPDATE,
+	NOTES_EDIT
 } from "./actions.js";
 
-const initialState = {
+import throttle from "lodash/throttle";
+
+import { loadState, saveState } from "./localStorage.js";
+
+const initialState = loadState() || {
 	user: {},
 	listsGetWaiting: true,
 	userGetWaiting: true,
@@ -62,15 +67,29 @@ function speakersList(state = initialState, action) {
 				...state,
 				lists: updatedLists
 			};
-
+		case NOTES_EDIT:
+			const { value } = action;
+			return {
+				...state,
+				notes: value
+			};
 		default:
 			return state;
 	}
 }
 
-let store = createStore(
-	speakersList,
-	window.__REDUX_DEVTOOLS_EXTENSION__ && window.__REDUX_DEVTOOLS_EXTENSION__()
+const enhancers = compose(
+	window.__REDUX_DEVTOOLS_EXTENSION__
+		? window.__REDUX_DEVTOOLS_EXTENSION__()
+		: f => f
+);
+
+let store = createStore(speakersList, initialState, enhancers);
+
+store.subscribe(
+	throttle(() => {
+		saveState(store.getState());
+	}, 1000)
 );
 
 export default store;

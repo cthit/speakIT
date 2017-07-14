@@ -8,6 +8,12 @@ import SubmitButton from "../SubmitButton.js";
 import AdminToolBar from "./AdminToolBar.js";
 import AdminFooter from "./AdminFooter.js";
 
+import {
+	ListContainer,
+	ListHeader,
+	DiscussionTitle
+} from "../SharedComponents.js";
+
 import store from "../store.js";
 import {
 	requestAddUserToList,
@@ -143,22 +149,6 @@ const Scroll = styled(ScrollArea)`
 	height: 20em;
 `;
 
-const ListContainer = styled.div`
-	display: flex;
-	justify-content: space-between;
-	flex-direction: column;
-	width: 20em;
-	background-color: #ffffff;
-	box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.5);
-	min-height: 18em;
-`;
-
-const ListHeader = styled.div`
-	background-color: #efeeee;
-	display: flex;
-	flex-direction: column;
-`;
-
 const ListTitle = styled.div`
 	font-family: Helvetica Neue, Helvetica, Roboto, Arial, sans-serif;
 	font-size: 1.25em;
@@ -166,16 +156,6 @@ const ListTitle = styled.div`
 	color: #4a4a4a;
 	padding-top: 0.5em;
 	padding-left: 1em;
-`;
-
-const DiscussionTitle = styled.div`
-	font-family: Helvetica Neue, Helvetica, Roboto, Arial, sans-serif;
-	font-size: 2em;
-	height: 2em;
-	line-height: 2em;
-	text-align: center;
-	font-weight: bold;
-	color: #4a4a4a;
 `;
 
 const Speaker = styled.div`

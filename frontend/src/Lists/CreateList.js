@@ -8,6 +8,8 @@ import SubmitButton from "../SubmitButton.js";
 import AdminToolBar from "./AdminToolBar.js";
 import AdminFooter from "./AdminFooter.js";
 
+import { ListContainer, ListHeader } from "../SharedComponents.js";
+
 import store from "../store.js";
 import { requestCreateList } from "../actions.js";
 
@@ -121,22 +123,6 @@ const AdminToolBarPlaceholder = styled(AdminToolBar)`
 
 const AdminFooterPlaceholder = styled(AdminFooter)`
 	opacity: 0.2;
-`;
-
-const ListContainer = styled.div`
-	display: flex;
-	justify-content: space-between;
-	flex-direction: column;
-	width: 20em;
-	background-color: #ffffff;
-	box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.5);
-	min-height: 18em;
-`;
-
-const ListHeader = styled.div`
-	background-color: #efeeee;
-	display: flex;
-	flex-direction: column;
 `;
 
 const ListTitle = styled.div`

@@ -46,3 +46,29 @@ export const Title = styled.div`
   font-weight: 200;
   color: #4a4a4a;
 `;
+
+export const ListContainer = styled.div`
+  display: flex;
+  justify-content: space-between;
+  flex-direction: column;
+  width: 20em;
+  background-color: #ffffff;
+  box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.5);
+  min-height: 18em;
+`;
+
+export const ListHeader = styled.div`
+  background-color: #efeeee;
+  display: flex;
+  flex-direction: column;
+`;
+
+export const DiscussionTitle = styled.div`
+  font-family: Helvetica Neue, Helvetica, Roboto, Arial, sans-serif;
+  font-size: 2em;
+  height: 2em;
+  line-height: 2em;
+  text-align: center;
+  font-weight: bold;
+  color: #4a4a4a;
+`;

@@ -25,6 +25,8 @@ export const LIST_CREATE = "LIST_CREATE";
 export const LIST_DELETE = "LIST_DELETE";
 export const LIST_POP = "LIST_POP";
 export const LIST_SET_DISCUSSION_STATUS = "LIST_SET_DISCUSSION_STATUS";
+
+export const NOTES_EDIT = "NOTES_EDIT";
 /*
 const USER_DELETE = "USER_DELETE";
 */
@@ -99,6 +101,10 @@ export const requestSetDiscussionStatus = (listId, status) => {
 			JSON.stringify({ listId, list: { status } })
 	);
 	return { type: LIST_WAITING, listId };
+};
+
+export const notesEdit = value => {
+	return { type: NOTES_EDIT, value };
 };
 
 export const dispatchActionFromTopic = (topic, obj) => {
