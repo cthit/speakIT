@@ -5,14 +5,13 @@ import FontAwesome from "react-fontawesome";
 class AdminToolBar extends Component {
 	render() {
 		const {
-			listId,
-			debateIsOpen,
-			toggleDiscussionStatus,
+			discussionIsOpen,
+			setDiscussionStatus,
 			onNextClick,
 			className
 		} = this.props;
 
-		const debateBackground = debateIsOpen
+		const debateBackground = discussionIsOpen
 			? {}
 			: { "background-color": "#d8d8d8" };
 
@@ -24,15 +23,17 @@ class AdminToolBar extends Component {
 						size="2x"
 						flip="horizontal"
 					/>
-					<br />{" "}
-					Nästa
+					<br /> Nästa
 				</ToolBarItem>
 				<ToolBarItem
 					style={debateBackground}
-					onClick={() => toggleDiscussionStatus(listId)}
+					onClick={() =>
+						setDiscussionStatus(
+							discussionIsOpen ? "closed" : "open"
+						)}
 				>
-					<FontAwesome name="users" size="2x" /><br />Streck i
-					debatten
+					<FontAwesome name="users" size="2x" />
+					<br />Streck i debatten
 				</ToolBarItem>
 			</ToolBar>
 		);
@@ -57,7 +58,7 @@ const ToolBarItem = styled.div`
 		background-color: #fafafa;
 	}
 	:active {
-		background-color: #e5e5e5;	
+		background-color: #e5e5e5;
 	}
 `;
 

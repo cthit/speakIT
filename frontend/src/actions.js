@@ -24,6 +24,7 @@ export const LIST_UPDATE = "LIST_UPDATE";
 export const LIST_CREATE = "LIST_CREATE";
 export const LIST_DELETE = "LIST_DELETE";
 export const LIST_POP = "LIST_POP";
+export const LIST_SET_DISCUSSION_STATUS = "LIST_SET_DISCUSSION_STATUS";
 /*
 const USER_DELETE = "USER_DELETE";
 */
@@ -65,15 +66,13 @@ export const updateList = list => {
 };
 
 export const requestAddUserToList = listId => {
-	backend.socket.send(LIST_ADD_USER + " " + JSON.stringify({ id: listId }));
-	return { type: LIST_WAITING, id: listId };
+	backend.socket.send(LIST_ADD_USER + " " + JSON.stringify({ listId }));
+	return { type: LIST_WAITING, listId };
 };
 
 export const requestRemoveUserFromList = listId => {
-	backend.socket.send(
-		LIST_REMOVE_USER + " " + JSON.stringify({ id: listId })
-	);
-	return { type: LIST_WAITING, id: listId };
+	backend.socket.send(LIST_REMOVE_USER + " " + JSON.stringify({ listId }));
+	return { type: LIST_WAITING, listId };
 };
 
 export const requestCreateList = listName => {
@@ -84,13 +83,22 @@ export const requestCreateList = listName => {
 };
 
 export const requestDeleteList = listId => {
-	backend.socket.send(LIST_DELETE + " " + JSON.stringify({ id: listId }));
-	return { type: LIST_WAITING, id: listId };
+	backend.socket.send(LIST_DELETE + " " + JSON.stringify({ listId }));
+	return { type: LIST_WAITING, listId };
 };
 
 export const requestPopList = listId => {
-	backend.socket.send(LIST_POP + " " + JSON.stringify({ id: listId }));
-	return { type: LIST_WAITING, id: listId };
+	backend.socket.send(LIST_POP + " " + JSON.stringify({ listId }));
+	return { type: LIST_WAITING, listId };
+};
+
+export const requestSetDiscussionStatus = (listId, status) => {
+	backend.socket.send(
+		LIST_SET_DISCUSSION_STATUS +
+			" " +
+			JSON.stringify({ listId, list: { status } })
+	);
+	return { type: LIST_WAITING, listId };
 };
 
 export const dispatchActionFromTopic = (topic, obj) => {

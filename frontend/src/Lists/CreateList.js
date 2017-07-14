@@ -4,7 +4,7 @@ import styled from "styled-components";
 import FontAwesome from "react-fontawesome";
 import ScrollArea from "react-scrollbar";
 
-import SubmitButton from "./SubmitButton.js";
+import SubmitButton from "../SubmitButton.js";
 import AdminToolBar from "./AdminToolBar.js";
 import AdminFooter from "./AdminFooter.js";
 
@@ -77,13 +77,9 @@ class CreateList extends Component {
 				</ListHeader>
 
 				<Scroll speed={0.8} horizontal={false} minScrollSize={1}>
-					<ListTitle>
-						Första talarlista (0)
-					</ListTitle>
+					<ListTitle>Första talarlista (0)</ListTitle>
 
-					<ListTitle>
-						Andra talarlista (0)
-					</ListTitle>
+					<ListTitle>Andra talarlista (0)</ListTitle>
 				</Scroll>
 				<AdminFooterPlaceholder />
 			</ListContainer>
@@ -102,21 +98,21 @@ const Scroll = styled(ScrollArea)`
 `;
 
 const ListContainerPlaceholder = styled.div`
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  flex-direction: column;
-  width: 20em;
-  background-color: #ffffff;
-  box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.5);
-  min-height: 18em;
-  opacity: 0.5;
-  :hover {
-  	opacity: 0.7;
-  }
-  :active {
-  	opacity: 0.9;	
-  }
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	flex-direction: column;
+	width: 20em;
+	background-color: #ffffff;
+	box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.5);
+	min-height: 18em;
+	opacity: 0.5;
+	:hover {
+		opacity: 0.7;
+	}
+	:active {
+		opacity: 0.9;
+	}
 `;
 
 const AdminToolBarPlaceholder = styled(AdminToolBar)`
@@ -128,38 +124,38 @@ const AdminFooterPlaceholder = styled(AdminFooter)`
 `;
 
 const ListContainer = styled.div`
-  display: flex;
-  justify-content: space-between;
-  flex-direction: column;
-  width: 20em;
-  background-color: #ffffff;
-  box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.5);
-  min-height: 18em;
+	display: flex;
+	justify-content: space-between;
+	flex-direction: column;
+	width: 20em;
+	background-color: #ffffff;
+	box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.5);
+	min-height: 18em;
 `;
 
 const ListHeader = styled.div`
-  background-color: #efeeee;
-  display: flex;
-  flex-direction: column;
+	background-color: #efeeee;
+	display: flex;
+	flex-direction: column;
 `;
 
 const ListTitle = styled.div`
-  font-family: Helvetica Neue,Helvetica,Roboto,Arial,sans-serif;
-  font-size: 1.25em;
-  font-weight: bold;
-  color: #4a4a4a;
-  padding-top: 0.5em;
-  padding-left: 1em;
+	font-family: Helvetica Neue, Helvetica, Roboto, Arial, sans-serif;
+	font-size: 1.25em;
+	font-weight: bold;
+	color: #4a4a4a;
+	padding-top: 0.5em;
+	padding-left: 1em;
 `;
 
 const DiscussionTitle = styled.input`
-  font-family: Helvetica Neue,Helvetica,Roboto,Arial,sans-serif;
-  font-size: 2em;
-  height: 2em;
-  line-height: 2em;
-  text-align: center;
-  font-weight: bold;
-  color: #4a4a4a;
+	font-family: Helvetica Neue, Helvetica, Roboto, Arial, sans-serif;
+	font-size: 2em;
+	height: 2em;
+	line-height: 2em;
+	text-align: center;
+	font-weight: bold;
+	color: #4a4a4a;
 `;
 
 export default CreateList;

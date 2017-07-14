@@ -44,21 +44,25 @@ type ListDelete struct {
 type ListPop struct {
 	hub *Hub
 }
+type ListSetDiscussionStatus struct {
+	hub *Hub
+}
 
 func CreateHandlers(hub *Hub) map[string]MessageHandler {
 	return map[string]MessageHandler{
-		messages.CLIENT_HELO:            ClientHelo{hub},
-		messages.USER_GET:               UserGet{},
-		messages.USER_UPDATE:            UserUpdate{hub},
-		messages.ADMIN_LOGIN:            AdminLogin{hub},
-		messages.LISTS_GET:              ListsGet{hub},
-		messages.LIST_ADD_USER:          ListAddUser{hub},
-		messages.LIST_REMOVE_USER:       ListRemoveUser{hub},
-		messages.USER_CONNECTION_OPENED: UserConnectionOpened{hub},
-		messages.USER_CONNECTION_CLOSED: UserConnectionClosed{hub},
-		messages.LIST_CREATE:            ListCreate{hub},
-		messages.LIST_DELETE:            ListDelete{hub},
-		messages.LIST_POP:               ListPop{hub},
+		messages.CLIENT_HELO:                ClientHelo{hub},
+		messages.USER_GET:                   UserGet{},
+		messages.USER_UPDATE:                UserUpdate{hub},
+		messages.ADMIN_LOGIN:                AdminLogin{hub},
+		messages.LISTS_GET:                  ListsGet{hub},
+		messages.LIST_ADD_USER:              ListAddUser{hub},
+		messages.LIST_REMOVE_USER:           ListRemoveUser{hub},
+		messages.USER_CONNECTION_OPENED:     UserConnectionOpened{hub},
+		messages.USER_CONNECTION_CLOSED:     UserConnectionClosed{hub},
+		messages.LIST_CREATE:                ListCreate{hub},
+		messages.LIST_DELETE:                ListDelete{hub},
+		messages.LIST_POP:                   ListPop{hub},
+		messages.LIST_SET_DISCUSSION_STATUS: ListSetDiscussionStatus{hub},
 	}
 }
 
@@ -103,7 +107,7 @@ func (m ListsGet) handle(userEvent UserEvent) {
 }
 
 func (m ListAddUser) handle(userEvent UserEvent) {
-	id, err := uuid.Parse(userEvent.Id)
+	id, err := uuid.Parse(userEvent.ListId)
 	if err != nil {
 		sendError(userEvent.user.input, err.Error())
 		return
@@ -113,6 +117,11 @@ func (m ListAddUser) handle(userEvent UserEvent) {
 		sendError(userEvent.user.input, err.Error())
 		return
 	}
+	if list.Status == Closed && !userEvent.user.IsAdmin {
+		sendError(userEvent.user.input, "Discussion is closed.")
+		return
+	}
+
 	ok := list.AddUser(userEvent.user)
 	if !ok {
 		sendError(userEvent.user.input, UserAlreadyInList)
@@ -128,7 +137,7 @@ func (m ListAddUser) handle(userEvent UserEvent) {
 }
 
 func (m ListRemoveUser) handle(userEvent UserEvent) {
-	id, err := uuid.Parse(userEvent.Id)
+	id, err := uuid.Parse(userEvent.ListId)
 	if err != nil {
 		sendError(userEvent.user.input, err.Error())
 		return
@@ -138,6 +147,7 @@ func (m ListRemoveUser) handle(userEvent UserEvent) {
 		sendError(userEvent.user.input, err.Error())
 		return
 	}
+
 	ok := list.RemoveUser(userEvent.user)
 	if !ok {
 		sendError(userEvent.user.input, "User not in list.")
@@ -185,7 +195,7 @@ func (m ListDelete) handle(userEvent UserEvent) {
 		sendError(userEvent.user.input, "Unauthorized biatch!")
 		return
 	}
-	id, err := uuid.Parse(userEvent.Id)
+	id, err := uuid.Parse(userEvent.ListId)
 	if err != nil {
 		sendError(userEvent.user.input, err.Error())
 		return
@@ -210,7 +220,7 @@ func (m ListPop) handle(userEvent UserEvent) {
 		sendError(userEvent.user.input, "Unauthorized biatch!")
 		return
 	}
-	id, err := uuid.Parse(userEvent.Id)
+	id, err := uuid.Parse(userEvent.ListId)
 	if err != nil {
 		sendError(userEvent.user.input, err.Error())
 		return
@@ -218,7 +228,7 @@ func (m ListPop) handle(userEvent UserEvent) {
 
 	list, err := m.hub.getList(id)
 	if err != nil {
-	    	sendError(userEvent.user.input, err.Error())
+		sendError(userEvent.user.input, err.Error())
 		return
 	}
 	_, err = list.Pop()
@@ -232,6 +242,33 @@ func (m ListPop) handle(userEvent UserEvent) {
 	}
 	m.hub.Broadcast(resp)
 
+}
+
+func (m ListSetDiscussionStatus) handle(userEvent UserEvent) {
+	if !userEvent.user.IsAdmin {
+		sendError(userEvent.user.input, "Unauthorized biatch!")
+		return
+	}
+	id, err := uuid.Parse(userEvent.ListId)
+	if err != nil {
+		sendError(userEvent.user.input, err.Error())
+		return
+	}
+	list, err := m.hub.getList(id)
+	if err != nil {
+		sendError(userEvent.user.input, err.Error())
+		return
+	}
+	if !userEvent.List.Status.Valid() {
+		sendError(userEvent.user.input, "Invalid status")
+		return
+	}
+	list.Status = userEvent.List.Status
+	resp, err := createListResponse(list)
+	if err != nil {
+		sendError(userEvent.user.input, err.Error())
+	}
+	m.hub.Broadcast(resp)
 }
 
 func sendListsResponse(userChannel chan messages.SendEvent, lists []*SpeakerList) {

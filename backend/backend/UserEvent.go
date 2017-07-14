@@ -5,6 +5,7 @@ type UserEvent struct {
 	user         *User
 	ReceivedUser User        `json:"user"`
 	Password     string      `json:"password"`
-	Id           string      `json:"id"`
+	UserId       string      `json:"userId"`
+	ListId       string      `json:"listId"`
 	List         SpeakerList `json:"list"`
 }

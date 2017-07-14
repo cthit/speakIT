@@ -6,9 +6,10 @@ import {
   SubContainer,
   Row,
   RowContent,
-  Input,
-  SubmitButton
+  Input
 } from "./SharedComponents.js";
+
+import SubmitButton from "./SubmitButton.js";
 
 import Loading from "./loading.js";
 
@@ -78,6 +79,8 @@ class User extends Component {
           <Row>
             <RowContent>
               <SubmitButton
+                positiveText="Spara"
+                isShowingPositive={true}
                 type="button"
                 value="Spara"
                 disabled={
@@ -85,7 +88,7 @@ class User extends Component {
                     ? "disabled"
                     : ""
                 }
-                onClick={this.dispatchUserUpdate}
+                onPositiveClick={this.dispatchUserUpdate}
               />
             </RowContent>
           </Row>

@@ -8,9 +8,10 @@ import {
   Row,
   RowContent,
   Input,
-  SubmitButton,
   Title
 } from "./SharedComponents.js";
+
+import SubmitButton from "./SubmitButton.js";
 
 import { requestAdminLogin } from "./actions.js";
 
@@ -42,9 +43,7 @@ class Admin extends Component {
       return (
         <Container>
           <SubContainer>
-            <LoggedIn>
-              Du är inloggad.
-            </LoggedIn>
+            <LoggedIn>Du är inloggad.</LoggedIn>
           </SubContainer>
         </Container>
       );
@@ -69,7 +68,6 @@ class Admin extends Component {
                 style={{ cursor: "pointer" }}
                 onClick={this.toggleShowPassword}
               />
-
             </RowContent>
           </Row>
           <Row>
@@ -77,7 +75,9 @@ class Admin extends Component {
               <SubmitButton
                 type="button"
                 value="Send"
-                onClick={this.attemptAuth}
+                onPositiveClick={this.attemptAuth}
+                positiveText="Logga in"
+                isShowingPositive={true}
               />
             </RowContent>
           </Row>

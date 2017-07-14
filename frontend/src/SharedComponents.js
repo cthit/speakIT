@@ -28,9 +28,7 @@ export const Row = styled.div`
   flex-direction: row;
 `;
 
-export const RowContent = styled.div`
-  display: flex;
-`;
+export const RowContent = styled.div`display: flex;`;
 
 export const Input = styled.input`
   border: 0;
@@ -42,25 +40,8 @@ export const Input = styled.input`
   font-size: 1.2rem;
 `;
 
-export const SubmitButton = styled.input`
-  background-color: #7ed321;
-  border: none;
-  outline: none;
-  padding: 15px 45px;
-  :hover {
-    cursor: pointer;
-    background-color: #a4e063;
-  }
-  :active {
-    background-color: #71bd1d;
-  }
-  :disabled {
-    background-color: #c4c4c4;
-  }
-`;
-
 export const Title = styled.div`
-  font-family: Helvetica Neue,Helvetica,Roboto,Arial,sans-serif;
+  font-family: Helvetica Neue, Helvetica, Roboto, Arial, sans-serif;
   font-size: 2rem;
   font-weight: 200;
   color: #4a4a4a;

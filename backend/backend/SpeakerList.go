@@ -1,15 +1,16 @@
 package backend
 
 import (
-	"github.com/google/uuid"
 	"errors"
+	"github.com/google/uuid"
 )
 
 type SpeakerList struct {
 	Title              string    `json:"title"`
 	Id                 uuid.UUID `json:"id"`
-	SpeakerQueue       queue   `json:"speakersQueue"`
-	SecondSpeakerQueue queue   `json:"secondSpeakersQueue"`
+	Status             Status    `json:"status"`
+	SpeakerQueue       queue     `json:"speakersQueue"`
+	SecondSpeakerQueue queue     `json:"secondSpeakersQueue"`
 	previousSpeakers   map[uuid.UUID]*User
 }
 
@@ -17,11 +18,12 @@ type speakersQueue []*User
 
 func CreateSpeakerList(title string) SpeakerList {
 	return SpeakerList{
-		Title:        title,
-		SpeakerQueue: make([]*User, 0),
+		Title:              title,
+		SpeakerQueue:       make([]*User, 0),
 		SecondSpeakerQueue: make([]*User, 0),
-		previousSpeakers: make(map[uuid.UUID]*User),
-		Id:           uuid.New(),
+		previousSpeakers:   make(map[uuid.UUID]*User),
+		Id:                 uuid.New(),
+		Status:             Open,
 	}
 }
 
@@ -63,8 +65,6 @@ func (list *SpeakerList) AddUser(user *User) bool {
 	}
 }
 
-
-
 type queue []*User
 
 func (q queue) add(user *User) queue {
@@ -95,4 +95,13 @@ func (q queue) index(user *User) int {
 
 func (q queue) contains(user *User) bool {
 	return q.index(user) >= 0
+}
+
+type Status string
+
+const Open Status = "open"
+const Closed Status = "closed"
+
+func (s Status) Valid() bool {
+	return s == Open || s == Closed
 }
