@@ -68,7 +68,7 @@ class List extends Component {
 	render() {
 		const { list, user } = this.props;
 
-		const userIsPresent = list.speakersQueue.some(u => u.id === user.id);
+		const userIsPresent = list.speakersQueue.concat(list.secondSpeakersQueue).some(u => u.id === user.id);
 
 		return (
 			<ListContainer key={list.id}>
