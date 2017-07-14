@@ -11,44 +11,6 @@ import (
 
 var hub backend.Hub
 
-
-
-
-
-//func userWithSession(w http.ResponseWriter, req *http.Request, next http.HandlerFunc) {
-//
-//	session, err := hub.Get(req, SESSION_KEY)
-//	if err != nil {
-//		http.Error(w, err.Error(), http.StatusInternalServerError)
-//		return
-//	}
-//
-//	log.Printf("Requested url %s", req.URL)
-//
-//	if session.IsNew {
-//		var id = uuid.New()
-//		session.Values[UUID_KEY] = id.String()
-//
-//		log.Printf("New user id: %v\n", id)
-//
-//		state.addUser(&backend.User{"", false, id})
-//		log.Printf("State after new user: %v", state.Users)
-//
-//		session.Options = &sessions.Options{
-//			MaxAge:   86400,
-//			HttpOnly: true,
-//		}
-//
-//		err = session.Save(req, w)
-//
-//		if err != nil {
-//			log.Printf("Error when saving session to storage: %v\n", err)
-//		}
-//	}
-//
-//	next(w, req)
-//}
-
 func main() {
 	log.SetFlags(log.Lshortfile)
 	hub = backend.CreateHub()
