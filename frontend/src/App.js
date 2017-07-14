@@ -14,12 +14,13 @@ import backend from "./backend.js";
 import { Provider, connect } from "react-redux";
 import store from "./store.js";
 import { sendClientHello } from "./actions.js";
+import conf from "./config.js";
 
 class App extends Component {
   componentWillMount() {
     window.backend = backend;
     backend
-      .connect("ws://tejp.xyz:3001/ws")
+      .connect(`ws://${conf.backend_address}:${conf.backend_port}/ws`)
       .then(() => {
         sendClientHello();
       })
