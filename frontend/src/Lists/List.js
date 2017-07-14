@@ -20,7 +20,8 @@ import {
 	requestRemoveUserFromList,
 	requestDeleteList,
 	requestPopList,
-	requestSetDiscussionStatus
+	requestSetDiscussionStatus,
+	requestListAdminAddUser
 } from "../actions.js";
 
 const createSpeakerRow = (user, index) => {
@@ -37,6 +38,14 @@ const createSpeakerRow = (user, index) => {
 };
 
 class List extends Component {
+	constructor(props) {
+		super(props);
+		this.state = {
+			adminAdduser: false,
+			adminAddUserNick: ""
+		};
+	}
+
 	registerTalkRequest = () => {
 		store.dispatch(requestAddUserToList(this.props.list.id));
 	};
@@ -58,6 +67,12 @@ class List extends Component {
 		store.dispatch(requestPopList(this.props.list.id));
 	};
 
+	adminAddUserToggle = () => {
+		this.setState({
+			adminAddingUser: !this.state.adminAddingUser
+		});
+	};
+
 	renderAdminTools = (discussionIsOpen, listId) => {
 		return (
 			<AdminToolBar
@@ -65,8 +80,55 @@ class List extends Component {
 				setDiscussionStatus={this.setDiscussionStatus}
 				listId={listId}
 				onNextClick={this.nextSpeaker}
+				onAddUser={this.adminAddUserToggle}
 			/>
 		);
+	};
+
+	renderAdminAddUserInputBox = () => {
+		const { adminAddUserNick } = this.state;
+		return (
+			<AdminAddUserContainer>
+				Nick:
+				<AdminUserNickInput
+					type="text"
+					value={adminAddUserNick}
+					onChange={this.adminAddingUserInputChange}
+					onKeyPress={this.onAdminAddingUserKeyPress}
+					autoFocus
+				/>
+				<AdminAddUserButton
+					disabled={adminAddUserNick === ""}
+					onClick={this.adminAddUser}
+				/>
+			</AdminAddUserContainer>
+		);
+	};
+
+	adminAddingUserInputChange = e => {
+		this.setState({
+			adminAddUserNick: e.target.value
+		});
+	};
+
+	onAdminAddingUserKeyPress = e => {
+		if (e.key === "Enter") {
+			this.adminAddUser();
+		}
+	};
+
+	adminAddUser = () => {
+		const { adminAddUserNick } = this.state;
+		const { list: { id } } = this.props;
+		if (adminAddUserNick === "") {
+			return;
+		}
+
+		this.setState({
+			adminAddingUser: false,
+			adminAddUserNick: ""
+		});
+		store.dispatch(requestListAdminAddUser(id, adminAddUserNick));
 	};
 
 	renderAdminFooter = listId => {
@@ -74,6 +136,7 @@ class List extends Component {
 	};
 
 	render() {
+		const { adminAddingUser } = this.state;
 		const { list, user } = this.props;
 
 		const userIsPresent = list.speakersQueue
@@ -101,6 +164,8 @@ class List extends Component {
 					{user.isAdmin &&
 						this.renderAdminTools(list.status === "open", list.id)}
 				</ListHeader>
+
+				{adminAddingUser && this.renderAdminAddUserInputBox()}
 
 				<Scroll speed={0.8} horizontal={false} minScrollSize={1}>
 					<ListTitle>
@@ -134,6 +199,51 @@ class List extends Component {
 		);
 	}
 }
+
+const AdminAddUserButton = props => {
+	return (
+		<AdminAddUserButtonStyle {...props}>
+			<FontAwesome name="user-plus" />
+		</AdminAddUserButtonStyle>
+	);
+};
+
+const AdminAddUserButtonStyle = styled.button`
+	border: none;
+	outline: none;
+	background-color: transparent;
+	cursor: pointer;
+	color: #84c043;
+	font-size: 1.5em;
+	:hover {
+		color: #a4e063;
+	}
+	:active {
+		color: #94d053;
+	}
+	:disabled {
+		color: #aeaeae;
+		cursor: default;
+	}
+`;
+
+const AdminAddUserContainer = styled.div`
+	display: flex;
+	align-items: center;
+	padding: 1em;
+	background-color: #efeeee;
+	font-size: 1em;
+`;
+
+const AdminUserNickInput = styled.input`
+	border: none;
+	outline: none;
+	flex: 1;
+	font-size: 1em;
+	margin: 0 1em;
+	background-color: #efeeee;
+	border-bottom: 1px solid black;
+`;
 
 const DiscussionClosedLabel = styled.div`
 	background-color: #e80808;

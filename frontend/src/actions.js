@@ -25,6 +25,7 @@ export const LIST_CREATE = "LIST_CREATE";
 export const LIST_DELETE = "LIST_DELETE";
 export const LIST_POP = "LIST_POP";
 export const LIST_SET_DISCUSSION_STATUS = "LIST_SET_DISCUSSION_STATUS";
+export const LIST_ADMIN_ADD_USER = "LIST_ADMIN_ADD_USER";
 
 export const NOTES_EDIT = "NOTES_EDIT";
 /*
@@ -105,6 +106,18 @@ export const requestSetDiscussionStatus = (listId, status) => {
 
 export const notesEdit = value => {
 	return { type: NOTES_EDIT, value };
+};
+
+export const requestListAdminAddUser = (listId, nick) => {
+	backend.socket.send(
+		LIST_ADMIN_ADD_USER +
+			" " +
+			JSON.stringify({
+				listId,
+				user: { nick }
+			})
+	);
+	return { type: LIST_WAITING, listId };
 };
 
 export const dispatchActionFromTopic = (topic, obj) => {

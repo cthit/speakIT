@@ -8,6 +8,7 @@ class AdminToolBar extends Component {
 			discussionIsOpen,
 			setDiscussionStatus,
 			onNextClick,
+			onAddUser,
 			className
 		} = this.props;
 
@@ -35,6 +36,10 @@ class AdminToolBar extends Component {
 					<FontAwesome name="users" size="2x" />
 					<br />Streck i debatten
 				</ToolBarItem>
+				<ToolBarItem onClick={onAddUser}>
+					<FontAwesome name="user-plus" size="2x" />
+					<br />Lägg till person
+				</ToolBarItem>
 			</ToolBar>
 		);
 	}
@@ -46,10 +51,11 @@ const ToolBar = styled.div`
 `;
 
 const ToolBarItem = styled.div`
+	cursor: pointer;
 	flex: 1;
 	font-size: 0.8em;
 	text-align: center;
-	padding: 1.5em 0.5em;
+	padding: 1.5em 0;
 	line-height: 2em;
 	background-color: #f5f5f5;
 	color: #4990e2;

@@ -18,6 +18,17 @@ type User struct {
 	input      chan messages.SendEvent
 }
 
+func CreateUser() *User {
+
+	return &User{
+		Nick: "",
+		IsAdmin: false,
+		Id: uuid.New(),
+		hubChannel: nil,
+		input: nil,
+	}
+}
+
 func (u *User) ServeWS(conn *websocket.Conn) {
 	conn.SetCloseHandler(u.onWSClose)
 	u.input = make(chan messages.SendEvent)

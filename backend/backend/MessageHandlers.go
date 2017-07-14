@@ -47,6 +47,9 @@ type ListPop struct {
 type ListSetDiscussionStatus struct {
 	hub *Hub
 }
+type ListAdminAddUser struct {
+	hub *Hub
+}
 
 func CreateHandlers(hub *Hub) map[string]MessageHandler {
 	return map[string]MessageHandler{
@@ -63,6 +66,7 @@ func CreateHandlers(hub *Hub) map[string]MessageHandler {
 		messages.LIST_DELETE:                ListDelete{hub},
 		messages.LIST_POP:                   ListPop{hub},
 		messages.LIST_SET_DISCUSSION_STATUS: ListSetDiscussionStatus{hub},
+		messages.LIST_ADMIN_ADD_USER:        ListAdminAddUser{hub},
 	}
 }
 
@@ -136,6 +140,53 @@ func (m ListAddUser) handle(userEvent UserEvent) {
 	}
 }
 
+func (m ListAdminAddUser) handle(userEvent UserEvent) {
+	if !userEvent.user.IsAdmin {
+		sendError(userEvent.user.input, "Unauthorized")
+		return
+	}
+
+	id, err := uuid.Parse(userEvent.ListId)
+	if err != nil {
+		sendError(userEvent.user.input, err.Error())
+		return
+	}
+	list, err := m.hub.getList(id)
+	if err != nil {
+		sendError(userEvent.user.input, err.Error())
+		return
+	}
+
+	var adminCreatedUser *User
+	adminCreatedUser, ok := m.hub.AdminCreatedUsers[userEvent.ReceivedUser.Nick]
+	if !ok {
+		if userEvent.ReceivedUser.Nick == "" {
+			sendError(userEvent.user.input, "Can't have empty nick.")
+			return
+		}
+		if m.hub.isUserNickTaken(userEvent.ReceivedUser.Nick) {
+			sendError(userEvent.user.input, "Nick already taken.")
+			return
+		}
+		adminCreatedUser = CreateUser()
+		adminCreatedUser.Nick = userEvent.ReceivedUser.Nick
+		m.hub.addAdminCreatedUser(adminCreatedUser)
+	}
+
+	ok = list.AddUser(adminCreatedUser)
+	if !ok {
+		sendError(userEvent.user.input, UserAlreadyInList)
+		return
+	}
+
+	resp, err := createListResponse(list)
+	if err != nil {
+		sendError(userEvent.user.input, err.Error())
+	} else {
+		m.hub.Broadcast(resp)
+	}
+}
+
 func (m ListRemoveUser) handle(userEvent UserEvent) {
 	id, err := uuid.Parse(userEvent.ListId)
 	if err != nil {
@@ -173,7 +224,7 @@ func (m UserConnectionClosed) handle(UserEvent UserEvent) {
 
 func (m ListCreate) handle(userEvent UserEvent) {
 	if !userEvent.user.IsAdmin {
-		sendError(userEvent.user.input, "Unauthorized biatch!")
+		sendError(userEvent.user.input, "Unauthorized")
 		return
 	}
 	if userEvent.List.Title == "" {
@@ -192,7 +243,7 @@ func (m ListCreate) handle(userEvent UserEvent) {
 
 func (m ListDelete) handle(userEvent UserEvent) {
 	if !userEvent.user.IsAdmin {
-		sendError(userEvent.user.input, "Unauthorized biatch!")
+		sendError(userEvent.user.input, "Unauthorized")
 		return
 	}
 	id, err := uuid.Parse(userEvent.ListId)
@@ -217,7 +268,7 @@ func (m ListDelete) handle(userEvent UserEvent) {
 
 func (m ListPop) handle(userEvent UserEvent) {
 	if !userEvent.user.IsAdmin {
-		sendError(userEvent.user.input, "Unauthorized biatch!")
+		sendError(userEvent.user.input, "Unauthorized")
 		return
 	}
 	id, err := uuid.Parse(userEvent.ListId)
@@ -246,7 +297,7 @@ func (m ListPop) handle(userEvent UserEvent) {
 
 func (m ListSetDiscussionStatus) handle(userEvent UserEvent) {
 	if !userEvent.user.IsAdmin {
-		sendError(userEvent.user.input, "Unauthorized biatch!")
+		sendError(userEvent.user.input, "Unauthorized")
 		return
 	}
 	id, err := uuid.Parse(userEvent.ListId)

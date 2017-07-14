@@ -27,12 +27,13 @@ const (
 )
 
 type Hub struct {
-	Users            map[uuid.UUID]*User
-	SpeakerLists     []*SpeakerList
-	connectedUsers   map[uuid.UUID]*User
-	oneTimePasswords []string
-	hubInput         chan UserEvent
-	messageHandlers  map[string]MessageHandler
+	Users             map[uuid.UUID]*User
+	AdminCreatedUsers map[string]*User
+	SpeakerLists      []*SpeakerList
+	connectedUsers    map[uuid.UUID]*User
+	oneTimePasswords  []string
+	hubInput          chan UserEvent
+	messageHandlers   map[string]MessageHandler
 }
 
 var store = sessions.NewFilesystemStore("store", []byte("this is the secret stuff"))
@@ -54,10 +55,11 @@ func CreateHub() Hub {
 	log.Printf("Generated password: %s", initialPassword)
 
 	hub := Hub{
-		Users:            make(map[uuid.UUID]*User),
-		SpeakerLists:     speakerLists,
-		connectedUsers:   make(map[uuid.UUID]*User),
-		oneTimePasswords: []string{initialPassword},
+		Users:             make(map[uuid.UUID]*User),
+		AdminCreatedUsers: make(map[string]*User),
+		SpeakerLists:      speakerLists,
+		connectedUsers:    make(map[uuid.UUID]*User),
+		oneTimePasswords:  []string{initialPassword},
 	}
 	hub.messageHandlers = CreateHandlers(&hub)
 	return hub
@@ -141,7 +143,7 @@ func (h *Hub) deleteList(id uuid.UUID) error {
 		}
 	}
 	if i == -1 {
-	    return errors.New("List not found")
+		return errors.New("List not found")
 	}
 
 	copy(h.SpeakerLists[i:], h.SpeakerLists[i+1:])
@@ -187,12 +189,35 @@ func (s Hub) getUser(id uuid.UUID) (*User, error) {
 	return user, nil
 }
 
+func (h Hub) isUserNickTaken(nick string) bool {
+	for _, user := range h.Users {
+		if user.Nick == nick {
+			return true
+		}
+	}
+	for n := range h.AdminCreatedUsers {
+		if n == nick {
+			return true
+		}
+	}
+	return false
+}
+
 func (s Hub) addUser(user *User) bool {
 	_, ok := s.Users[user.Id]
 	if ok {
 		return false
 	}
 	s.Users[user.Id] = user
+	return true
+}
+
+func (h Hub) addAdminCreatedUser(user *User) bool {
+	_, ok := h.AdminCreatedUsers[user.Nick]
+	if ok {
+		return false
+	}
+	h.AdminCreatedUsers[user.Nick] = user
 	return true
 }
 
@@ -240,12 +265,10 @@ func (hub *Hub) ServeWs(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if session.IsNew {
-		var id = uuid.New()
-		session.Values[UUID_KEY] = id.String()
-
-		log.Printf("New user id: %v\n", id)
-
-		hub.addUser(&User{"", false, id, hub.hubInput, nil})
+		newUser := CreateUser()
+		session.Values[UUID_KEY] = newUser.Id.String()
+		newUser.hubChannel = hub.hubInput
+		hub.addUser(newUser)
 
 		session.Options = &sessions.Options{
 			MaxAge:   86400,
