@@ -84,6 +84,14 @@ func (h *Hub) Broadcast(sendEvent messages.SendEvent) {
 	}
 }
 
+func (h *Hub) AdminBroadcast(sendEvent messages.SendEvent) {
+	for _, user := range h.Users {
+		if user.IsAdmin {
+			user.input <- sendEvent
+		}
+	}
+}
+
 func (h *Hub) listenForUserEvents() {
 	for {
 		event := <-h.hubInput
@@ -312,6 +320,28 @@ func createListsResponse(lists []*SpeakerList) (messages.SendEvent, error) {
 		return messages.SendEvent{}, err
 	} else {
 		return messages.SendEvent{messages.LISTS_UPDATE, listsObj}, nil
+	}
+}
+
+type UsersResponse struct {
+	Users             []*User `json:"users"`
+	AdminCreatedUsers []*User `json:"adminCreatedUsers"`
+}
+
+func (hub *Hub) createUsersResponse() (messages.SendEvent, error) {
+	var users, adminCreatedUsers []*User
+	for _, u := range hub.Users {
+		users = append(users, u)
+	}
+	for _, u := range hub.AdminCreatedUsers {
+		adminCreatedUsers = append(adminCreatedUsers, u)
+	}
+
+	usersUbj, err := json.Marshal(UsersResponse{Users: users, AdminCreatedUsers: adminCreatedUsers})
+	if err != nil {
+	    return messages.SendEvent{}, err
+	} else {
+		return messages.SendEvent{messages.USERS_UPDATE, usersUbj}, nil
 	}
 }
 

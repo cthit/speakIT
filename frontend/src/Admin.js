@@ -3,6 +3,14 @@ import FontAwesome from "react-fontawesome";
 import styled from "styled-components";
 
 import {
+  ListContainer,
+  ListHeader,
+  ListTitle,
+  SubListTitle,
+  ListBody,
+  HR,
+  RowContainer,
+  ColumnContainer,
   Container,
   SubContainer,
   Row,
@@ -36,19 +44,7 @@ class Admin extends Component {
     this.setState({ showPassword: !this.state.showPassword });
   };
 
-  render() {
-    const { user } = this.props;
-
-    if (user.isAdmin) {
-      return (
-        <Container>
-          <SubContainer>
-            <LoggedIn>Du är inloggad.</LoggedIn>
-          </SubContainer>
-        </Container>
-      );
-    }
-
+  renderLoginPromp = () => {
     return (
       <Container>
         <SubContainer>
@@ -83,6 +79,73 @@ class Admin extends Component {
           </Row>
         </SubContainer>
       </Container>
+    );
+  };
+
+  renderUsers = (users, f) => {
+    if (!f) {
+      f = () => true;
+    }
+    console.log("helo       ", users);
+    console.log("helo filter", users.filter(f));
+    return (
+      <div>
+        {users.filter(f).map(u => <div>{u.nick}</div>)}
+      </div>
+    );
+  };
+
+  render() {
+    const { user } = this.props;
+
+    if (!user.isAdmin) {
+      return this.renderLoginPromp();
+    }
+
+    const { users, adminCreatedUsers } = this.props;
+
+    return (
+      <RowContainer>
+
+        <ColumnContainer>
+
+          <ListContainer>
+            <ListHeader>
+              <ListTitle>
+                Användare
+              </ListTitle>
+            </ListHeader>
+
+            <ListBody>
+              <SubListTitle>Aktiva</SubListTitle>
+              <HR />
+              {this.renderUsers(users, u => u.connected)}
+
+              <SubListTitle>Inaktiva</SubListTitle>
+              <HR />
+              {this.renderUsers(users, u => !u.connected)}
+
+              <SubListTitle>Skapade av admin</SubListTitle>
+              <HR />
+              {this.renderUsers(adminCreatedUsers)}
+
+            </ListBody>
+
+          </ListContainer>
+
+        </ColumnContainer>
+
+        <ColumnContainer>
+          <ListContainer>
+            <ListHeader>
+              <ListTitle>
+                Lösenord
+              </ListTitle>
+            </ListHeader>
+          </ListContainer>
+        </ColumnContainer>
+
+      </RowContainer>
     );
   }
 }

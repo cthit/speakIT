@@ -1,6 +1,7 @@
 import { compose, createStore } from "redux";
 import {
 	USER_UPDATE,
+	USERS_UPDATE,
 	USER_GET_WAITING,
 	LISTS_UPDATE,
 	LISTS_GET_WAITING,
@@ -15,6 +16,8 @@ import { loadState, saveState } from "./localStorage.js";
 
 const initialState = loadState() || {
 	user: {},
+	users: [],
+	adminCreatedUsers: [],
 	listsGetWaiting: true,
 	userGetWaiting: true,
 	lists: []
@@ -28,6 +31,14 @@ function speakersList(state = initialState, action) {
 				...state,
 				user,
 				userGetWaiting: false
+			};
+		case USERS_UPDATE:
+			console.log(action);
+			const { usersObj: { users, adminCreatedUsers } } = action;
+			return {
+				...state,
+				users,
+				adminCreatedUsers: adminCreatedUsers || []
 			};
 		case USER_GET_WAITING:
 			return { ...state, userGetWaiting: true };

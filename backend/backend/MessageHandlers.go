@@ -10,8 +10,11 @@ type MessageHandler interface {
 	handle(UserEvent)
 }
 
-type UserGet struct{}
 type ClientHelo struct {
+	hub *Hub
+}
+type UserGet struct{}
+type UsersGet struct {
 	hub *Hub
 }
 type UserUpdate struct {
@@ -55,6 +58,7 @@ func CreateHandlers(hub *Hub) map[string]MessageHandler {
 	return map[string]MessageHandler{
 		messages.CLIENT_HELO:                ClientHelo{hub},
 		messages.USER_GET:                   UserGet{},
+		messages.USERS_GET:                  UsersGet{hub},
 		messages.USER_UPDATE:                UserUpdate{hub},
 		messages.ADMIN_LOGIN:                AdminLogin{hub},
 		messages.LISTS_GET:                  ListsGet{hub},
@@ -79,6 +83,20 @@ func (m UserGet) handle(userEvent UserEvent) {
 	sendUserResponse(userEvent.user.input, userEvent.user)
 }
 
+func (m UsersGet) handle(userEvent UserEvent) {
+	if !userEvent.user.IsAdmin {
+		sendError(userEvent.user.input, "Unauthorized")
+		return
+	}
+
+	resp, err := m.hub.createUsersResponse()
+	if err != nil {
+		sendError(userEvent.user.input, err.Error())
+		return
+	}
+	userEvent.user.input <- resp
+}
+
 func (m UserUpdate) handle(userEvent UserEvent) {
 	userEvent.user.Nick = userEvent.ReceivedUser.Nick
 	sendUserResponse(userEvent.user.input, userEvent.user)
@@ -95,6 +113,12 @@ func (m AdminLogin) handle(userEvent UserEvent) {
 	if ok {
 		sendSuccess(userEvent.user.input, "Login successful.")
 		sendUserResponse(userEvent.user.input, userEvent.user)
+		resp, err := m.hub.createUsersResponse()
+		if err != nil {
+			sendError(userEvent.user.input, err.Error())
+		} else {
+			userEvent.user.input <- resp
+		}
 	} else {
 		sendError(userEvent.user.input, "Login failed.")
 	}
@@ -182,9 +206,17 @@ func (m ListAdminAddUser) handle(userEvent UserEvent) {
 	resp, err := createListResponse(list)
 	if err != nil {
 		sendError(userEvent.user.input, err.Error())
+		return
 	} else {
 		m.hub.Broadcast(resp)
 	}
+	adminResp, err := m.hub.createUsersResponse()
+	if err != nil {
+	    sendError(userEvent.user.input, err.Error())
+	} else {
+		m.hub.AdminBroadcast(adminResp)
+	}
+
 }
 
 func (m ListRemoveUser) handle(userEvent UserEvent) {

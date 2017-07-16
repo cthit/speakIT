@@ -6,11 +6,7 @@ import { notesEdit } from "../actions.js";
 
 import debounce from "lodash/debounce";
 
-import {
-	ListContainer,
-	ListHeader,
-	DiscussionTitle
-} from "../SharedComponents.js";
+import { ListContainer, ListHeader, ListTitle } from "../SharedComponents.js";
 
 class Notes extends Component {
 	constructor(props) {
@@ -42,7 +38,7 @@ class Notes extends Component {
 		return (
 			<ListContainer>
 				<ListHeader>
-					<DiscussionTitle>Anteckningar</DiscussionTitle>
+					<ListTitle>Anteckningar</ListTitle>
 				</ListHeader>
 				<InputContainer>
 					<InputField onChange={this.handleNotesEdit} value={notes} />

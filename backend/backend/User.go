@@ -14,6 +14,7 @@ type User struct {
 	Nick       string    `json:"nick"`
 	IsAdmin    bool      `json:"isAdmin"`
 	Id         uuid.UUID `json:"id"`
+	Connected  bool      `json:"connected"`
 	hubChannel chan UserEvent
 	input      chan messages.SendEvent
 }
@@ -21,17 +22,19 @@ type User struct {
 func CreateUser() *User {
 
 	return &User{
-		Nick: "",
-		IsAdmin: false,
-		Id: uuid.New(),
+		Nick:       "",
+		IsAdmin:    false,
+		Id:         uuid.New(),
+		Connected:  false,
 		hubChannel: nil,
-		input: nil,
+		input:      nil,
 	}
 }
 
 func (u *User) ServeWS(conn *websocket.Conn) {
 	conn.SetCloseHandler(u.onWSClose)
 	u.input = make(chan messages.SendEvent)
+	u.Connected = true
 	u.hubChannel <- UserEvent{messageType: messages.USER_CONNECTION_OPENED, user: u}
 	go u.receiveFromWebsocket(conn)
 	go u.handleSendEvents(conn)
@@ -77,7 +80,7 @@ func (u *User) handleSendEvents(conn *websocket.Conn) {
 		content := <-u.input
 		err := conn.WriteMessage(websocket.TextMessage, []byte(content.String()))
 		if err != nil {
-		    break
+			break
 		}
 	}
 }
@@ -93,6 +96,7 @@ func sendUserResponse(userChannel chan messages.SendEvent, user *User) {
 
 func (u *User) onWSClose(code int, text string) error {
 	u.input = nil
-	u.hubChannel <- UserEvent{messageType:messages.USER_CONNECTION_CLOSED, user: u}
+	u.Connected = false
+	u.hubChannel <- UserEvent{messageType: messages.USER_CONNECTION_CLOSED, user: u}
 	return nil
 }

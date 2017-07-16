@@ -43,7 +43,7 @@ class App extends Component {
   };
 
   render() {
-    const { user, userGetWaiting } = this.props;
+    const { user, users, adminCreatedUsers, userGetWaiting } = this.props;
 
     return (
       <Router>
@@ -52,7 +52,15 @@ class App extends Component {
           <AppHeader />
           <Route exact path="/" render={this.renderList} />
           <Route path="/list" render={this.renderList} />
-          <Route path="/admin" render={() => <Admin user={user} />} />
+          <Route
+            path="/admin"
+            render={() =>
+              <Admin
+                user={user}
+                users={users}
+                adminCreatedUsers={adminCreatedUsers}
+              />}
+          />
           <Route
             path="/user"
             render={() => <User user={user} loading={userGetWaiting} />}
@@ -65,6 +73,8 @@ class App extends Component {
 
 const ConnectedApp = connect(state => ({
   user: state.user,
+  users: state.users,
+  adminCreatedUsers: state.adminCreatedUsers,
   userGetWaiting: state.userGetWaiting,
   lists: state.lists,
   listsGetWaiting: state.listsGetWaiting,
