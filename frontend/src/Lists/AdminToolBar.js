@@ -19,12 +19,8 @@ class AdminToolBar extends Component {
 		return (
 			<ToolBar className={className}>
 				<ToolBarItem onClick={onNextClick}>
-					<FontAwesome
-						name="stack-overflow"
-						size="2x"
-						flip="horizontal"
-					/>
-					<br /> Nästa
+					<Icon name="stack-overflow" size="2x" flip="horizontal" />
+					<ItemText>Nästa</ItemText>
 				</ToolBarItem>
 				<ToolBarItem
 					style={debateBackground}
@@ -33,17 +29,22 @@ class AdminToolBar extends Component {
 							discussionIsOpen ? "closed" : "open"
 						)}
 				>
-					<FontAwesome name="users" size="2x" />
-					<br />Streck i debatten
+					<Icon name="users" size="2x" />
+					<ItemText>Streck i debatten</ItemText>
 				</ToolBarItem>
 				<ToolBarItem onClick={onAddUser}>
-					<FontAwesome name="user-plus" size="2x" />
-					<br />Lägg till person
+					<Icon name="user-plus" size="2x" />
+					<ItemText>Lägg till person</ItemText>
 				</ToolBarItem>
 			</ToolBar>
 		);
 	}
 }
+
+const Icon = styled(FontAwesome)`
+	flex: 1;
+	margin-bottom: 0.2em;
+`;
 
 const ToolBar = styled.div`
 	display: flex;
@@ -51,6 +52,8 @@ const ToolBar = styled.div`
 `;
 
 const ToolBarItem = styled.div`
+	display: flex;
+	flex-direction: column;
 	cursor: pointer;
 	flex: 1;
 	font-size: 0.8em;
@@ -59,13 +62,18 @@ const ToolBarItem = styled.div`
 	line-height: 2em;
 	background-color: #f5f5f5;
 	color: #4990e2;
-	height: 3em;
 	:hover {
 		background-color: #fafafa;
 	}
 	:active {
 		background-color: #e5e5e5;
 	}
+`;
+
+const ItemText = styled.div`
+	line-height: 1em;
+	flex: 1;
+	margin-top: 0.2em;
 `;
 
 export default AdminToolBar;
