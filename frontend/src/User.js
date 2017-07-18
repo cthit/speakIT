@@ -36,11 +36,14 @@ class User extends Component {
 
   dispatchUserUpdate = () => {
     const { newNick } = this.state;
-    const { user, user: { nick } } = this.props;
-    if (nick !== newNick) {
+    const { user } = this.props;
+    if (this.validNick(newNick)) {
       store.dispatch(requestUserUpdate({ user: { ...user, nick: newNick } }));
     }
   };
+
+  validNick = nick =>
+    nick !== null && nick !== "" && nick !== this.props.user.nick;
 
   render() {
     const { newNick } = this.state;
@@ -83,11 +86,7 @@ class User extends Component {
                 isShowingPositive={true}
                 type="button"
                 value="Spara"
-                disabled={
-                  newNick === null || newNick === "" || nick === newNick
-                    ? "disabled"
-                    : ""
-                }
+                disabled={this.validNick(newNick) ? "" : "disabled"}
                 onPositiveClick={this.dispatchUserUpdate}
               />
             </RowContent>

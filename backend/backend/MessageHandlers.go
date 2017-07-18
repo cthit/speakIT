@@ -99,6 +99,14 @@ func (m UsersGet) handle(userEvent UserEvent) {
 }
 
 func (m UserUpdate) handle(userEvent UserEvent) {
+	if userEvent.ReceivedUser.Nick == "" {
+		sendError(userEvent.user.input, "Can't set empty nick.")
+		return
+	}
+	if m.hub.isUserNickTaken(userEvent.ReceivedUser.Nick) {
+		sendError(userEvent.user.input, "Nick is taken. If someone has taken your nick ask an admin to update or remove that user.")
+		return
+	}
 	userEvent.user.Nick = userEvent.ReceivedUser.Nick
 	sendUserResponse(userEvent.user.input, userEvent.user)
 	resp, err := createListsResponse(m.hub.SpeakerLists)
