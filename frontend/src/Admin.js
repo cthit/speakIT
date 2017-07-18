@@ -1,6 +1,5 @@
 import React, { Component } from "react";
 import FontAwesome from "react-fontawesome";
-import styled from "styled-components";
 
 import {
   ListContainer,
@@ -151,10 +150,3 @@ class Admin extends Component {
 }
 
 export default Admin;
-
-const LoggedIn = styled(Row)`
-  color: #7ed321;
-  font-size: 36px;
-  font-weight: bold;
-  text-align: center;
-`;

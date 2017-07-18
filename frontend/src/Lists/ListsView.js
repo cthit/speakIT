@@ -1,12 +1,7 @@
 import React, { Component } from "react";
 import styled from "styled-components";
 
-import {
-  Container,
-  Row,
-  RowContent,
-  ColumnContainer
-} from "../SharedComponents.js";
+import { Row, RowContent, ColumnContainer } from "../SharedComponents.js";
 
 import Loading from "../loading.js";
 
