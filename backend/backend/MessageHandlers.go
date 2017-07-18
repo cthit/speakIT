@@ -77,6 +77,7 @@ func CreateHandlers(hub *Hub) map[string]MessageHandler {
 func (m ClientHelo) handle(userEvent UserEvent) {
 	sendUserResponse(userEvent.user.input, userEvent.user)
 	sendListsResponse(userEvent.user.input, m.hub.SpeakerLists)
+	sendUsersUpdateToAdmins(m.hub, userEvent.user)
 }
 
 func (m UserGet) handle(userEvent UserEvent) {
@@ -106,6 +107,7 @@ func (m UserUpdate) handle(userEvent UserEvent) {
 	} else {
 		m.hub.Broadcast(resp)
 	}
+	sendUsersUpdateToAdmins(m.hub, userEvent.user)
 }
 
 func (m AdminLogin) handle(userEvent UserEvent) {
@@ -113,15 +115,11 @@ func (m AdminLogin) handle(userEvent UserEvent) {
 	if ok {
 		sendSuccess(userEvent.user.input, "Login successful.")
 		sendUserResponse(userEvent.user.input, userEvent.user)
-		resp, err := m.hub.createUsersResponse()
-		if err != nil {
-			sendError(userEvent.user.input, err.Error())
-		} else {
-			userEvent.user.input <- resp
-		}
+		sendUsersUpdateToAdmins(m.hub, userEvent.user)
 	} else {
 		sendError(userEvent.user.input, "Login failed.")
 	}
+	sendUsersUpdateToAdmins(m.hub, userEvent.user)
 }
 
 func (m ListsGet) handle(userEvent UserEvent) {
@@ -210,13 +208,7 @@ func (m ListAdminAddUser) handle(userEvent UserEvent) {
 	} else {
 		m.hub.Broadcast(resp)
 	}
-	adminResp, err := m.hub.createUsersResponse()
-	if err != nil {
-	    sendError(userEvent.user.input, err.Error())
-	} else {
-		m.hub.AdminBroadcast(adminResp)
-	}
-
+	sendUsersUpdateToAdmins(m.hub, userEvent.user)
 }
 
 func (m ListRemoveUser) handle(userEvent UserEvent) {
@@ -245,13 +237,14 @@ func (m ListRemoveUser) handle(userEvent UserEvent) {
 	}
 }
 
-func (m UserConnectionOpened) handle(UserEvent UserEvent) {
-	m.hub.connectedUsers[UserEvent.user.Id] = UserEvent.user
+func (m UserConnectionOpened) handle(userEvent UserEvent) {
+	m.hub.connectedUsers[userEvent.user.Id] = userEvent.user
+	sendUsersUpdateToAdmins(m.hub, userEvent.user)
 }
 
-func (m UserConnectionClosed) handle(UserEvent UserEvent) {
-	delete(m.hub.connectedUsers, UserEvent.user.Id)
-
+func (m UserConnectionClosed) handle(userEvent UserEvent) {
+	delete(m.hub.connectedUsers, userEvent.user.Id)
+	sendUsersUpdateToAdmins(m.hub, userEvent.user)
 }
 
 func (m ListCreate) handle(userEvent UserEvent) {
@@ -362,4 +355,13 @@ func sendListsResponse(userChannel chan messages.SendEvent, lists []*SpeakerList
 		userChannel <- resp
 	}
 
+}
+
+func sendUsersUpdateToAdmins(hub *Hub, user *User) {
+	resp, err := hub.createUsersResponse()
+	if err != nil {
+		sendError(user.input, err.Error())
+		return
+	}
+	hub.AdminBroadcast(resp)
 }
