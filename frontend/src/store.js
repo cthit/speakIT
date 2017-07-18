@@ -7,7 +7,8 @@ import {
 	LISTS_GET_WAITING,
 	LIST_WAITING,
 	LIST_UPDATE,
-	NOTES_EDIT
+	NOTES_EDIT,
+	ERROR
 } from "./actions.js";
 
 import throttle from "lodash/throttle";
@@ -83,6 +84,12 @@ function speakersList(state = initialState, action) {
 			return {
 				...state,
 				notes: value
+			};
+		case ERROR:
+			return {
+				...state,
+				listsGetWaiting: false,
+				userGetWaiting: false
 			};
 		default:
 			return state;

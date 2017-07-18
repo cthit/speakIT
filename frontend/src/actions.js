@@ -132,6 +132,10 @@ export const requestListAdminAddUser = (listId, nick) => {
 	return { type: LIST_WAITING, listId };
 };
 
+export const error = err => {
+	return { type: ERROR, err };
+};
+
 export const dispatchActionFromTopic = (topic, obj) => {
 	switch (topic) {
 		case USER_UPDATE:
@@ -148,6 +152,7 @@ export const dispatchActionFromTopic = (topic, obj) => {
 			break;
 		case ERROR:
 			toast.error(`${obj.msg}`);
+			store.dispatch(error(obj));
 			break;
 		case SUCCESS:
 			toast.success(`${obj.msg}`);
