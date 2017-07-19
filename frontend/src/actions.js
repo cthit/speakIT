@@ -9,9 +9,11 @@ export const SUCCESS = "SUCCESS";
 
 export const USER_GET = "USER_GET";
 export const USER_UPDATE = "USER_UPDATE";
+export const USER_DELETE = "USER_DELETE";
 export const USERS_GET = "USERS_GET";
 export const USERS_UPDATE = "USERS_UPDATE";
 export const USER_GET_WAITING = "USER_GET_WAITING";
+export const USER_REMOVE_WAITING = "USER_REMOVE_WAITING";
 export const USERS_GET_WAITING = "USERS_GET_WAITING";
 
 export const ADMIN_LOGIN = "ADMIN_LOGIN";
@@ -31,9 +33,6 @@ export const LIST_SET_DISCUSSION_STATUS = "LIST_SET_DISCUSSION_STATUS";
 export const LIST_ADMIN_ADD_USER = "LIST_ADMIN_ADD_USER";
 
 export const NOTES_EDIT = "NOTES_EDIT";
-/*
-const USER_DELETE = "USER_DELETE";
-*/
 
 export const sendClientHello = () => {
 	backend.socket.send(CLIENT_HELO);
@@ -50,8 +49,13 @@ export const requestUsers = () => {
 };
 
 export const requestUserUpdate = user => {
-	backend.socket.send(USER_UPDATE + " " + JSON.stringify(user));
+	backend.socket.send(USER_UPDATE + " " + JSON.stringify({ user }));
 	return { type: USER_GET_WAITING };
+};
+
+export const requestUserDelete = user => {
+	backend.socket.send(USER_DELETE + " " + JSON.stringify({ user }));
+	return { type: USER_REMOVE_WAITING, user };
 };
 
 export const requestAdminLogin = password => {

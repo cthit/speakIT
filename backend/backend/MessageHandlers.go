@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/google/uuid"
 	"github.com/tejpbit/talarlista/backend/backend/messages"
+	"log"
 )
 
 type MessageHandler interface {
@@ -14,10 +15,14 @@ type ClientHelo struct {
 	hub *Hub
 }
 type UserGet struct{}
+
 type UsersGet struct {
 	hub *Hub
 }
 type UserUpdate struct {
+	hub *Hub
+}
+type UserDelete struct {
 	hub *Hub
 }
 type AdminLogin struct {
@@ -60,6 +65,7 @@ func CreateHandlers(hub *Hub) map[string]MessageHandler {
 		messages.USER_GET:                   UserGet{},
 		messages.USERS_GET:                  UsersGet{hub},
 		messages.USER_UPDATE:                UserUpdate{hub},
+		messages.USER_DELETE:                UserDelete{hub},
 		messages.ADMIN_LOGIN:                AdminLogin{hub},
 		messages.LISTS_GET:                  ListsGet{hub},
 		messages.LIST_ADD_USER:              ListAddUser{hub},
@@ -107,14 +113,55 @@ func (m UserUpdate) handle(userEvent UserEvent) {
 		sendError(userEvent.user.input, "Nick is taken. If someone has taken your nick ask an admin to update or remove that user.")
 		return
 	}
-	userEvent.user.Nick = userEvent.ReceivedUser.Nick
-	sendUserResponse(userEvent.user.input, userEvent.user)
+
+	if userEvent.user.Id == userEvent.ReceivedUser.Id {
+		userEvent.user.Nick = userEvent.ReceivedUser.Nick
+		sendUserResponse(userEvent.user.input, userEvent.user)
+	} else {
+		if !userEvent.user.IsAdmin {
+			sendError(userEvent.user.input, "Needs to be admin to update another users nick.")
+			return
+		}
+		ok := m.hub.updateUser(userEvent.ReceivedUser)
+		if !ok {
+			sendError(userEvent.user.input, "Couldn't find user in ")
+			return
+		}
+
+	}
+
 	resp, err := createListsResponse(m.hub.SpeakerLists)
 	if err != nil {
 		sendError(userEvent.user.input, err.Error())
 	} else {
 		m.hub.Broadcast(resp)
 	}
+	sendUsersUpdateToAdmins(m.hub, userEvent.user)
+}
+
+func (m UserDelete) handle(userEvent UserEvent) {
+	log.Println(userEvent.String())
+	if !userEvent.user.IsAdmin {
+		sendError(userEvent.user.input, "Unauthorized")
+		return
+	}
+
+	if userEvent.ReceivedUser == nil {
+		sendError(userEvent.user.input, "Received user is null")
+		return
+	}
+
+	user, ok := m.hub.Users[userEvent.ReceivedUser.Id]
+	if ok {
+		sendNotification(user.input, messages.ERROR, "You have been removed from this hub by an admin.")
+	}
+	m.hub.deleteUser(userEvent.ReceivedUser)
+	resp, err := createListsResponse(m.hub.SpeakerLists)
+	if err != nil {
+		sendError(userEvent.user.input, err.Error())
+		return
+	}
+	userEvent.user.input <- resp
 	sendUsersUpdateToAdmins(m.hub, userEvent.user)
 }
 
@@ -127,7 +174,6 @@ func (m AdminLogin) handle(userEvent UserEvent) {
 	} else {
 		sendError(userEvent.user.input, "Login failed.")
 	}
-	sendUsersUpdateToAdmins(m.hub, userEvent.user)
 }
 
 func (m ListsGet) handle(userEvent UserEvent) {
@@ -188,7 +234,7 @@ func (m ListAdminAddUser) handle(userEvent UserEvent) {
 	}
 
 	var adminCreatedUser *User
-	adminCreatedUser, ok := m.hub.AdminCreatedUsers[userEvent.ReceivedUser.Nick]
+	adminCreatedUser, ok := m.hub.AdminCreatedUsers[userEvent.ReceivedUser.Id]
 	if !ok {
 		if userEvent.ReceivedUser.Nick == "" {
 			sendError(userEvent.user.input, "Can't have empty nick.")

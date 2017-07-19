@@ -88,13 +88,14 @@ export const SubListTitle = styled.div`
   font-size: 1.25em;
   font-weight: bold;
   color: #4a4a4a;
-  padding-top: 0.5em;
+  padding-top: 1.5em;
   padding-left: 1em;
 `;
 
 export const ListBody = styled.div`
   display: flex;
   flex-direction: column;
+  padding: 1em;
 `;
 
 export const HR = styled.hr`

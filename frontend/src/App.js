@@ -6,7 +6,7 @@ import "react-toastify/dist/ReactToastify.min.css";
 
 import ListsView from "./Lists/ListsView.js";
 import User from "./User.js";
-import Admin from "./Admin.js";
+import Admin from "./Admin";
 import AppHeader from "./AppHeader.js";
 
 import backend from "./backend.js";

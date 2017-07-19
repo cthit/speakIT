@@ -16,18 +16,19 @@ import {
   RowContent,
   Input,
   Title
-} from "./SharedComponents.js";
+} from "../SharedComponents.js";
 
-import SubmitButton from "./SubmitButton.js";
-
-import { requestAdminLogin } from "./actions.js";
+import SubmitButton from "../SubmitButton.js";
+import UserRow from "./UserRow.js";
+import { requestAdminLogin } from "../actions.js";
 
 class Admin extends Component {
   constructor(props) {
     super(props);
     this.state = {
       showPassword: false,
-      authCode: ""
+      authCode: "",
+      editingUser: null
     };
   }
 
@@ -85,11 +86,9 @@ class Admin extends Component {
     if (!f) {
       f = () => true;
     }
-    console.log("helo       ", users);
-    console.log("helo filter", users.filter(f));
     return (
       <div>
-        {users.filter(f).map(u => <div>{u.nick}</div>)}
+        {users.filter(f).map(u => <UserRow user={u} />)}
       </div>
     );
   };

@@ -38,7 +38,7 @@ class User extends Component {
     const { newNick } = this.state;
     const { user } = this.props;
     if (this.validNick(newNick)) {
-      store.dispatch(requestUserUpdate({ user: { ...user, nick: newNick } }));
+      store.dispatch(requestUserUpdate({ ...user, nick: newNick }));
     }
   };
 
