@@ -23,7 +23,9 @@ export const LIST_WAITING = "LIST_WAITING";
 export const LIST_UPDATE = "LIST_UPDATE";
 export const LIST_CREATE = "LIST_CREATE";
 export const LIST_DELETE = "LIST_DELETE";
+export const LIST_OPEN = "LIST_OPEN";
 export const LIST_POP = "LIST_POP";
+export const LIST_TITLE = "LIST_TITLE";
 export const LIST_SET_DISCUSSION_STATUS = "LIST_SET_DISCUSSION_STATUS";
 export const LIST_ADMIN_ADD_USER = "LIST_ADMIN_ADD_USER";
 
@@ -80,12 +82,16 @@ export const requestRemoveUserFromList = listId => {
 
 export const requestCreateList = listName => {
   backend.send(LIST_CREATE, { list: { title: listName } });
-  return { type: LIST_WAITING };
+  return { type: LIST_CREATE };
 };
 
 export const requestDeleteList = listId => {
   backend.send(LIST_DELETE, { listId });
   return { type: LIST_WAITING, listId };
+};
+
+export const requestToggleCreateList = bool => {
+  return { type: LIST_OPEN, bool };
 };
 
 export const requestPopList = listId => {
@@ -97,6 +103,11 @@ export const requestSetDiscussionStatus = (listId, status) => {
   backend.send(LIST_SET_DISCUSSION_STATUS, { listId, list: { status } });
   return { type: LIST_WAITING, listId };
 };
+
+export const setListTitle = title => ({
+  type: LIST_TITLE,
+  title
+});
 
 export const notesEdit = value => {
   return { type: NOTES_EDIT, value };

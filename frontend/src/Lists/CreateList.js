@@ -10,23 +10,17 @@ import AdminFooter from "./AdminFooter.js";
 
 import { ListContainer, ListHeader } from "../SharedComponents.js";
 
-import { requestCreateList } from "../actions.js";
+import {
+  requestCreateList,
+  requestToggleCreateList,
+  setListTitle
+} from "../actions.js";
 
 import { connect } from "react-redux";
 
 class CreateList extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      creatingNewList: false
-    };
-  }
-
   createNewList = () => {
-    console.log("new list");
-    this.setState({
-      creatingNewList: true
-    });
+    this.props.toggleCreateList(true);
   };
 
   renderAdminTools = (debateIsOpen, listId) => {
@@ -34,23 +28,16 @@ class CreateList extends Component {
   };
 
   titleChange = event => {
-    this.setState({
-      discussionTitle: event.target.value
-    });
+    this.props.newListTitle(event.target.value);
   };
 
   createList = event => {
     event && event.preventDefault();
-    const { discussionTitle } = this.state;
-    this.props.onCreateList(discussionTitle);
-    this.setState({
-      creatingNewList: false,
-      discussionTitle: ""
-    });
+    this.props.onCreateList(this.props.discussionTitle);
   };
 
   render() {
-    const { creatingNewList, discussionTitle } = this.state;
+    const { creatingNewList, discussionTitle } = this.props;
 
     if (!creatingNewList) {
       return (
@@ -93,11 +80,18 @@ class CreateList extends Component {
   }
 }
 
-const mapDispatchToProps = dispatch => ({
-  onCreateList: title => dispatch(requestCreateList(title))
+const mapStateToProps = state => ({
+  creatingNewList: state.lists.creatingNewList,
+  discussionTitle: state.lists.discussionTitle
 });
 
-export default connect(null, mapDispatchToProps)(CreateList);
+const mapDispatchToProps = dispatch => ({
+  onCreateList: title => dispatch(requestCreateList(title)),
+  toggleCreateList: bool => dispatch(requestToggleCreateList(bool)),
+  newListTitle: title => dispatch(setListTitle(title))
+});
+
+export default connect(mapStateToProps, mapDispatchToProps)(CreateList);
 
 const BigFontAwesome = styled(FontAwesome)`
     font-size: 128px;

@@ -2,12 +2,17 @@ import {
   LISTS_UPDATE,
   LISTS_GET_WAITING,
   LIST_WAITING,
-  LIST_UPDATE
+  LIST_UPDATE,
+  LIST_OPEN,
+  LIST_CREATE,
+  LIST_TITLE
 } from "../actions.js";
 
 const initialState = {
   listsGetWaiting: true,
-  lists: []
+  lists: [],
+  creatingNewList: false,
+  discussionTitle: ""
 };
 
 export default function listReducer(state = initialState, action) {
@@ -56,6 +61,23 @@ export default function listReducer(state = initialState, action) {
             return l;
           }
         })
+      };
+
+    case LIST_OPEN:
+      return {
+        ...state,
+        creatingNewList: action.bool
+      };
+    case LIST_CREATE:
+      return {
+        ...state,
+        creatingNewList: false,
+        discussionTitle: ""
+      };
+    case LIST_TITLE:
+      return {
+        ...state,
+        discussionTitle: action.title
       };
 
     default:
