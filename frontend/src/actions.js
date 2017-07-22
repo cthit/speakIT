@@ -33,110 +33,100 @@ const USER_DELETE = "USER_DELETE";
 */
 
 export const sendClientHello = () => {
-	backend.socket.send(CLIENT_HELO);
+  backend.send(CLIENT_HELO);
 };
 
 export const requestUser = () => {
-	backend.socket.send(USER_GET);
-	return { type: USER_GET_WAITING };
+  backend.send(USER_GET);
+  return { type: USER_GET_WAITING };
 };
 
 export const requestUserUpdate = user => {
-	backend.socket.send(USER_UPDATE + " " + JSON.stringify(user));
-	return { type: USER_GET_WAITING };
+  backend.send(USER_UPDATE, user);
+  return { type: USER_GET_WAITING };
 };
 
 export const requestAdminLogin = password => {
-	backend.socket.send(ADMIN_LOGIN + " " + JSON.stringify({ password }));
-	return { type: ADMIN_LOGIN_WAITING };
+  backend.send(ADMIN_LOGIN, { password });
+  return { type: ADMIN_LOGIN_WAITING };
 };
 
 export const requestLists = () => {
-	backend.socket.send(LISTS_GET);
-	return { type: LISTS_GET_WAITING };
+  backend.send(LISTS_GET);
+  return { type: LISTS_GET_WAITING };
 };
 
 export const updateUser = user => {
-	return { type: USER_UPDATE, user };
+  return { type: USER_UPDATE, user };
 };
 
 export const updateLists = lists => {
-	return { type: LISTS_UPDATE, lists };
+  return { type: LISTS_UPDATE, lists };
 };
 
 export const updateList = list => {
-	return { type: LIST_UPDATE, list };
+  return { type: LIST_UPDATE, list };
 };
 
 export const requestAddUserToList = listId => {
-	backend.socket.send(LIST_ADD_USER + " " + JSON.stringify({ listId }));
-	return { type: LIST_WAITING, listId };
+  backend.send(LIST_ADD_USER, { listId });
+  return { type: LIST_WAITING, listId };
 };
 
 export const requestRemoveUserFromList = listId => {
-	backend.socket.send(LIST_REMOVE_USER + " " + JSON.stringify({ listId }));
-	return { type: LIST_WAITING, listId };
+  backend.send(LIST_REMOVE_USER, { listId });
+  return { type: LIST_WAITING, listId };
 };
 
 export const requestCreateList = listName => {
-	backend.socket.send(
-		LIST_CREATE + " " + JSON.stringify({ list: { title: listName } })
-	);
-	return { type: LIST_WAITING };
+  backend.send(LIST_CREATE, { list: { title: listName } });
+  return { type: LIST_WAITING };
 };
 
 export const requestDeleteList = listId => {
-	backend.socket.send(LIST_DELETE + " " + JSON.stringify({ listId }));
-	return { type: LIST_WAITING, listId };
+  backend.send(LIST_DELETE, { listId });
+  return { type: LIST_WAITING, listId };
 };
 
 export const requestPopList = listId => {
-	backend.socket.send(LIST_POP + " " + JSON.stringify({ listId }));
-	return { type: LIST_WAITING, listId };
+  backend.send(LIST_POP, { listId });
+  return { type: LIST_WAITING, listId };
 };
 
 export const requestSetDiscussionStatus = (listId, status) => {
-	backend.socket.send(
-		LIST_SET_DISCUSSION_STATUS +
-			" " +
-			JSON.stringify({ listId, list: { status } })
-	);
-	return { type: LIST_WAITING, listId };
+  backend.send(LIST_SET_DISCUSSION_STATUS, { listId, list: { status } });
+  return { type: LIST_WAITING, listId };
 };
 
 export const notesEdit = value => {
-	return { type: NOTES_EDIT, value };
+  return { type: NOTES_EDIT, value };
 };
 
 export const requestListAdminAddUser = (listId, nick) => {
-	backend.socket.send(
-		LIST_ADMIN_ADD_USER +
-			" " +
-			JSON.stringify({
-				listId,
-				user: { nick }
-			})
-	);
-	return { type: LIST_WAITING, listId };
+  backend.send(LIST_ADMIN_ADD_USER, {
+    listId,
+    user: { nick }
+  });
+  return { type: LIST_WAITING, listId };
 };
 
 export const dispatchActionFromTopic = (topic, obj) => {
-	switch (topic) {
-		case USER_UPDATE:
-			store.dispatch(updateUser(obj));
-			break;
-		case LISTS_UPDATE:
-			store.dispatch(updateLists(obj));
-			break;
-		case LIST_UPDATE:
-			store.dispatch(updateList(obj));
-			break;
-		case ERROR:
-			toast.error(`${obj.msg}`);
-			break;
-		case SUCCESS:
-			toast.success(`${obj.msg}`);
-			break;
-		default:
-	}
+  switch (topic) {
+    case USER_UPDATE:
+      store.dispatch(updateUser(obj));
+      break;
+    case LISTS_UPDATE:
+      store.dispatch(updateLists(obj));
+      break;
+    case LIST_UPDATE:
+      store.dispatch(updateList(obj));
+      break;
+    case ERROR:
+      toast.error(obj.msg);
+      break;
+    case SUCCESS:
+      toast.success(obj.msg);
+      break;
+    default:
+  }
 };
