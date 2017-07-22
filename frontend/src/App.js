@@ -64,11 +64,11 @@ class App extends Component {
 }
 
 const ConnectedApp = connect(state => ({
-  user: state.user,
-  userGetWaiting: state.userGetWaiting,
-  lists: state.lists,
-  listsGetWaiting: state.listsGetWaiting,
-  notes: state.notes
+  user: state.user.user,
+  userGetWaiting: state.user.userGetWaiting,
+  lists: state.lists.lists,
+  listsGetWaiting: state.lists.listsGetWaiting,
+  notes: state.notes.notes
 }))(App);
 
 const ProviderApp = () =>
