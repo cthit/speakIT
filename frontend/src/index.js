@@ -9,6 +9,10 @@ injectGlobal`
     *, *:before, *:after {
         box-sizing: border-box;
     }
+
+    body {
+        margin: 0;
+    }
 `;
 
 ReactDOM.render(<App />, document.getElementById("root"));
