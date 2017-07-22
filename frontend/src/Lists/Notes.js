@@ -49,5 +49,9 @@ const InputContainer = styled.div`
 const InputField = styled.textarea`
   font-size: 1em;
   flex: 1;
-  padding: 0.5em;
+  padding: 1rem;
+
+  &:focus {
+    outline: 0;
+  }
 `;

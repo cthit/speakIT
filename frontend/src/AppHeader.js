@@ -8,13 +8,14 @@ class AppHeader extends Component {
   render() {
     return (
       <Banner>
-
         <HeaderContainer>
           <Header>
             <Title>
               speakIT <SmallTitle>digital talarlista</SmallTitle>
             </Title>
-            <ITLogo src={itlogo} />
+            <Link to="/">
+              <ITLogo src={itlogo} />
+            </Link>
           </Header>
         </HeaderContainer>
 
@@ -25,7 +26,6 @@ class AppHeader extends Component {
             <NavigationItem to="/admin">Admin</NavigationItem>
           </Navigation>
         </NavigationContainer>
-
       </Banner>
     );
   }
@@ -49,19 +49,21 @@ const Banner = styled.div`
 const Header = styled.header`
   display: flex;
   align-items: center;
+  justify-content: space-between;
   flex-flow: row-wrap;
-  width: 75rem;
+  width: 100%;
+  max-width: 75em;
+  padding: 0 1rem;
 `;
 
 const ITLogo = styled.img`
   width: 142px;
   height: 142px;
-  margin-left: 33%;
 `;
 
 const Title = styled.div`
   height: 68px;
-  font-family: Helvetica Neue,Helvetica,Roboto,Arial,sans-serif;
+  font-family: Helvetica Neue, Helvetica, Roboto, Arial, sans-serif;
   font-size: 3rem;
   font-weight: 500;
   color: #4a4a4a;
@@ -80,9 +82,7 @@ const NavigationContainer = styled.div`
   justify-content: space-around;
 `;
 
-const Navigation = styled.nav`
-  display: flex;
-`;
+const Navigation = styled.nav`display: flex;`;
 
 const NavigationItem = styled(Link)`
   width: 200px;
