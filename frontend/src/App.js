@@ -31,15 +31,8 @@ class App extends Component {
   }
 
   renderList = () => {
-    const { user, lists, listsGetWaiting, notes } = this.props;
-    return (
-      <ListsView
-        user={user}
-        lists={lists}
-        loading={listsGetWaiting}
-        notes={notes}
-      />
-    );
+    const { user, lists, listsGetWaiting } = this.props;
+    return <ListsView user={user} lists={lists} loading={listsGetWaiting} />;
   };
 
   render() {
@@ -66,9 +59,8 @@ class App extends Component {
 const ConnectedApp = connect(state => ({
   user: state.user.user,
   userGetWaiting: state.user.userGetWaiting,
-  lists: state.lists.lists,
   listsGetWaiting: state.lists.listsGetWaiting,
-  notes: state.notes.notes
+  lists: state.lists.lists,
 }))(App);
 
 const ProviderApp = () =>

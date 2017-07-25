@@ -52,6 +52,7 @@ const Header = styled.header`
   justify-content: space-between;
   flex-flow: row-wrap;
   width: 100%;
+  max-width: 75em;
   padding: 0 1rem;
 `;
 
