@@ -4,13 +4,14 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log"
+	"net/http"
+
 	"github.com/google/uuid"
 	"github.com/gorilla/sessions"
 	"github.com/gorilla/websocket"
 	garbler "github.com/michaelbironneau/garbler/lib"
 	"github.com/tejpbit/talarlista/backend/backend/messages"
-	"log"
-	"net/http"
 )
 
 const SESSION_KEY = "talarlista_session"
@@ -36,7 +37,7 @@ type Hub struct {
 	messageHandlers   map[string]MessageHandler
 }
 
-var store = sessions.NewFilesystemStore("store", []byte("this is the secret stuff"))
+var store = sessions.NewCookieStore([]byte("this is the secret stuff"))
 
 func CreateHub() Hub {
 	reqs := garbler.PasswordStrengthRequirements{

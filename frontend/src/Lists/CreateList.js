@@ -10,84 +10,88 @@ import AdminFooter from "./AdminFooter.js";
 
 import { ListContainer, ListHeader } from "../SharedComponents.js";
 
-import store from "../store.js";
-import { requestCreateList } from "../actions.js";
+import {
+  requestCreateList,
+  requestToggleCreateList,
+  setListTitle
+} from "../actions.js";
+
+import { connect } from "react-redux";
 
 class CreateList extends Component {
-	constructor(props) {
-		super(props);
-		this.state = {
-			creatingNewList: false
-		};
-	}
+  createNewList = () => {
+    this.props.toggleCreateList(true);
+  };
 
-	createNewList = () => {
-		console.log("new list");
-		this.setState({
-			creatingNewList: true
-		});
-	};
+  renderAdminTools = (debateIsOpen, listId) => {
+    return <AdminToolBar />;
+  };
 
-	renderAdminTools = (debateIsOpen, listId) => {
-		return <AdminToolBar />;
-	};
+  titleChange = event => {
+    this.props.newListTitle(event.target.value);
+  };
 
-	titleChange = event => {
-		this.setState({
-			discussionTitle: event.target.value
-		});
-	};
+  createList = event => {
+    event && event.preventDefault();
+    this.props.onCreateList(this.props.discussionTitle);
+  };
 
-	createList = () => {
-		const { discussionTitle } = this.state;
-		store.dispatch(requestCreateList(discussionTitle));
-		this.setState({
-			creatingNewList: false,
-			discussionTitle: ""
-		});
-	};
+  render() {
+    const { creatingNewList, discussionTitle } = this.props;
 
-	render() {
-		const { creatingNewList, discussionTitle } = this.state;
+    if (!creatingNewList) {
+      return (
+        <ListContainerPlaceholder onClick={this.createNewList}>
+          <BigFontAwesome name="plus-circle" />
+        </ListContainerPlaceholder>
+      );
+    }
 
-		if (!creatingNewList) {
-			return (
-				<ListContainerPlaceholder onClick={this.createNewList}>
-					<BigFontAwesome name="plus-circle" />
-				</ListContainerPlaceholder>
-			);
-		}
+    return (
+      <ListContainer>
+        <ListHeader>
+          <Form onSubmit={this.createList}>
+            <DiscussionTitle
+              placeholder="Ny diskussion"
+              onChange={this.titleChange}
+              value={discussionTitle}
+              autoFocus
+            />
+            <SubmitButton
+              isShowingPositive={true}
+              onPositiveClick={this.createList}
+              positiveText="Skapa lista"
+            />
+          </Form>
+          <AdminToolBarPlaceholder
+            debateIsOpen={true}
+            toggleDiscussionStatus={() => {}}
+          />
+        </ListHeader>
 
-		return (
-			<ListContainer>
-				<ListHeader>
-					<DiscussionTitle
-						placeholder="Ny diskussion"
-						onChange={this.titleChange}
-						value={discussionTitle}
-						autoFocus
-					/>
-					<SubmitButton
-						isShowingPositive={true}
-						onPositiveClick={this.createList}
-						positiveText="Skapa lista"
-					/>
-					<AdminToolBarPlaceholder
-						debateIsOpen={true}
-						toggleDiscussionStatus={() => {}}
-					/>
-				</ListHeader>
+        <Scroll speed={0.8} horizontal={false} minScrollSize={1}>
+          <ListTitle>Första talarlista (0)</ListTitle>
 
-				<Scroll speed={0.8} horizontal={false} minScrollSize={1}>
-					<ListTitle>Första talarlista (0)</ListTitle>
-
-					<ListTitle>Andra talarlista (0)</ListTitle>
-				</Scroll>
-				<AdminFooterPlaceholder />
-			</ListContainer>
-		);
-	}
+          <ListTitle>Andra talarlista (0)</ListTitle>
+        </Scroll>
+        <AdminFooterPlaceholder />
+      </ListContainer>
+    );
+  }
 }
+
+const mapStateToProps = state => ({
+  creatingNewList: state.lists.creatingNewList,
+  discussionTitle: state.lists.discussionTitle
+});
+
+const mapDispatchToProps = dispatch => ({
+  onCreateList: title => dispatch(requestCreateList(title)),
+  toggleCreateList: bool => dispatch(requestToggleCreateList(bool)),
+  newListTitle: title => dispatch(setListTitle(title))
+});
+
+export default connect(mapStateToProps, mapDispatchToProps)(CreateList);
 
 const BigFontAwesome = styled(FontAwesome)`
     font-size: 128px;
@@ -99,22 +103,27 @@ const Scroll = styled(ScrollArea)`
 	opacity: 0.2;
 `;
 
+const Form = styled.form`
+  display: flex;
+  flex-direction: column;
+`;
+
 const ListContainerPlaceholder = styled.div`
-	display: flex;
-	justify-content: center;
-	align-items: center;
-	flex-direction: column;
-	width: 20em;
-	background-color: #ffffff;
-	box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.5);
-	min-height: 18em;
-	opacity: 0.5;
-	:hover {
-		opacity: 0.7;
-	}
-	:active {
-		opacity: 0.9;
-	}
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  width: 20em;
+  background-color: #ffffff;
+  box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.5);
+  min-height: 18em;
+  opacity: 0.5;
+  :hover {
+    opacity: 0.7;
+  }
+  :active {
+    opacity: 0.9;
+  }
 `;
 
 const AdminToolBarPlaceholder = styled(AdminToolBar)`
@@ -126,22 +135,20 @@ const AdminFooterPlaceholder = styled(AdminFooter)`
 `;
 
 const ListTitle = styled.div`
-	font-family: Helvetica Neue, Helvetica, Roboto, Arial, sans-serif;
-	font-size: 1.25em;
-	font-weight: bold;
-	color: #4a4a4a;
-	padding-top: 0.5em;
-	padding-left: 1em;
+  font-family: Helvetica Neue, Helvetica, Roboto, Arial, sans-serif;
+  font-size: 1.25em;
+  font-weight: bold;
+  color: #4a4a4a;
+  padding-top: 0.5em;
+  padding-left: 1em;
 `;
 
 const DiscussionTitle = styled.input`
-	font-family: Helvetica Neue, Helvetica, Roboto, Arial, sans-serif;
-	font-size: 2em;
-	height: 2em;
-	line-height: 2em;
-	text-align: center;
-	font-weight: bold;
-	color: #4a4a4a;
+  font-family: Helvetica Neue, Helvetica, Roboto, Arial, sans-serif;
+  font-size: 2em;
+  height: 2em;
+  line-height: 2em;
+  text-align: center;
+  font-weight: bold;
+  color: #4a4a4a;
 `;
-
-export default CreateList;

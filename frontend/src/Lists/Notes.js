@@ -32,7 +32,7 @@ class Notes extends Component {
 }
 
 const mapStateToProps = state => ({
-  notes: state.notes
+  notes: state.notes.text
 });
 
 const mapDispatchToProps = dispatch => ({
