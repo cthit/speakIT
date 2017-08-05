@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import styled from "styled-components";
 
-import { Container, Row, RowContent } from "../SharedComponents.js";
+import { Row, RowContent, ColumnContainer } from "../SharedComponents.js";
 
 import Loading from "../loading.js";
 
@@ -18,7 +18,7 @@ class ListsView extends Component {
     }
 
     return (
-      <ListViewContainer>
+      <ColumnContainer>
         <Row>
           <RowContent>
             Du är: {user.nick}
@@ -30,14 +30,10 @@ class ListsView extends Component {
           <Notes />
           {user.isAdmin && <CreateList />}
         </ListsContainer>
-      </ListViewContainer>
+      </ColumnContainer>
     );
   }
 }
-
-const ListViewContainer = styled(Container)`
-  flex-direction: column;
-`;
 
 const ListsContainer = styled(Row)`
   padding-top: 2em;

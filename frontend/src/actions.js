@@ -9,7 +9,12 @@ export const SUCCESS = "SUCCESS";
 
 export const USER_GET = "USER_GET";
 export const USER_UPDATE = "USER_UPDATE";
+export const USER_DELETE = "USER_DELETE";
+export const USERS_GET = "USERS_GET";
+export const USERS_UPDATE = "USERS_UPDATE";
 export const USER_GET_WAITING = "USER_GET_WAITING";
+export const USER_REMOVE_WAITING = "USER_REMOVE_WAITING";
+export const USERS_GET_WAITING = "USERS_GET_WAITING";
 
 export const ADMIN_LOGIN = "ADMIN_LOGIN";
 export const ADMIN_LOGIN_WAITING = "ADMIN_LOGIN_WAITING";
@@ -30,9 +35,6 @@ export const LIST_SET_DISCUSSION_STATUS = "LIST_SET_DISCUSSION_STATUS";
 export const LIST_ADMIN_ADD_USER = "LIST_ADMIN_ADD_USER";
 
 export const NOTES_EDIT = "NOTES_EDIT";
-/*
-const USER_DELETE = "USER_DELETE";
-*/
 
 export const sendClientHello = () => {
   backend.send(CLIENT_HELO);
@@ -43,9 +45,19 @@ export const requestUser = () => {
   return { type: USER_GET_WAITING };
 };
 
+export const requestUsers = () => {
+  backend.socket.send(USERS_GET);
+  return { type: USERS_GET_WAITING };
+};
+
 export const requestUserUpdate = user => {
-  backend.send(USER_UPDATE, user);
+  backend.send(USER_UPDATE, { user });
   return { type: USER_GET_WAITING };
+};
+
+export const requestUserDelete = user => {
+  backend.socket.send(USER_DELETE + " " + JSON.stringify({ user }));
+  return { type: USER_REMOVE_WAITING, user };
 };
 
 export const requestAdminLogin = password => {
@@ -60,6 +72,10 @@ export const requestLists = () => {
 
 export const updateUser = user => {
   return { type: USER_UPDATE, user };
+};
+
+export const updateUsers = usersObj => {
+  return { type: USERS_UPDATE, usersObj };
 };
 
 export const updateLists = lists => {
@@ -121,10 +137,17 @@ export const requestListAdminAddUser = (listId, nick) => {
   return { type: LIST_WAITING, listId };
 };
 
+export const error = err => {
+  return { type: ERROR, err };
+};
+
 export const dispatchActionFromTopic = (topic, obj) => {
   switch (topic) {
     case USER_UPDATE:
       store.dispatch(updateUser(obj));
+      break;
+    case USERS_UPDATE:
+      store.dispatch(updateUsers(obj));
       break;
     case LISTS_UPDATE:
       store.dispatch(updateLists(obj));
@@ -134,6 +157,7 @@ export const dispatchActionFromTopic = (topic, obj) => {
       break;
     case ERROR:
       toast.error(obj.msg);
+      store.dispatch(error(obj));
       break;
     case SUCCESS:
       toast.success(obj.msg);

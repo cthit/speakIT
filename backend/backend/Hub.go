@@ -29,7 +29,7 @@ const (
 
 type Hub struct {
 	Users             map[uuid.UUID]*User
-	AdminCreatedUsers map[string]*User
+	AdminCreatedUsers map[uuid.UUID]*User
 	SpeakerLists      []*SpeakerList
 	connectedUsers    map[uuid.UUID]*User
 	oneTimePasswords  []string
@@ -57,7 +57,7 @@ func CreateHub() Hub {
 
 	hub := Hub{
 		Users:             make(map[uuid.UUID]*User),
-		AdminCreatedUsers: make(map[string]*User),
+		AdminCreatedUsers: make(map[uuid.UUID]*User),
 		SpeakerLists:      speakerLists,
 		connectedUsers:    make(map[uuid.UUID]*User),
 		oneTimePasswords:  []string{initialPassword},
@@ -82,6 +82,14 @@ func (h *Hub) Start() error {
 func (h *Hub) Broadcast(sendEvent messages.SendEvent) {
 	for _, user := range h.Users {
 		user.input <- sendEvent
+	}
+}
+
+func (h *Hub) AdminBroadcast(sendEvent messages.SendEvent) {
+	for _, user := range h.Users {
+		if user.IsAdmin {
+			user.input <- sendEvent
+		}
 	}
 }
 
@@ -196,8 +204,8 @@ func (h Hub) isUserNickTaken(nick string) bool {
 			return true
 		}
 	}
-	for n := range h.AdminCreatedUsers {
-		if n == nick {
+	for _, user := range h.AdminCreatedUsers {
+		if user.Nick == nick {
 			return true
 		}
 	}
@@ -213,12 +221,39 @@ func (s Hub) addUser(user *User) bool {
 	return true
 }
 
+func (h Hub) updateUser(updatedUser *User) (success bool) {
+	user, inUsers := h.Users[updatedUser.Id]
+	adminCreatedUser, inAdminCreatedUsers := h.AdminCreatedUsers[updatedUser.Id]
+	success = inUsers != inAdminCreatedUsers
+	if !success {
+		return
+	}
+
+	if inUsers {
+		user.Nick = updatedUser.Nick
+	} else if inAdminCreatedUsers {
+		adminCreatedUser.Nick = updatedUser.Nick
+	}
+
+	return
+}
+
+func (h Hub) deleteUser(user *User) {
+	for _, list := range h.SpeakerLists {
+		list.RemoveUser(user)
+	}
+	delete(h.AdminCreatedUsers, user.Id)
+	delete(h.Users, user.Id)
+	delete(h.connectedUsers, user.Id)
+}
+
 func (h Hub) addAdminCreatedUser(user *User) bool {
-	_, ok := h.AdminCreatedUsers[user.Nick]
+	_, ok := h.AdminCreatedUsers[user.Id]
 	if ok {
 		return false
 	}
-	h.AdminCreatedUsers[user.Nick] = user
+	user.Id = uuid.New()
+	h.AdminCreatedUsers[user.Id] = user
 	return true
 }
 
@@ -313,6 +348,28 @@ func createListsResponse(lists []*SpeakerList) (messages.SendEvent, error) {
 		return messages.SendEvent{}, err
 	} else {
 		return messages.SendEvent{messages.LISTS_UPDATE, listsObj}, nil
+	}
+}
+
+type UsersResponse struct {
+	Users             []*User `json:"users"`
+	AdminCreatedUsers []*User `json:"adminCreatedUsers"`
+}
+
+func (hub *Hub) createUsersResponse() (messages.SendEvent, error) {
+	var users, adminCreatedUsers []*User
+	for _, u := range hub.Users {
+		users = append(users, u)
+	}
+	for _, u := range hub.AdminCreatedUsers {
+		adminCreatedUsers = append(adminCreatedUsers, u)
+	}
+
+	usersUbj, err := json.Marshal(UsersResponse{Users: users, AdminCreatedUsers: adminCreatedUsers})
+	if err != nil {
+		return messages.SendEvent{}, err
+	} else {
+		return messages.SendEvent{messages.USERS_UPDATE, usersUbj}, nil
 	}
 }
 

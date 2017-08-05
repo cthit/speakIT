@@ -6,7 +6,7 @@ import "react-toastify/dist/ReactToastify.min.css";
 
 import ListsView from "./Lists/ListsView.js";
 import User from "./User.js";
-import Admin from "./Admin.js";
+import Admin from "./Admin";
 import AppHeader from "./AppHeader.js";
 
 import backend from "./backend.js";
@@ -45,7 +45,7 @@ class App extends Component {
           <AppHeader />
           <Route exact path="/" render={this.renderList} />
           <Route path="/list" render={this.renderList} />
-          <Route path="/admin" render={() => <Admin user={user} />} />
+          <Route path="/admin" component={Admin} />
           <Route
             path="/user"
             render={() => <User user={user} loading={userGetWaiting} />}
@@ -60,7 +60,7 @@ const ConnectedApp = connect(state => ({
   user: state.user.user,
   userGetWaiting: state.user.userGetWaiting,
   listsGetWaiting: state.lists.listsGetWaiting,
-  lists: state.lists.lists,
+  lists: state.lists.lists
 }))(App);
 
 const ProviderApp = () =>

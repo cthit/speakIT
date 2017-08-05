@@ -10,23 +10,23 @@ import ListsReducer from "./reducers/Lists";
 const persistedState = loadState();
 
 const mainReducer = combineReducers({
-  user: UserReducer,
-  notes: NotesReducer,
-  lists: ListsReducer
+	user: UserReducer,
+	notes: NotesReducer,
+	lists: ListsReducer
 });
 
 const enhancers = compose(
-  window.__REDUX_DEVTOOLS_EXTENSION__
-    ? window.__REDUX_DEVTOOLS_EXTENSION__()
-    : f => f
+	window.__REDUX_DEVTOOLS_EXTENSION__
+		? window.__REDUX_DEVTOOLS_EXTENSION__()
+		: f => f
 );
 
 let store = createStore(mainReducer, persistedState, enhancers);
 
 store.subscribe(
-  throttle(() => {
-    saveState(store.getState());
-  }, 1000)
+	throttle(() => {
+		saveState(store.getState());
+	}, 1000)
 );
 
 export default store;

@@ -49,7 +49,6 @@ export const Title = styled.div`
 
 export const ListContainer = styled.div`
   display: flex;
-  justify-content: space-between;
   flex-direction: column;
   width: 20em;
   background-color: #ffffff;
@@ -63,7 +62,7 @@ export const ListHeader = styled.div`
   flex-direction: column;
 `;
 
-export const DiscussionTitle = styled.div`
+export const ListTitle = styled.div`
   font-family: Helvetica Neue, Helvetica, Roboto, Arial, sans-serif;
   font-size: 2em;
   height: 2em;
@@ -71,4 +70,36 @@ export const DiscussionTitle = styled.div`
   text-align: center;
   font-weight: bold;
   color: #4a4a4a;
+`;
+
+export const RowContainer = styled(Container)`
+  display: flex;
+  flex-direction: row;
+  justify-content: space-around;
+`;
+
+export const ColumnContainer = styled(Container)`
+  display: flex;
+  flex-direction: column;
+`;
+
+export const SubListTitle = styled.div`
+  font-family: Helvetica Neue, Helvetica, Roboto, Arial, sans-serif;
+  font-size: 1.25em;
+  font-weight: bold;
+  color: #4a4a4a;
+  padding-top: 1.5em;
+  padding-left: 1em;
+`;
+
+export const ListBody = styled.div`
+  display: flex;
+  flex-direction: column;
+  padding: 1em;
+`;
+
+export const HR = styled.hr`
+  width: 18em;
+  border: none;
+  border-top: 1px solid #979797;
 `;

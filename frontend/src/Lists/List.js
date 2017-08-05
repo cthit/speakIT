@@ -11,7 +11,9 @@ import AdminFooter from "./AdminFooter.js";
 import {
 	ListContainer,
 	ListHeader,
-	DiscussionTitle
+	ListTitle,
+	SubListTitle,
+	HR
 } from "../SharedComponents.js";
 
 import store from "../store.js";
@@ -146,9 +148,9 @@ class List extends Component {
 		return (
 			<ListContainer key={list.id}>
 				<ListHeader>
-					<DiscussionTitle>
+					<ListTitle>
 						{list.title}
-					</DiscussionTitle>
+					</ListTitle>
 					{list.status === "open" || user.isAdmin
 						? <SubmitButton
 								disabled={list.updating}
@@ -168,9 +170,9 @@ class List extends Component {
 				{adminAddingUser && this.renderAdminAddUserInputBox()}
 
 				<Scroll speed={0.8} horizontal={false} minScrollSize={1}>
-					<ListTitle>
+					<SubListTitle>
 						Första talarlista ({list.speakersQueue.length})
-					</ListTitle>
+					</SubListTitle>
 					{list.speakersQueue
 						.map((user, index) => createSpeakerRow(user, index))
 						.reduce(
@@ -181,9 +183,9 @@ class List extends Component {
 							[]
 						)}
 
-					<ListTitle>
+					<SubListTitle>
 						Andra talarlista ({list.secondSpeakersQueue.length})
-					</ListTitle>
+					</SubListTitle>
 					{list.secondSpeakersQueue
 						.map((user, index) => createSpeakerRow(user, index))
 						.reduce(
@@ -259,15 +261,6 @@ const Scroll = styled(ScrollArea)`
 	height: 20em;
 `;
 
-const ListTitle = styled.div`
-	font-family: Helvetica Neue, Helvetica, Roboto, Arial, sans-serif;
-	font-size: 1.25em;
-	font-weight: bold;
-	color: #4a4a4a;
-	padding-top: 0.5em;
-	padding-left: 1em;
-`;
-
 const Speaker = styled.div`
 	font-size: 1.5em;
 	padding: 1em 0;
@@ -284,12 +277,6 @@ const CurrentSpeakerArrow = styled(FontAwesome)`
 
 const PlaceHolder = styled(CurrentSpeakerArrow)`
   opacity: 0;
-`;
-
-const HR = styled.hr`
-	width: 18em;
-	border: none;
-	border-top: 1px solid #979797;
 `;
 
 export default List;
