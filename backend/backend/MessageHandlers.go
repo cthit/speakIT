@@ -246,6 +246,10 @@ func (m ListAdminAddUser) handle(userEvent UserEvent) {
 		}
 	}
 	if adminCreatedUser == nil {
+		if m.hub.isUserNickTaken(userEvent.ReceivedUser.Nick) {
+			sendError(userEvent.user.input, "The nick is taken.")
+			return
+		}
 		adminCreatedUser = CreateUser()
 		adminCreatedUser.Nick = userEvent.ReceivedUser.Nick
 		m.hub.addAdminCreatedUser(adminCreatedUser)
