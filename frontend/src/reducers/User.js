@@ -3,6 +3,7 @@ import { USER_UPDATE, USERS_UPDATE, USER_GET_WAITING } from "../actions.js";
 const initialState = {
   user: {},
   users: [],
+  adminCreatedUsers: [],
   userGetWaiting: true
 };
 
