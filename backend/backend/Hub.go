@@ -40,6 +40,11 @@ type Hub struct {
 var store = sessions.NewCookieStore([]byte("this is the secret stuff"))
 
 func CreateHub() Hub {
+	store.Options = &sessions.Options{
+		MaxAge:   86400,
+		HttpOnly: true,
+	}
+
 	reqs := garbler.PasswordStrengthRequirements{
 		MinimumTotalLength: 8,
 		MaximumTotalLength: 8,
@@ -305,11 +310,6 @@ func (hub *Hub) ServeWs(w http.ResponseWriter, r *http.Request) {
 		session.Values[UUID_KEY] = newUser.Id.String()
 		newUser.hubChannel = hub.hubInput
 		hub.addUser(newUser)
-
-		session.Options = &sessions.Options{
-			MaxAge:   86400,
-			HttpOnly: true,
-		}
 
 		err = session.Save(r, w)
 
