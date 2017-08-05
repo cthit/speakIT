@@ -39,7 +39,7 @@ class UserRow extends Component {
 	};
 
 	render() {
-		const { user } = this.props;
+		const { user , removeEnabled} = this.props;
 		const { editing, newNick } = this.state;
 
 		return (
@@ -64,18 +64,19 @@ class UserRow extends Component {
 							name="times"
 							onClick={this.toggleEdit}
 						/>
-					</div>}
-				{!editing &&
+          </div>}
 					<div>
+        {!editing &&
 						<ActionIconPositive
 							name="pencil"
 							onClick={this.toggleEdit}
-						/>
-						<ActionIconNegative
+						/>}
+				{!editing && removeEnabled &&
+					<ActionIconNegative
 							name="trash"
 							onClick={() => this.removeUser(user)}
-						/>
-					</div>}
+						/>}
+					</div>
 
 			</Row>
 		);
