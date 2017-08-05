@@ -11,7 +11,7 @@ import Notes from "./Notes.js";
 
 class ListsView extends Component {
   render() {
-    const { user, lists, loading, notes } = this.props;
+    const { user, lists, loading } = this.props;
 
     if (loading) {
       return <Loading />;
@@ -27,7 +27,7 @@ class ListsView extends Component {
 
         <ListsContainer>
           {lists.map(list => <List key={list.id} list={list} user={user} />)}
-          <Notes notes={notes} />
+          <Notes />
           {user.isAdmin && <CreateList />}
         </ListsContainer>
       </ColumnContainer>

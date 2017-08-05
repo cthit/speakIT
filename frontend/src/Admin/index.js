@@ -1,4 +1,5 @@
 import React, { Component } from "react";
+import { connect } from "react-redux";
 import FontAwesome from "react-fontawesome";
 
 import {
@@ -148,4 +149,14 @@ class Admin extends Component {
   }
 }
 
-export default Admin;
+const mapStateToProps = state => ({
+  user: state.user.user,
+  users: state.user.users,
+  adminCreatedUsers: state.user.adminCreatedUsers
+});
+
+//const mapDispatchToProps = dispatch => ({
+//  onChangeNotes: newNotes => dispatch(notesEdit(newNotes))
+//});
+
+export default connect(mapStateToProps)(Admin);

@@ -1,101 +1,19 @@
-import { compose, createStore } from "redux";
-import {
-	USER_UPDATE,
-	USERS_UPDATE,
-	USER_GET_WAITING,
-	LISTS_UPDATE,
-	LISTS_GET_WAITING,
-	LIST_WAITING,
-	LIST_UPDATE,
-	NOTES_EDIT,
-	ERROR
-} from "./actions.js";
+import { compose, createStore, combineReducers } from "redux";
 
 import throttle from "lodash/throttle";
 
 import { loadState, saveState } from "./localStorage.js";
+import UserReducer from "./reducers/User";
+import NotesReducer from "./reducers/Notes";
+import ListsReducer from "./reducers/Lists";
 
-const initialState = loadState() || {
-	user: {},
-	users: [],
-	adminCreatedUsers: [],
-	listsGetWaiting: true,
-	userGetWaiting: true,
-	lists: []
-};
+const persistedState = loadState();
 
-function speakersList(state = initialState, action) {
-	switch (action.type) {
-		case USER_UPDATE:
-			const { user } = action;
-			return {
-				...state,
-				users: state.users.map(u => (u.id === user.id ? user : u)),
-				user,
-				userGetWaiting: false
-			};
-		case USERS_UPDATE:
-			console.log(action);
-			const { usersObj: { users, adminCreatedUsers } } = action;
-			return {
-				...state,
-				users,
-				adminCreatedUsers: adminCreatedUsers || []
-			};
-		case USER_GET_WAITING:
-			return { ...state, userGetWaiting: true };
-
-		case LISTS_UPDATE:
-			const { lists } = action;
-			return { ...state, lists, listsGetWaiting: false };
-
-		case LIST_UPDATE:
-			const { list } = action;
-
-			const newLists = state.lists.map(l => {
-				if (l.id === list.id) {
-					list.updating = false;
-					return list;
-				} else {
-					return l;
-				}
-			});
-
-			return { ...state, lists: newLists };
-
-		case LISTS_GET_WAITING:
-			return { ...state, listsGetWaiting: true };
-
-		case LIST_WAITING:
-			const { id } = action;
-
-			const updatedLists = state.lists.map(list => {
-				if (list.id === id) {
-					list.updating = true;
-				}
-				return list;
-			});
-
-			return {
-				...state,
-				lists: updatedLists
-			};
-		case NOTES_EDIT:
-			const { value } = action;
-			return {
-				...state,
-				notes: value
-			};
-		case ERROR:
-			return {
-				...state,
-				listsGetWaiting: false,
-				userGetWaiting: false
-			};
-		default:
-			return state;
-	}
-}
+const mainReducer = combineReducers({
+	user: UserReducer,
+	notes: NotesReducer,
+	lists: ListsReducer
+});
 
 const enhancers = compose(
 	window.__REDUX_DEVTOOLS_EXTENSION__
@@ -103,7 +21,7 @@ const enhancers = compose(
 		: f => f
 );
 
-let store = createStore(speakersList, initialState, enhancers);
+let store = createStore(mainReducer, persistedState, enhancers);
 
 store.subscribe(
 	throttle(() => {
