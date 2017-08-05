@@ -58,6 +58,7 @@ class CreateList extends Component {
               autoFocus
             />
             <SubmitButton
+              disabled={discussionTitle.length === 0}
               isShowingPositive={true}
               onPositiveClick={this.createList}
               positiveText="Skapa lista"
