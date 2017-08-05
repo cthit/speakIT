@@ -88,7 +88,7 @@ class Admin extends Component {
     }
     return (
       <div>
-        {users.filter(f).map(u => <UserRow user={u} />)}
+        {users.filter(f).map(u => <UserRow key={u.id} user={u} />)}
       </div>
     );
   };

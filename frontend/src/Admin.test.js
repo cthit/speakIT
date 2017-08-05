@@ -11,6 +11,14 @@ it("renders without crashing", () => {
 				isAdmin: true,
 				id: "ef9711bd-1ac2-4f6f-88a9-12c35aa47fe2"
 			}}
+			users={[
+				{
+					nick: "",
+					isAdmin: true,
+					id: "ef9711bd-1ac2-4f6f-88a9-12c35aa47fe2"
+				}
+			]}
+			adminCreatedUsers={[]}
 		/>,
 		div
 	);
