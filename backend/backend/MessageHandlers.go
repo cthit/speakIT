@@ -222,6 +222,11 @@ func (m ListAdminAddUser) handle(userEvent UserEvent) {
 		return
 	}
 
+	if userEvent.ReceivedUser.Nick == "" {
+		sendError(userEvent.user.input, "Can't have empty nick.")
+		return
+	}
+
 	id, err := uuid.Parse(userEvent.ListId)
 	if err != nil {
 		sendError(userEvent.user.input, err.Error())
@@ -234,22 +239,19 @@ func (m ListAdminAddUser) handle(userEvent UserEvent) {
 	}
 
 	var adminCreatedUser *User
-	adminCreatedUser, ok := m.hub.AdminCreatedUsers[userEvent.ReceivedUser.Id]
-	if !ok {
-		if userEvent.ReceivedUser.Nick == "" {
-			sendError(userEvent.user.input, "Can't have empty nick.")
-			return
+	for _, user := range m.hub.AdminCreatedUsers {
+		if user.Nick == userEvent.ReceivedUser.Nick{
+			adminCreatedUser = user
+			break
 		}
-		if m.hub.isUserNickTaken(userEvent.ReceivedUser.Nick) {
-			sendError(userEvent.user.input, "Nick already taken.")
-			return
-		}
+	}
+	if adminCreatedUser == nil {
 		adminCreatedUser = CreateUser()
 		adminCreatedUser.Nick = userEvent.ReceivedUser.Nick
 		m.hub.addAdminCreatedUser(adminCreatedUser)
 	}
 
-	ok = list.AddUser(adminCreatedUser)
+	ok := list.AddUser(adminCreatedUser)
 	if !ok {
 		sendError(userEvent.user.input, UserAlreadyInList)
 		return

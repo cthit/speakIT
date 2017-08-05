@@ -30,6 +30,7 @@ function speakersList(state = initialState, action) {
 			const { user } = action;
 			return {
 				...state,
+				users: state.users.map(u => (u.id === user.id ? user : u)),
 				user,
 				userGetWaiting: false
 			};
