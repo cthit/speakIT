@@ -16,6 +16,8 @@ import store from "./store.js";
 import { sendClientHello } from "./actions.js";
 import conf from "./config.js";
 
+import EntryPoint from './EntryPoint.js';
+
 class App extends Component {
   componentWillMount() {
     window.backend = backend;
@@ -46,6 +48,7 @@ class App extends Component {
           <Route exact path="/" render={this.renderList} />
           <Route path="/list" render={this.renderList} />
           <Route path="/admin" component={Admin} />
+          <Route path="/test" component={EntryPoint} />
           <Route
             path="/user"
             render={() => <User user={user} loading={userGetWaiting} />}
