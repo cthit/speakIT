@@ -12,9 +12,10 @@ import (
 
 type User struct {
 	Nick       string    `json:"nick"`
-	IsAdmin    bool      `json:"isAdmin"`
 	Id         uuid.UUID `json:"id"`
 	Connected  bool      `json:"connected"`
+	IsAdmin    bool      `json:"isAdmin"`
+	sockets    []*websocket.Conn
 	hubChannel chan UserEvent
 	input      chan messages.SendEvent
 }
@@ -23,21 +24,61 @@ func CreateUser() *User {
 
 	return &User{
 		Nick:       "",
-		IsAdmin:    false,
 		Id:         uuid.New(),
 		Connected:  false,
+		IsAdmin:    false,
+		sockets:    []*websocket.Conn{},
 		hubChannel: nil,
-		input:      nil,
+		input:      make(chan messages.SendEvent),
 	}
 }
 
+func (u *User) addSocket(socket *websocket.Conn) {
+	u.sockets = append(u.sockets, socket)
+}
+
+func (u *User) removeSocket() {
+
+}
+
 func (u *User) ServeWS(conn *websocket.Conn) {
-	conn.SetCloseHandler(u.onWSClose)
-	u.input = make(chan messages.SendEvent)
-	u.Connected = true
-	u.hubChannel <- UserEvent{messageType: messages.USER_CONNECTION_OPENED, user: u}
+	u.sockets = append(u.sockets, conn)
+
+	u.setupCloseHandler(conn)
+
+	if !u.Connected {
+		go u.handleSendEvents()
+		u.Connected = true
+	}
 	go u.receiveFromWebsocket(conn)
-	go u.handleSendEvents(conn)
+	u.hubChannel <- UserEvent{messageType: messages.USER_CONNECTION_OPENED, user: u}
+}
+
+func (u *User) setupCloseHandler(conn *websocket.Conn) {
+	conn.SetCloseHandler(func(code int, text string) error {
+
+		u.sockets = removeSocket(u.sockets, conn)
+		if len(u.sockets) == 0 {
+			u.Connected = false
+		}
+
+		u.hubChannel <- UserEvent{messageType: messages.USER_CONNECTION_CLOSED, user: u}
+		return nil
+	})
+}
+
+func removeSocket(sockets []*websocket.Conn, socket *websocket.Conn) []*websocket.Conn {
+	socketIndex := -1
+	for i, s := range sockets {
+		if s == socket {
+			socketIndex = i
+		}
+	}
+	if socketIndex == -1 {
+		return sockets
+	}
+	return append(sockets[:socketIndex], sockets[socketIndex+1:]...)
+
 }
 
 func (u *User) receiveFromWebsocket(conn *websocket.Conn) {
@@ -75,12 +116,15 @@ func (u *User) receiveFromWebsocket(conn *websocket.Conn) {
 	}
 }
 
-func (u *User) handleSendEvents(conn *websocket.Conn) {
+func (u *User) handleSendEvents() {
 	for {
 		content := <-u.input
-		err := conn.WriteMessage(websocket.TextMessage, []byte(content.String()))
-		if err != nil {
-			break
+		for _, socket := range u.sockets {
+			err := socket.WriteMessage(websocket.TextMessage, []byte(content.String()))
+			if err != nil {
+				log.Printf("Error when writing to socket for user %s: %v ", u.Nick, err)
+				break
+			}
 		}
 	}
 }
@@ -92,11 +136,4 @@ func sendUserResponse(userChannel chan messages.SendEvent, user *User) {
 	} else {
 		userChannel <- messages.SendEvent{messages.USER_UPDATE, userObj}
 	}
-}
-
-func (u *User) onWSClose(code int, text string) error {
-	u.input = nil
-	u.Connected = false
-	u.hubChannel <- UserEvent{messageType: messages.USER_CONNECTION_CLOSED, user: u}
-	return nil
 }
