@@ -1,4 +1,4 @@
-package backend
+package main
 
 import (
 	"encoding/json"
@@ -11,7 +11,7 @@ import (
 	"github.com/gorilla/sessions"
 	"github.com/gorilla/websocket"
 	garbler "github.com/michaelbironneau/garbler/lib"
-	"github.com/tejpbit/talarlista/backend/backend/messages"
+	"github.com/tejpbit/talarlista/backend/messages"
 )
 
 const SESSION_KEY = "talarlista_session"

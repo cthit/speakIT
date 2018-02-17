@@ -1,11 +1,11 @@
-package backend
+package main
 
 import (
 	"encoding/json"
 	"fmt"
 	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
-	"github.com/tejpbit/talarlista/backend/backend/messages"
+	"github.com/tejpbit/talarlista/backend/messages"
 	"log"
 	"strings"
 )

@@ -3,17 +3,15 @@ package main
 import (
 	"github.com/gorilla/context"
 	"github.com/gorilla/mux"
-	"github.com/tejpbit/talarlista/backend/backend"
 	"github.com/urfave/negroni"
 	"log"
 	"net/http"
 )
 
-var hub backend.Hub
 
 func main() {
 	log.SetFlags(log.Lshortfile)
-	hub = backend.CreateHub()
+	hub := CreateHub()
 	hub.Start()
 
 	n := negroni.Classic()

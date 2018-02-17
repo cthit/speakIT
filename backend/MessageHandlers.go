@@ -1,9 +1,9 @@
-package backend
+package main
 
 import (
 	"fmt"
 	"github.com/google/uuid"
-	"github.com/tejpbit/talarlista/backend/backend/messages"
+	"github.com/tejpbit/talarlista/backend/messages"
 	"log"
 )
 
