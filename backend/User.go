@@ -37,10 +37,6 @@ func (u *User) addSocket(socket *websocket.Conn) {
 	u.sockets = append(u.sockets, socket)
 }
 
-func (u *User) removeSocket() {
-
-}
-
 func (u *User) ServeWS(conn *websocket.Conn) {
 	u.sockets = append(u.sockets, conn)
 
