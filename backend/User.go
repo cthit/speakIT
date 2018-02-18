@@ -22,7 +22,7 @@ type User struct {
 
 func CreateUser() *User {
 
-	return &User{
+	u := &User{
 		Nick:       "",
 		Id:         uuid.New(),
 		Connected:  false,
@@ -31,6 +31,10 @@ func CreateUser() *User {
 		hubChannel: nil,
 		input:      make(chan messages.SendEvent),
 	}
+
+	go u.handleSendEvents()
+	
+	return u
 }
 
 func (u *User) addSocket(socket *websocket.Conn) {
@@ -41,15 +45,14 @@ func (u *User) ServeWS(conn *websocket.Conn) {
 	u.sockets = append(u.sockets, conn)
 
 	u.setupCloseHandler(conn)
+	u.Connected = true
 
-	if !u.Connected {
-		go u.handleSendEvents()
-		u.Connected = true
-	}
 	go u.receiveFromWebsocket(conn)
 	u.hubChannel <- UserEvent{messageType: messages.USER_CONNECTION_OPENED, user: u}
 }
 
+// setupCloseHandler sets a callback for conn
+// run for each WS a user has.
 func (u *User) setupCloseHandler(conn *websocket.Conn) {
 	conn.SetCloseHandler(func(code int, text string) error {
 
@@ -63,6 +66,8 @@ func (u *User) setupCloseHandler(conn *websocket.Conn) {
 	})
 }
 
+// removeSockets removes socket from sockets and returns the resulting slice of web socket connections
+// if $socket is not in sockets, return @sockets as is
 func removeSocket(sockets []*websocket.Conn, socket *websocket.Conn) []*websocket.Conn {
 	socketIndex := -1
 	for i, s := range sockets {
@@ -112,6 +117,8 @@ func (u *User) receiveFromWebsocket(conn *websocket.Conn) {
 	}
 }
 
+// handleSendEvents is an inf loop which reads from u.input and writes the content to all the users web sockets.
+// Only one of these should run for each user.
 func (u *User) handleSendEvents() {
 	for {
 		content := <-u.input
