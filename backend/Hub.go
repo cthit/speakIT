@@ -33,7 +33,7 @@ type Hub struct {
 	SpeakerLists      []*SpeakerList
 	connectedUsers    map[uuid.UUID]*User
 	oneTimePasswords  []string
-	hubInput          chan UserEvent
+	input             chan UserEvent
 	messageHandlers   map[string]MessageHandler
 }
 
@@ -72,12 +72,12 @@ func CreateHub() Hub {
 }
 
 func (hub *Hub) Start() error {
-	if hub.hubInput != nil {
+	if hub.input != nil {
 		return errors.New("Hub already running")
 	}
-	hub.hubInput = make(chan UserEvent, 10)
+	hub.input = make(chan UserEvent, 10)
 	for _, user := range hub.Users {
-		user.hubChannel = hub.hubInput
+		user.hubChannel = hub.input
 	}
 
 	go hub.listenForUserEvents()
@@ -100,7 +100,7 @@ func (hub *Hub) AdminBroadcast(sendEvent messages.SendEvent) {
 
 func (hub *Hub) listenForUserEvents() {
 	for {
-		event := <-hub.hubInput
+		event := <-hub.input
 		handler, ok := hub.messageHandlers[event.messageType]
 		if !ok {
 			sendError(event.user.input, fmt.Sprintf("No handler for the topic '%s'.", event.messageType))
@@ -308,7 +308,7 @@ func (hub *Hub) ServeWs(w http.ResponseWriter, r *http.Request) {
 	if session.IsNew {
 		newUser := CreateUser()
 		session.Values[UUID_KEY] = newUser.Id.String()
-		newUser.hubChannel = hub.hubInput
+		newUser.hubChannel = hub.input
 		hub.addUser(newUser)
 
 		err = session.Save(r, w)
