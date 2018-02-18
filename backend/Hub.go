@@ -71,37 +71,37 @@ func CreateHub() Hub {
 	return hub
 }
 
-func (h *Hub) Start() error {
-	if h.hubInput != nil {
+func (hub *Hub) Start() error {
+	if hub.hubInput != nil {
 		return errors.New("Hub already running")
 	}
-	h.hubInput = make(chan UserEvent, 10)
-	for _, user := range h.Users {
-		user.hubChannel = h.hubInput
+	hub.hubInput = make(chan UserEvent, 10)
+	for _, user := range hub.Users {
+		user.hubChannel = hub.hubInput
 	}
 
-	go h.listenForUserEvents()
+	go hub.listenForUserEvents()
 	return nil
 }
 
-func (h *Hub) Broadcast(sendEvent messages.SendEvent) {
-	for _, user := range h.Users {
+func (hub *Hub) Broadcast(sendEvent messages.SendEvent) {
+	for _, user := range hub.Users {
 		user.input <- sendEvent
 	}
 }
 
-func (h *Hub) AdminBroadcast(sendEvent messages.SendEvent) {
-	for _, user := range h.Users {
+func (hub *Hub) AdminBroadcast(sendEvent messages.SendEvent) {
+	for _, user := range hub.Users {
 		if user.IsAdmin {
 			user.input <- sendEvent
 		}
 	}
 }
 
-func (h *Hub) listenForUserEvents() {
+func (hub *Hub) listenForUserEvents() {
 	for {
-		event := <-h.hubInput
-		handler, ok := h.messageHandlers[event.messageType]
+		event := <-hub.hubInput
+		handler, ok := hub.messageHandlers[event.messageType]
 		if !ok {
 			sendError(event.user.input, fmt.Sprintf("No handler for the topic '%s'.", event.messageType))
 			log.Printf("No handler for the topic '%s'", event.messageType)
@@ -111,9 +111,9 @@ func (h *Hub) listenForUserEvents() {
 	}
 }
 
-func (s *Hub) addUserToList(id uuid.UUID, user *User) error {
+func (hub *Hub) addUserToList(id uuid.UUID, user *User) error {
 	listIndex := -1
-	for i, list := range s.SpeakerLists {
+	for i, list := range hub.SpeakerLists {
 		if list.Id == id {
 			listIndex = i
 			break
@@ -122,7 +122,7 @@ func (s *Hub) addUserToList(id uuid.UUID, user *User) error {
 	if listIndex == -1 {
 		return errors.New("Could not find list for provided id")
 	}
-	list := s.SpeakerLists[listIndex]
+	list := hub.SpeakerLists[listIndex]
 	ok := list.AddUser(user)
 	if !ok {
 		return errors.New("User already in list")
@@ -130,9 +130,9 @@ func (s *Hub) addUserToList(id uuid.UUID, user *User) error {
 	return nil
 }
 
-func (s *Hub) removeUserFromList(id uuid.UUID, user *User) error {
+func (hub *Hub) removeUserFromList(id uuid.UUID, user *User) error {
 	listIndex := -1
-	for i, list := range s.SpeakerLists {
+	for i, list := range hub.SpeakerLists {
 		if list.Id == id {
 			listIndex = i
 			break
@@ -141,7 +141,7 @@ func (s *Hub) removeUserFromList(id uuid.UUID, user *User) error {
 	if listIndex == -1 {
 		return errors.New("Could not find list for provided id")
 	}
-	list := s.SpeakerLists[listIndex]
+	list := hub.SpeakerLists[listIndex]
 	ok := list.RemoveUser(user)
 	if !ok {
 		return errors.New("User not in list")
@@ -149,9 +149,9 @@ func (s *Hub) removeUserFromList(id uuid.UUID, user *User) error {
 	return nil
 }
 
-func (h *Hub) deleteList(id uuid.UUID) error {
+func (hub *Hub) deleteList(id uuid.UUID) error {
 	i := -1
-	for index, list := range h.SpeakerLists {
+	for index, list := range hub.SpeakerLists {
 		if list.Id == id {
 			i = index
 		}
@@ -160,15 +160,15 @@ func (h *Hub) deleteList(id uuid.UUID) error {
 		return errors.New("List not found")
 	}
 
-	copy(h.SpeakerLists[i:], h.SpeakerLists[i+1:])
-	h.SpeakerLists[len(h.SpeakerLists)-1] = nil
-	h.SpeakerLists = h.SpeakerLists[:len(h.SpeakerLists)-1]
+	copy(hub.SpeakerLists[i:], hub.SpeakerLists[i+1:])
+	hub.SpeakerLists[len(hub.SpeakerLists)-1] = nil
+	hub.SpeakerLists = hub.SpeakerLists[:len(hub.SpeakerLists)-1]
 	return nil
 }
 
-func (s *Hub) getList(id uuid.UUID) (*SpeakerList, error) {
+func (hub *Hub) getList(id uuid.UUID) (*SpeakerList, error) {
 
-	for _, list := range s.SpeakerLists {
+	for _, list := range hub.SpeakerLists {
 		if id == list.Id {
 			return list, nil
 		}
@@ -176,26 +176,26 @@ func (s *Hub) getList(id uuid.UUID) (*SpeakerList, error) {
 	return nil, errors.New(NoListForUUID)
 }
 
-func (s Hub) getUserFromRequest(req *http.Request) (*User, error) {
+func (hub Hub) getUserFromRequest(req *http.Request) (*User, error) {
 	session, err := store.Get(req, SESSION_KEY)
 	if err != nil {
 		return nil, errors.New("Could not get session from storage")
 	}
-	return s.getUserFromSession(session)
+	return hub.getUserFromSession(session)
 }
 
-func (s Hub) getUserFromSession(session *sessions.Session) (*User, error) {
+func (hub Hub) getUserFromSession(session *sessions.Session) (*User, error) {
 	id, err := getUUIDfromSession(session)
 
 	if err != nil {
 		return nil, err
 	}
 
-	return s.getUser(id)
+	return hub.getUser(id)
 }
 
-func (s Hub) getUser(id uuid.UUID) (*User, error) {
-	user, ok := s.Users[id]
+func (hub Hub) getUser(id uuid.UUID) (*User, error) {
+	user, ok := hub.Users[id]
 
 	if !ok {
 		return nil, errors.New(NoUserForUUID)
@@ -203,13 +203,13 @@ func (s Hub) getUser(id uuid.UUID) (*User, error) {
 	return user, nil
 }
 
-func (h Hub) isUserNickTaken(nick string) bool {
-	for _, user := range h.Users {
+func (hub Hub) isUserNickTaken(nick string) bool {
+	for _, user := range hub.Users {
 		if user.Nick == nick {
 			return true
 		}
 	}
-	for _, user := range h.AdminCreatedUsers {
+	for _, user := range hub.AdminCreatedUsers {
 		if user.Nick == nick {
 			return true
 		}
@@ -217,18 +217,18 @@ func (h Hub) isUserNickTaken(nick string) bool {
 	return false
 }
 
-func (s Hub) addUser(user *User) bool {
-	_, ok := s.Users[user.Id]
+func (hub Hub) addUser(user *User) bool {
+	_, ok := hub.Users[user.Id]
 	if ok {
 		return false
 	}
-	s.Users[user.Id] = user
+	hub.Users[user.Id] = user
 	return true
 }
 
-func (h Hub) updateUser(updatedUser *User) (success bool) {
-	user, inUsers := h.Users[updatedUser.Id]
-	adminCreatedUser, inAdminCreatedUsers := h.AdminCreatedUsers[updatedUser.Id]
+func (hub Hub) updateUser(updatedUser *User) (success bool) {
+	user, inUsers := hub.Users[updatedUser.Id]
+	adminCreatedUser, inAdminCreatedUsers := hub.AdminCreatedUsers[updatedUser.Id]
 	success = inUsers != inAdminCreatedUsers
 	if !success {
 		return
@@ -243,28 +243,28 @@ func (h Hub) updateUser(updatedUser *User) (success bool) {
 	return
 }
 
-func (h Hub) deleteUser(user *User) {
-	for _, list := range h.SpeakerLists {
+func (hub Hub) deleteUser(user *User) {
+	for _, list := range hub.SpeakerLists {
 		list.RemoveUser(user)
 	}
-	delete(h.AdminCreatedUsers, user.Id)
-	delete(h.Users, user.Id)
-	delete(h.connectedUsers, user.Id)
+	delete(hub.AdminCreatedUsers, user.Id)
+	delete(hub.Users, user.Id)
+	delete(hub.connectedUsers, user.Id)
 }
 
-func (h Hub) addAdminCreatedUser(user *User) bool {
-	_, ok := h.AdminCreatedUsers[user.Id]
+func (hub Hub) addAdminCreatedUser(user *User) bool {
+	_, ok := hub.AdminCreatedUsers[user.Id]
 	if ok {
 		return false
 	}
 	user.Id = uuid.New()
-	h.AdminCreatedUsers[user.Id] = user
+	hub.AdminCreatedUsers[user.Id] = user
 	return true
 }
 
-func (s *Hub) tryAdminLogin(user *User, password string) bool {
+func (hub *Hub) tryAdminLogin(user *User, password string) bool {
 	passwordIndex := -1
-	for i, k := range s.oneTimePasswords {
+	for i, k := range hub.oneTimePasswords {
 		if k == password {
 			passwordIndex = i
 			break
@@ -274,7 +274,7 @@ func (s *Hub) tryAdminLogin(user *User, password string) bool {
 	ok := passwordIndex != -1
 	if ok {
 		user.IsAdmin = true
-		s.oneTimePasswords = append(s.oneTimePasswords[:passwordIndex], s.oneTimePasswords[passwordIndex+1:]...)
+		hub.oneTimePasswords = append(hub.oneTimePasswords[:passwordIndex], hub.oneTimePasswords[passwordIndex+1:]...)
 	}
 	return ok
 }
