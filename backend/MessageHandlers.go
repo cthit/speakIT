@@ -240,7 +240,7 @@ func (m ListAdminAddUser) handle(userEvent UserEvent) {
 
 	var adminCreatedUser *User
 	for _, user := range m.hub.AdminCreatedUsers {
-		if user.Nick == userEvent.ReceivedUser.Nick{
+		if user.Nick == userEvent.ReceivedUser.Nick {
 			adminCreatedUser = user
 			break
 		}
