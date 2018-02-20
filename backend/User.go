@@ -20,10 +20,12 @@ type User struct {
 	input      chan messages.SendEvent
 }
 
+var userCounter = 0
+
 func CreateUser() *User {
 
 	u := &User{
-		Nick:       "",
+		Nick:       fmt.Sprintf("Antendee_%d", userCounter),
 		Id:         uuid.New(),
 		Connected:  false,
 		IsAdmin:    false,
@@ -31,6 +33,7 @@ func CreateUser() *User {
 		hubChannel: nil,
 		input:      make(chan messages.SendEvent),
 	}
+	userCounter += 1
 
 	go u.handleSendEvents()
 	
