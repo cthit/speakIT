@@ -6,13 +6,15 @@ import { loadState, saveState } from "./localStorage.js";
 import UserReducer from "./reducers/User";
 import NotesReducer from "./reducers/Notes";
 import ListsReducer from "./reducers/Lists";
+import PasswordReducer from "./reducers/Passwords";
 
 const persistedState = loadState();
 
 const mainReducer = combineReducers({
 	user: UserReducer,
 	notes: NotesReducer,
-	lists: ListsReducer
+        lists: ListsReducer,
+        password: PasswordReducer
 });
 
 const enhancers = compose(

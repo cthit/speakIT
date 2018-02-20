@@ -277,6 +277,8 @@ func (hub *Hub) tryAdminLogin(user *User, password string) bool {
 	return ok
 }
 
+type PasswordListResponse struct {
+	Passwords []string `json:"passwords"`
 }
 
 func (hub *Hub) generateNewPassword() {
@@ -286,6 +288,16 @@ func (hub *Hub) generateNewPassword() {
 	}
 	log.Printf("Generated password: %s", newPassword)
 	hub.oneTimePasswords = append(hub.oneTimePasswords, newPassword)
+}
+
+func createPasswordListResponse(passwordList []string) (messages.SendEvent, error) {
+	response := PasswordListResponse{passwordList}
+	jsonObj, err := json.Marshal(response)
+	if err != nil {
+		return messages.SendEvent{}, err
+	} else {
+		return messages.SendEvent{messages.ADMIN_UPDATE_PASSWORD_LIST, jsonObj}, nil
+	}
 }
 
 func getUUIDfromSession(session *sessions.Session) (uuid.UUID, error) {

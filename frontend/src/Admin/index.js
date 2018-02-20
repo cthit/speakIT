@@ -21,7 +21,12 @@ import {
 
 import SubmitButton from "../SubmitButton.js";
 import UserRow from "./UserRow.js";
-import { requestAdminLogin } from "../actions.js";
+import {
+  requestAdminLogin,
+  requestAdminGenerateNewPassword
+} from "../actions.js";
+
+import store from "../store.js";
 
 class Admin extends Component {
   constructor(props) {
@@ -35,6 +40,9 @@ class Admin extends Component {
 
   attemptAuth = () => {
     requestAdminLogin(this.state.authCode);
+
+  requestNewPassword = () => {
+    store.dispatch(requestAdminGenerateNewPassword());
   };
 
   handleAuthCodeChange = event => {
@@ -101,8 +109,7 @@ class Admin extends Component {
       return this.renderLoginPromp();
     }
 
-    const { users, adminCreatedUsers } = this.props;
-
+    const { users, adminCreatedUsers, passwords } = this.props;
     return (
       <RowContainer>
 
@@ -141,6 +148,15 @@ class Admin extends Component {
                 Lösenord
               </ListTitle>
             </ListHeader>
+            <SubmitButton
+              type="button"
+              value="Send"
+              onPositiveClick={this.requestNewPassword}
+              positiveText="Create password"
+              isShowingPositive={true}
+            />
+
+            <div> {passwords.map(x => <Row> {x} </Row>)} </div>
           </ListContainer>
         </ColumnContainer>
 
@@ -152,7 +168,8 @@ class Admin extends Component {
 const mapStateToProps = state => ({
   user: state.user.user,
   users: state.user.users,
-  adminCreatedUsers: state.user.adminCreatedUsers
+  adminCreatedUsers: state.user.adminCreatedUsers,
+  passwords: state.password.passwords
 });
 
 //const mapDispatchToProps = dispatch => ({
