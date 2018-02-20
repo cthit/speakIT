@@ -20,7 +20,7 @@ class AdminToolBar extends Component {
       <ToolBar className={className}>
         <ToolBarItem onClick={onNextClick}>
           <Icon name="stack-overflow" size="2x" flip="horizontal" />
-          <ItemText>Nästa</ItemText>
+          <ItemText>Next speaker</ItemText>
         </ToolBarItem>
         <ToolBarItem
           style={debateBackground}
@@ -28,11 +28,11 @@ class AdminToolBar extends Component {
             setDiscussionStatus(discussionIsOpen ? "closed" : "open")}
         >
           <Icon name="users" size="2x" />
-          <ItemText>Streck i debatten</ItemText>
+          <ItemText>Call for a vote</ItemText>
         </ToolBarItem>
         <ToolBarItem onClick={onAddUser}>
           <Icon name="user-plus" size="2x" />
-          <ItemText>Lägg till person</ItemText>
+          <ItemText>Add person</ItemText>
         </ToolBarItem>
       </ToolBar>
     );

@@ -7,7 +7,7 @@ class AdminFooter extends Component {
 		const { className, onClick } = this.props;
 		return (
 			<Footer className={className} onClick={onClick}>
-				Avsluta diskussionen <FontAwesome name="trash" />
+				End discussion <FontAwesome name="trash" />
 			</Footer>
 		);
 	}

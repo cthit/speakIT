@@ -99,7 +99,7 @@ class User extends Component {
           <Row>
             <RowContent>
               <SubmitButton
-                positiveText="Spara"
+                positiveText="Save"
                 isShowingPositive={true}
                 type="button"
                 value="Spara"

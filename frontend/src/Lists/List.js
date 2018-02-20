@@ -157,11 +157,11 @@ class List extends Component {
 								isShowingPositive={!userIsPresent}
 								onNegativeClick={this.unregisterTalkRequest}
 								onPositiveClick={this.registerTalkRequest}
-								positiveText="Skriv upp mig"
-								negativeText="Stryk mig"
+								positiveText="Add me"
+								negativeText="Remove me"
 							/>
 						: <DiscussionClosedLabel>
-								Streck i debatten
+								Debate closed
 							</DiscussionClosedLabel>}
 					{user.isAdmin &&
 						this.renderAdminTools(list.status === "open", list.id)}
@@ -171,7 +171,7 @@ class List extends Component {
 
 				<Scroll speed={0.8} horizontal={false} minScrollSize={1}>
 					<SubListTitle>
-						Första talarlista ({list.speakersQueue.length})
+						First speakers list ({list.speakersQueue.length})
 					</SubListTitle>
 					{list.speakersQueue
 						.map((user, index) => createSpeakerRow(user, index))
@@ -184,7 +184,7 @@ class List extends Component {
 						)}
 
 					<SubListTitle>
-						Andra talarlista ({list.secondSpeakersQueue.length})
+						Second speakers list ({list.secondSpeakersQueue.length})
 					</SubListTitle>
 					{list.secondSpeakersQueue
 						.map((user, index) => createSpeakerRow(user, index))

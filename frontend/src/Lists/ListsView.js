@@ -19,12 +19,6 @@ class ListsView extends Component {
 
     return (
       <ColumnContainer>
-        <Row>
-          <RowContent>
-            Du är: {user.nick}
-          </RowContent>
-        </Row>
-
         <MainContainer>
           <ListContainer numberOfLists={lists.length} >
             {lists.map((list, i) => <List key={list.id} list={list} user={user} inactive={i < lists.length - 1} />)}

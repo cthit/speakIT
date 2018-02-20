@@ -109,20 +109,20 @@ class Admin extends Component {
           <ListContainer>
             <ListHeader>
               <ListTitle>
-                Användare
+                Users
               </ListTitle>
             </ListHeader>
 
             <ListBody>
-              <SubListTitle>Aktiva</SubListTitle>
+              <SubListTitle>Active</SubListTitle>
               <HR />
               {this.renderUsers(users, u => u.connected)}
 
-              <SubListTitle>Inaktiva</SubListTitle>
+              <SubListTitle>Inactive</SubListTitle>
               <HR />
               {this.renderUsers(users, u => !u.connected)}
 
-              <SubListTitle>Skapade av admin</SubListTitle>
+              <SubListTitle>Created by admin</SubListTitle>
               <HR />
               {this.renderUsers(adminCreatedUsers)}
 
@@ -136,7 +136,7 @@ class Admin extends Component {
           <ListContainer>
             <ListHeader>
               <ListTitle>
-                Lösenord
+                Passwords
               </ListTitle>
             </ListHeader>
           </ListContainer>

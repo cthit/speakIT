@@ -11,7 +11,7 @@ class AppHeader extends Component {
         <HeaderContainer>
           <Header>
             <Title>
-              speakIT <SmallTitle>Digital talarlista</SmallTitle>
+              speakIT <SmallTitle>Digital speakers list</SmallTitle>
             </Title>
             <Link to="/">
               <ITLogo src={itlogo} />
@@ -21,8 +21,8 @@ class AppHeader extends Component {
 
         <NavigationContainer>
           <Navigation>
-            <NavigationItem to="/user">Användare</NavigationItem>
-            <NavigationItem to="/list">Listor</NavigationItem>
+            <NavigationItem to="/user">User</NavigationItem>
+            <NavigationItem to="/list">Lists</NavigationItem>
             <NavigationItem to="/admin">Admin</NavigationItem>
           </Navigation>
         </NavigationContainer>

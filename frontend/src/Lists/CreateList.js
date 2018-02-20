@@ -52,7 +52,7 @@ class CreateList extends Component {
         <ListHeader>
           <Form onSubmit={this.createList}>
             <DiscussionTitle
-              placeholder="Ny diskussion"
+              placeholder="New discussion"
               onChange={this.titleChange}
               value={discussionTitle}
               autoFocus
@@ -61,7 +61,7 @@ class CreateList extends Component {
               disabled={discussionTitle.length === 0}
               isShowingPositive={true}
               onPositiveClick={this.createList}
-              positiveText="Skapa lista"
+              positiveText="Create list"
             />
           </Form>
           <AdminToolBarPlaceholder
@@ -71,9 +71,9 @@ class CreateList extends Component {
         </ListHeader>
 
         <Scroll speed={0.8} horizontal={false} minScrollSize={1}>
-          <ListTitle>Första talarlista (0)</ListTitle>
+          <ListTitle>First speakers list (0)</ListTitle>
 
-          <ListTitle>Andra talarlista (0)</ListTitle>
+          <ListTitle>Second speakers list (0)</ListTitle>
         </Scroll>
         <AdminFooterPlaceholder />
       </ListContainer>
