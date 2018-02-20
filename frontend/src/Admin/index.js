@@ -105,9 +105,7 @@ class Admin extends Component {
 
     return (
       <RowContainer>
-
         <ColumnContainer>
-
           <ListContainer>
             <ListHeader>
               <ListTitle>

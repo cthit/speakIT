@@ -11,7 +11,7 @@ class AppHeader extends Component {
         <HeaderContainer>
           <Header>
             <Title>
-              speakIT <SmallTitle>digital talarlista</SmallTitle>
+              speakIT <SmallTitle>Digital talarlista</SmallTitle>
             </Title>
             <Link to="/">
               <ITLogo src={itlogo} />
@@ -36,11 +36,10 @@ const HeaderContainer = styled.div`
   flex-direction: column;
   align-items: center;
   justify-content: space-around;
-  height: 250px;
+  padding: 1rem 1rem;
 `;
 
 const Banner = styled.div`
-  height: 250px;
   background-color: #ffffff;
   box-shadow: 0 0 9px 2px rgba(0, 0, 0, 0.3);
   margin-bottom: 5rem;
@@ -57,35 +56,66 @@ const Header = styled.header`
 `;
 
 const ITLogo = styled.img`
-  width: 142px;
-  height: 142px;
+  @media (min-width: 900px) {
+    width: 96px;
+  }
+  @media (max-width: 900px) {
+    display: none;
+  }
 `;
 
 const Title = styled.div`
-  height: 68px;
   font-family: Helvetica Neue, Helvetica, Roboto, Arial, sans-serif;
-  font-size: 3rem;
   font-weight: 500;
-  color: #4a4a4a;
+  color: #0a0a0a;
+  @media (min-width: 900px) {
+    font-size: 3rem;
+  }
+  @media (max-width: 900px) {
+    font-size: 2rem;
+  }
 `;
 
 const SmallTitle = styled.small`
   font-weight: 200;
-  font-size: 80%;
+  color: #4a4a4a;
+  @media (min-width: 900px) {
+    font-size: 80%;
+  }
+  @media (max-width: 900px) {
+    display: block;
+    margin-top: 10px;
+    font-size: 1.2rem;
+  }
 `;
 
 const NavigationContainer = styled.div`
-  height: 3em;
   box-shadow: 0 5px 5px 0 rgba(0, 0, 0, 0.3);
   background-color: #c4c4c4;
   display: flex;
   justify-content: space-around;
 `;
 
-const Navigation = styled.nav`display: flex;`;
+const Navigation = styled.nav`
+  display: flex;
+  @media (min-width: 900px) {
+    flex-direction: row;
+  }
+  @media (max-width: 900px) {
+    flex-direction: column;
+    justify-content: space-around;
+    width: 100%;
+  }
+`;
 
 const NavigationItem = styled(Link)`
-  width: 200px;
+  @media (min-width: 900px) {
+    width: 200px;
+  }
+  @media (max-width: 900px) {
+    width: 100%;
+  }
+  min-height: 2em;
   display: flex;
   align-items: center;
   justify-content: space-around;
