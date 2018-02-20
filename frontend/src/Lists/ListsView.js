@@ -29,10 +29,8 @@ class ListsView extends Component {
               />
             )}
           </ListContainer>
-          <Row>
-            {user.isAdmin && <CreateList />}
-            <Notes />
-          </Row>
+          {user.isAdmin && <CreateList />}
+          <Notes />
         </MainContainer>
       </ColumnContainer>
     );
