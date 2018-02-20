@@ -39,7 +39,8 @@ class Admin extends Component {
   }
 
   attemptAuth = () => {
-    requestAdminLogin(this.state.authCode);
+    store.dispatch(requestAdminLogin(this.state.authCode));
+  };
 
   requestNewPassword = () => {
     store.dispatch(requestAdminGenerateNewPassword());
