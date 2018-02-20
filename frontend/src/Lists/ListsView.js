@@ -26,7 +26,7 @@ class ListsView extends Component {
         </Row>
 
         <MainContainer>
-          <ListContainer width={(lists.length - 2) * 20}>
+          <ListContainer numberOfLists={lists.length} >
             {lists.map((list, i) => <List key={list.id} list={list} user={user} inactive={i < lists.length - 1} />)}
           </ListContainer>
           {user.isAdmin && <CreateList />}
@@ -38,11 +38,21 @@ class ListsView extends Component {
 }
 
 const ListContainer = Row.extend`
-  margin-left: -${props => props.width}em;
+  margin-left: -${props => (props.numberOfLists - 2) * 20}em;
+  align-self: ${props => (props.numberOfLists > 1) ? 'flex-end' : 'center'};
+  margin-bottom: 2em;
 `;
 
-const MainContainer = styled(Row)`
+const MainContainer = Row.extend`
   padding-top: 2em;
+
+  @media (min-width: 900px) {
+    flex-direction: row;
+  }
+  @media (max-width: 900px) {
+    flex-direction: column;
+    align-items: center;
+  }
 `;
 
 export default ListsView;
