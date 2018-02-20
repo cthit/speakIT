@@ -8,7 +8,7 @@ jobs:
       - checkout:
           path: /go/src/github.com/tejpbit/talarlista/
       - run: go get -d
-      - run: go build main.go
+      - run: go build *.go
 
   build-frontend:
     working_directory: ~/talarlista/frontend
