@@ -41,7 +41,7 @@ const HeaderContainer = styled.div`
 
 const Banner = styled.div`
   background-color: #ffffff;
-  box-shadow: 0 0 9px 2px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 0 15px rgba(0, 0, 0, .3);
   margin-bottom: 5rem;
 `;
 
@@ -90,8 +90,7 @@ const SmallTitle = styled.small`
 `;
 
 const NavigationContainer = styled.div`
-  box-shadow: 0 5px 5px 0 rgba(0, 0, 0, 0.3);
-  background-color: #c4c4c4;
+  border-top: 1px solid #ddd;
   display: flex;
   justify-content: space-around;
 `;
@@ -119,7 +118,6 @@ const NavigationItem = styled(Link)`
   display: flex;
   align-items: center;
   justify-content: space-around;
-  background-color: #c4c4c4;
   text-decoration: none;
   color: #4a4a4a;
   font-family: AvenirNext;
