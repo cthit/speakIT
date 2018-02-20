@@ -1,7 +1,6 @@
 import React, { Component } from "react";
-import styled from "styled-components";
 
-import { Row, RowContent, ColumnContainer } from "../SharedComponents.js";
+import { Row, ColumnContainer } from "../SharedComponents.js";
 
 import Loading from "../loading.js";
 
@@ -38,8 +37,6 @@ const ListContainer = Row.extend`
 `;
 
 const MainContainer = Row.extend`
-  padding-top: 2em;
-
   @media (min-width: 900px) {
     flex-direction: row;
   }

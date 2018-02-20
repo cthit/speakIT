@@ -14,16 +14,17 @@ class AdminFooter extends Component {
 }
 
 const Footer = styled.div`
-	background-color: #f5f5f5;
 	line-height: 2.5em;
 	text-align: center;
+	cursor: pointer;
 	color: #4990e2;
-	:hover {
-		opacity: 0.7;
-	}
-	:active {
-		opacity: 0.9;	
-	}
+	background-color: #f5f5f5;
+  :hover {
+    background-color: #e5e5e5;
+  }
+  :active {
+    background-color: #d5d5d5;
+  }
 `;
 
 export default AdminFooter;

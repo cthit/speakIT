@@ -177,9 +177,7 @@ class List extends Component {
 						.map((user, index) => createSpeakerRow(user, index))
 						.reduce(
 							(acc, item, i) =>
-								acc.concat(
-									i === 0 ? [item] : [<HR key={i} />, item]
-								),
+								acc.concat(i === 0 ? [item] : [<HR key={i} />, item]),
 							[]
 						)}
 
@@ -190,9 +188,7 @@ class List extends Component {
 						.map((user, index) => createSpeakerRow(user, index))
 						.reduce(
 							(acc, item, i) =>
-								acc.concat(
-									i === 0 ? [item] : [<HR key={i} />, item]
-								),
+								acc.concat(i === 0 ? [item] : [<HR key={i} />, item]),
 							[]
 						)}
 				</Scroll>

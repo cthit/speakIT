@@ -58,13 +58,13 @@ const ToolBarItem = styled.div`
   text-align: center;
   padding: 1.5em 0;
   line-height: 2em;
-  background-color: #f5f5f5;
   color: #4990e2;
+  background-color: #f5f5f5;
   :hover {
-    background-color: #fafafa;
+    background-color: #e5e5e5;
   }
   :active {
-    background-color: #e5e5e5;
+    background-color: #d5d5d5;
   }
 `;
 

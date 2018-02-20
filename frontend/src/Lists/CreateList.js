@@ -120,11 +120,14 @@ const ListContainerPlaceholder = styled.div`
   min-height: 18em;
   opacity: 0.5;
   :hover {
-    opacity: 0.7;
+    opacity: 0.8;
+    box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.8);
   }
   :active {
-    opacity: 0.9;
+    opacity: 1.0;
+    box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 1.0);
   }
+  cursor: pointer;
 `;
 
 const AdminToolBarPlaceholder = styled(AdminToolBar)`
