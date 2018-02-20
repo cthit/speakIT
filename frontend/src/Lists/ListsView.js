@@ -27,7 +27,7 @@ class ListsView extends Component {
 
         <MainContainer>
           <ListContainer width={(lists.length - 2) * 20}>
-            {lists.map(list => <List key={list.id} list={list} user={user} />)}
+            {lists.map((list, i) => <List key={list.id} list={list} user={user} inactive={i < lists.length - 1} />)}
           </ListContainer>
           {user.isAdmin && <CreateList />}
           <Notes />

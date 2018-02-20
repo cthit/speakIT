@@ -139,14 +139,14 @@ class List extends Component {
 
 	render() {
 		const { adminAddingUser } = this.state;
-		const { list, user } = this.props;
+		const { list, user, inactive } = this.props;
 
 		const userIsPresent = list.speakersQueue
 			.concat(list.secondSpeakersQueue)
 			.some(u => u.id === user.id);
 
 		return (
-			<ListContainer key={list.id}>
+			<ListContainer key={list.id} inactive={inactive}>
 				<ListHeader>
 					<ListTitle>
 						{list.title}

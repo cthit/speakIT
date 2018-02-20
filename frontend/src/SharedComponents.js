@@ -54,6 +54,9 @@ export const ListContainer = styled.div`
   background-color: #ffffff;
   box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.5);
   min-height: 18em;
+  opacity: ${props => props.inactive ? '0.6' : '1.0'};
+  transform: ${props => props.inactive ? 'scale(0.95)' : 'scale(1.0)'};
+  margin-left: ${props => props.inactive ? 'margin-left: 0em' : '-2em'};
 `;
 
 export const ListHeader = styled.div`
