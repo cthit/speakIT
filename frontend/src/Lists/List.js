@@ -265,7 +265,7 @@ const AdminUserNickInput = styled.input`
 `;
 
 const DiscussionClosedLabel = styled.div`
-	background-color: #e80808;
+	background-color: #f4512e;
 	color: white;
 	border: none;
 	outline: none;

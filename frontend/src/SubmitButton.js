@@ -24,17 +24,19 @@ class SubmitButton extends Component {
 }
 
 export const StyledSubmitButton = styled.input`
-	background-color: #7ed321;
+	background-color: #00A8E2;
+	transition: background-color .25s ease-out, color .25s ease-out;
+	color: #fff;
 	border: none;
 	outline: none;
 	padding: 15px 45px;
 	font-size: 1.1em;
 	:hover {
 		cursor: pointer;
-		background-color: #a4e063;
+		background-color: #0090c2;
 	}
 	:active {
-		background-color: #71bd1d;
+		background-color: #006b8f;
 	}
 	:disabled {
 		background-color: #c4c4c4;

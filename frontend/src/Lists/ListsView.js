@@ -19,11 +19,20 @@ class ListsView extends Component {
     return (
       <ColumnContainer>
         <MainContainer>
-          <ListContainer numberOfLists={lists.length} >
-            {lists.map((list, i) => <List key={list.id} list={list} user={user} inactive={i < lists.length - 1} />)}
+          <ListContainer numberOfLists={lists.length}>
+            {lists.map((list, i) =>
+              <List
+                key={list.id}
+                list={list}
+                user={user}
+                inactive={i < lists.length - 1}
+              />
+            )}
           </ListContainer>
-          {user.isAdmin && <CreateList />}
-          <Notes />
+          <Row>
+            {user.isAdmin && <CreateList />}
+            <Notes />
+          </Row>
         </MainContainer>
       </ColumnContainer>
     );
@@ -32,13 +41,15 @@ class ListsView extends Component {
 
 const ListContainer = Row.extend`
   margin-left: -${props => (props.numberOfLists - 2) * 20}em;
-  align-self: ${props => (props.numberOfLists > 1) ? 'flex-end' : 'center'};
+  align-self: ${props => (props.numberOfLists > 1 ? "flex-end" : "center")};
   margin-bottom: 2em;
+  transition: all 1000ms;
 `;
 
 const MainContainer = Row.extend`
   @media (min-width: 900px) {
     flex-direction: row;
+    justify-content: space-around;
   }
   @media (max-width: 900px) {
     flex-direction: column;
