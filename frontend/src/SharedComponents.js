@@ -59,10 +59,10 @@ export const ListContainer = styled.div`
   box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.5);
   min-height: 18em;
   margin-top: 1em;
-  opacity: ${props => props.inactive ? '0.6' : '1.0'};
-  transform: ${props => props.inactive ? 'scale(0.95)' : 'scale(1.0)'};
-  margin-right: ${props => props.inactive ? '-2em' : '0em'};
-  margin-left: ${props => props.inactive ? '2em' : '0em'};
+  opacity: ${props => (props.inactive ? "0.6" : "1.0")};
+  transform: ${props => (props.inactive ? "scale(0.95)" : "scale(1.0)")};
+  margin-right: ${props => (props.inactive ? "-2em" : "0em")};
+  margin-left: ${props => (props.inactive ? "2em" : "0em")};
 `;
 
 export const ListHeader = styled.div`
@@ -117,4 +117,15 @@ export const HR = styled.hr`
   width: 18em;
   border: none;
   border-top: 1px solid #979797;
+`;
+
+export const ToolBarButton = styled.div`
+  cursor: ${props => (props.inactive ? "" : "pointer")};
+  background-color: ${props => (props.inactive ? "#d8d8d8" : "#f5f5f5")};
+  :hover {
+    background-color: ${props => (props.inactive ? "#d8d8d8" : "#e5e5e5")};
+  }
+  :active {
+    background-color: ${props => (props.inactive ? "#d8d8d8" : "#d5d5d5")};
+  }
 `;
