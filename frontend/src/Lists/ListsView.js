@@ -25,17 +25,23 @@ class ListsView extends Component {
           </RowContent>
         </Row>
 
-        <ListsContainer>
-          {lists.map(list => <List key={list.id} list={list} user={user} />)}
-          <Notes />
+        <MainContainer>
+          <ListContainer width={(lists.length - 2) * 20}>
+            {lists.map(list => <List key={list.id} list={list} user={user} />)}
+          </ListContainer>
           {user.isAdmin && <CreateList />}
-        </ListsContainer>
+          <Notes />
+        </MainContainer>
       </ColumnContainer>
     );
   }
 }
 
-const ListsContainer = styled(Row)`
+const ListContainer = Row.extend`
+  margin-left: -${props => props.width}em;
+`;
+
+const MainContainer = styled(Row)`
   padding-top: 2em;
 `;
 
