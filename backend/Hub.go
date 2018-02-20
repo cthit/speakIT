@@ -62,6 +62,8 @@ func CreateHub() Hub {
 	}
 
 	hub.generateNewPassword()
+	hub.generateNewPassword()
+	hub.generateNewPassword()
 
 	hub.messageHandlers = CreateHandlers(&hub)
 	return hub
