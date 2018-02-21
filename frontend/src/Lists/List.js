@@ -57,25 +57,41 @@ class List extends Component {
 	};
 
 	setDiscussionStatus = status => {
+		if (this.props.inactive) {
+			return;
+		}
+
 		store.dispatch(requestSetDiscussionStatus(this.props.list.id, status));
 	};
 
 	deleteList = () => {
+		if (this.props.inactive) {
+			return;
+		}
+
 		const { list: { id } } = this.props;
 		store.dispatch(requestDeleteList(id));
 	};
 
 	nextSpeaker = () => {
+		if (this.props.inactive) {
+			return;
+		}
+
 		store.dispatch(requestPopList(this.props.list.id));
 	};
 
 	adminAddUserToggle = () => {
+		if (this.props.inactive) {
+			return;
+		}
+
 		this.setState({
 			adminAddingUser: !this.state.adminAddingUser
 		});
 	};
 
-	renderAdminTools = (discussionIsOpen, listId) => {
+	renderAdminTools = (discussionIsOpen, listId, inactive) => {
 		return (
 			<AdminToolBar
 				discussionIsOpen={discussionIsOpen}
@@ -83,6 +99,7 @@ class List extends Component {
 				listId={listId}
 				onNextClick={this.nextSpeaker}
 				onAddUser={this.adminAddUserToggle}
+				inactive={inactive}
 			/>
 		);
 	};
@@ -120,6 +137,10 @@ class List extends Component {
 	};
 
 	adminAddUser = () => {
+		if (this.props.inactive) {
+			return;
+		}
+
 		const { adminAddUserNick } = this.state;
 		const { list: { id } } = this.props;
 		if (adminAddUserNick === "") {
@@ -133,70 +154,66 @@ class List extends Component {
 		store.dispatch(requestListAdminAddUser(id, adminAddUserNick));
 	};
 
-	renderAdminFooter = listId => {
-		return <AdminFooter onClick={this.deleteList} />;
+	renderAdminFooter = (listId, inactive) => {
+		return <AdminFooter onClick={this.deleteList} inactive={inactive} />;
 	};
 
 	render() {
 		const { adminAddingUser } = this.state;
-		const { list, user } = this.props;
+		const { list, user, inactive } = this.props;
 
 		const userIsPresent = list.speakersQueue
 			.concat(list.secondSpeakersQueue)
 			.some(u => u.id === user.id);
 
 		return (
-			<ListContainer key={list.id}>
+			<ListContainer key={list.id} inactive={inactive}>
 				<ListHeader>
 					<ListTitle>
 						{list.title}
 					</ListTitle>
 					{list.status === "open" || user.isAdmin
 						? <SubmitButton
-								disabled={list.updating}
+								disabled={list.updating || inactive}
 								isShowingPositive={!userIsPresent}
 								onNegativeClick={this.unregisterTalkRequest}
 								onPositiveClick={this.registerTalkRequest}
-								positiveText="Skriv upp mig"
-								negativeText="Stryk mig"
+								positiveText="Add me"
+								negativeText="Remove me"
 							/>
 						: <DiscussionClosedLabel>
-								Streck i debatten
+								Debate closed
 							</DiscussionClosedLabel>}
 					{user.isAdmin &&
-						this.renderAdminTools(list.status === "open", list.id)}
+						this.renderAdminTools(list.status === "open", list.id, inactive)}
 				</ListHeader>
 
 				{adminAddingUser && this.renderAdminAddUserInputBox()}
 
 				<Scroll speed={0.8} horizontal={false} minScrollSize={1}>
 					<SubListTitle>
-						Första talarlista ({list.speakersQueue.length})
+						First speakers list ({list.speakersQueue.length})
 					</SubListTitle>
 					{list.speakersQueue
 						.map((user, index) => createSpeakerRow(user, index))
 						.reduce(
 							(acc, item, i) =>
-								acc.concat(
-									i === 0 ? [item] : [<HR key={i} />, item]
-								),
+								acc.concat(i === 0 ? [item] : [<HR key={i} />, item]),
 							[]
 						)}
 
 					<SubListTitle>
-						Andra talarlista ({list.secondSpeakersQueue.length})
+						Second speakers list ({list.secondSpeakersQueue.length})
 					</SubListTitle>
 					{list.secondSpeakersQueue
 						.map((user, index) => createSpeakerRow(user, index))
 						.reduce(
 							(acc, item, i) =>
-								acc.concat(
-									i === 0 ? [item] : [<HR key={i} />, item]
-								),
+								acc.concat(i === 0 ? [item] : [<HR key={i} />, item]),
 							[]
 						)}
 				</Scroll>
-				{user.isAdmin && this.renderAdminFooter(list.Id)}
+				{user.isAdmin && this.renderAdminFooter(list.Id, inactive)}
 			</ListContainer>
 		);
 	}
@@ -248,7 +265,7 @@ const AdminUserNickInput = styled.input`
 `;
 
 const DiscussionClosedLabel = styled.div`
-	background-color: #e80808;
+	background-color: #f4512e;
 	color: white;
 	border: none;
 	outline: none;

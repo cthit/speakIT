@@ -7,80 +7,72 @@ import store from "../store.js";
 import { requestUserDelete, requestUserUpdate } from "../actions.js";
 
 class UserRow extends Component {
-	constructor(props) {
-		super(props);
-		this.state = {
-			editing: false,
-			userNick: props.user.nick,
-			newNick: props.user.nick
-		};
-	}
+  constructor(props) {
+    super(props);
+    this.state = {
+      editing: false,
+      userNick: props.user.nick,
+      newNick: props.user.nick
+    };
+  }
 
-	toggleEdit = () => {
-		this.setState({
-			editing: !this.state.editing
-		});
-	};
+  toggleEdit = () => {
+    this.setState({
+      editing: !this.state.editing
+    });
+  };
 
-	removeUser = user => {
-		store.dispatch(requestUserDelete(user));
-	};
+  removeUser = user => {
+    store.dispatch(requestUserDelete(user));
+  };
 
-	onNickInputChange = e => {
-		this.setState({
-			newNick: e.target.value
-		});
-	};
+  onNickInputChange = e => {
+    this.setState({
+      newNick: e.target.value
+    });
+  };
 
-	updateNick = () => {
-		const { user } = this.props;
-		const { newNick } = this.state;
-		store.dispatch(requestUserUpdate({ ...user, nick: newNick }));
-	};
+  updateNick = () => {
+    const { user } = this.props;
+    const { newNick } = this.state;
+    store.dispatch(requestUserUpdate({ ...user, nick: newNick }));
+  };
 
-	render() {
-		const { user , removeEnabled} = this.props;
-		const { editing, newNick } = this.state;
+  render() {
+    const { user, removeEnabled } = this.props;
+    const { editing, newNick } = this.state;
 
-		return (
-			<Row>
-				{user.isAdmin
-					? <AdminIcon name="user-circle-o" />
-					: <AdminIconPlaceholder name="user-circle-o" />}{" "}
-				{!editing && <Nick>{user.nick}</Nick>}
-				{editing &&
-					<EditingNick
-						autoFocus
-						value={newNick}
-						onChange={this.onNickInputChange}
-					/>}
-				{editing &&
-					<div>
-						<ActionIconPositive
-							name="check"
-							onClick={this.updateNick}
-						/>
-						<ActionIconNegative
-							name="times"
-							onClick={this.toggleEdit}
-						/>
+    return (
+      <Row>
+        {user.isAdmin
+          ? <AdminIcon name="user-circle-o" />
+          : <AdminIconPlaceholder name="user-circle-o" />}{" "}
+        {!editing && <Nick>{user.nick}</Nick>}
+        {editing &&
+          <EditingNick
+            autoFocus
+            value={newNick}
+            onChange={this.onNickInputChange}
+          />}
+        {editing &&
+          <div>
+            <ActionIconPositive name="check" onClick={this.updateNick} />
+            <ActionIconNegative name="times" onClick={this.toggleEdit} />
           </div>}
-					<div>
-        {!editing &&
-						<ActionIconPositive
-							name="pencil"
-							onClick={this.toggleEdit}
-						/>}
-				{!editing && removeEnabled &&
-					<ActionIconNegative
-							name="trash"
-							onClick={() => this.removeUser(user)}
-						/>}
-					</div>
+        <div>
+          {!editing &&
+            <ActionIconPositive name="pencil" onClick={this.toggleEdit} />}
+          {!editing &&
+            removeEnabled &&
+            <ActionIconNegative
+              name="trash"
+              onClick={() => this.removeUser(user)}
+            />}
+        </div>
 
-			</Row>
-		);
-	}
+      </Row>
+    );
+  }
 }
 
 export default UserRow;
@@ -110,6 +102,7 @@ const EditingNick = styled.input`
 
 const ActionIcon = styled(FontAwesome)`
   margin-right: .5em;
+  cursor: pointer;
 `;
 
 const ActionIconPositive = styled(ActionIcon)`

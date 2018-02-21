@@ -1,10 +1,11 @@
 import styled from "styled-components";
 
 export const ItemTitle = styled.div`
-  width: 5rem;
   align-content: right;
   display: flex;
-  justify-content: flex-end;
+  justify-content: flex-start;
+  font-size: 1.5em;
+  margin-bottom: 0.2em;
 `;
 
 export const Container = styled.div`
@@ -28,20 +29,22 @@ export const Row = styled.div`
   flex-direction: row;
 `;
 
-export const RowContent = styled.div`display: flex;`;
+export const RowContent = styled.div`
+  display: flex;
+  flex-direction: column;
+  margin: 1em;
+`;
 
 export const Input = styled.input`
   border: 0;
   outline: 0;
   background: transparent;
   border-bottom: 1px solid #4a4a4a;
-  margin-left: 20px;
-  width: 370px;
+  min-width: 270px;
   font-size: 1.2rem;
 `;
 
 export const Title = styled.div`
-  font-family: Helvetica Neue, Helvetica, Roboto, Arial, sans-serif;
   font-size: 2rem;
   font-weight: 200;
   color: #4a4a4a;
@@ -54,6 +57,12 @@ export const ListContainer = styled.div`
   background-color: #ffffff;
   box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.5);
   min-height: 18em;
+  transition: all 1500ms;
+  opacity: ${props => (props.inactive ? "0.6" : "1.0")};
+  transform: ${props => (props.inactive ? "scale(0.95)" : "scale(1.0)")};
+  margin-right: ${props => (props.inactive ? "-2em" : "0em")};
+  margin-left: ${props => (props.inactive ? "2em" : "0em")};
+  align-self: ${props => (props.flexEnd ? "flex-end" : "")};
 `;
 
 export const ListHeader = styled.div`
@@ -63,7 +72,6 @@ export const ListHeader = styled.div`
 `;
 
 export const ListTitle = styled.div`
-  font-family: Helvetica Neue, Helvetica, Roboto, Arial, sans-serif;
   font-size: 2em;
   height: 2em;
   line-height: 2em;
@@ -74,8 +82,14 @@ export const ListTitle = styled.div`
 
 export const RowContainer = styled(Container)`
   display: flex;
-  flex-direction: row;
   justify-content: space-around;
+  @media (min-width: 900px) {
+    flex-direction: row;
+  }
+  @media (max-width: 900px) {
+    flex-direction: column;
+    align-items: center;
+  }
 `;
 
 export const ColumnContainer = styled(Container)`
@@ -84,7 +98,6 @@ export const ColumnContainer = styled(Container)`
 `;
 
 export const SubListTitle = styled.div`
-  font-family: Helvetica Neue, Helvetica, Roboto, Arial, sans-serif;
   font-size: 1.25em;
   font-weight: bold;
   color: #4a4a4a;
@@ -102,4 +115,15 @@ export const HR = styled.hr`
   width: 18em;
   border: none;
   border-top: 1px solid #979797;
+`;
+
+export const ToolBarButton = styled.div`
+  cursor: ${props => (props.inactive ? "" : "pointer")};
+  background-color: ${props => (props.inactive ? "#d8d8d8" : "#f5f5f5")};
+  :hover {
+    background-color: ${props => (props.inactive ? "#d8d8d8" : "#e5e5e5")};
+  }
+  :active {
+    background-color: ${props => (props.inactive ? "#d8d8d8" : "#d5d5d5")};
+  }
 `;

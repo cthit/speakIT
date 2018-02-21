@@ -17,7 +17,7 @@ class Notes extends Component {
     return (
       <ListContainer>
         <ListHeader>
-          <ListTitle>Anteckningar</ListTitle>
+          <ListTitle>Notes</ListTitle>
         </ListHeader>
         <InputContainer>
           <InputField onChange={this.handleNotesEdit} value={notes} />

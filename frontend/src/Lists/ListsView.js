@@ -1,7 +1,6 @@
 import React, { Component } from "react";
-import styled from "styled-components";
 
-import { Row, RowContent, ColumnContainer } from "../SharedComponents.js";
+import { Row, ColumnContainer } from "../SharedComponents.js";
 
 import Loading from "../loading.js";
 
@@ -19,24 +18,42 @@ class ListsView extends Component {
 
     return (
       <ColumnContainer>
-        <Row>
-          <RowContent>
-            Du är: {user.nick}
-          </RowContent>
-        </Row>
-
-        <ListsContainer>
-          {lists.map(list => <List key={list.id} list={list} user={user} />)}
-          <Notes />
+        <MainContainer>
+          <ListContainer numberOfLists={lists.length}>
+            {lists.map((list, i) =>
+              <List
+                key={list.id}
+                list={list}
+                user={user}
+                inactive={i < lists.length - 1}
+              />
+            )}
+          </ListContainer>
           {user.isAdmin && <CreateList />}
-        </ListsContainer>
+          <Notes />
+        </MainContainer>
       </ColumnContainer>
     );
   }
 }
 
-const ListsContainer = styled(Row)`
-  padding-top: 2em;
+const ListContainer = Row.extend`
+  margin-left: -${props => (props.numberOfLists - 2) * 20}em;
+  align-self: ${props => (props.numberOfLists > 1 ? "flex-end" : "center")};
+  width: ${props => props.numberOfLists * 20}em;
+  margin-bottom: 2em;
+  transition: all 1000ms;
+`;
+
+const MainContainer = Row.extend`
+  @media (min-width: 900px) {
+    flex-direction: row;
+    justify-content: space-around;
+  }
+  @media (max-width: 900px) {
+    flex-direction: column;
+    align-items: center;
+  }
 `;
 
 export default ListsView;

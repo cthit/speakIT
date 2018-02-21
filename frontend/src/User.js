@@ -6,7 +6,9 @@ import {
   SubContainer,
   Row,
   RowContent,
-  Input
+  Input,
+  ListHeader,
+  ListTitle,
 } from "./SharedComponents.js";
 
 import SubmitButton from "./SubmitButton.js";
@@ -62,9 +64,14 @@ class User extends Component {
     return (
       <Container>
         <SubContainer>
+        <ListHeader>
+          <ListTitle>
+            User settings
+          </ListTitle>
+        </ListHeader>
           <Row>
             <RowContent>
-              <ItemTitle>User:</ItemTitle>
+              <ItemTitle>Nick:</ItemTitle>
               <Input
                 type="text"
                 onChange={this.handleChange}
@@ -74,21 +81,25 @@ class User extends Component {
             </RowContent>
           </Row>
           <Row>
-            <RowContent>
-              <ItemTitle>Id:</ItemTitle>
-              <Input type="text" disabled value={id} />
-            </RowContent>
+            {isAdmin &&
+              <RowContent>
+                <ItemTitle>Id:</ItemTitle>
+                <Input type="text" disabled value={id} />
+              </RowContent>
+            }
           </Row>
           <Row>
-            <RowContent>
-              <ItemTitle>Is Admin:</ItemTitle>
-              <Input type="text" disabled value={isAdmin} />
-            </RowContent>
+            {isAdmin &&
+              <RowContent>
+                <ItemTitle>Is Admin:</ItemTitle>
+                <Input type="text" disabled value={isAdmin} />
+              </RowContent>
+            }
           </Row>
           <Row>
             <RowContent>
               <SubmitButton
-                positiveText="Spara"
+                positiveText="Save"
                 isShowingPositive={true}
                 type="button"
                 value="Spara"
