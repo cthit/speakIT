@@ -1,3 +1,4 @@
+import FontAwesome from "react-fontawesome";
 import styled from "styled-components";
 
 export const ItemTitle = styled.div`
@@ -125,5 +126,28 @@ export const ToolBarButton = styled.div`
   }
   :active {
     background-color: ${props => (props.inactive ? "#d8d8d8" : "#d5d5d5")};
+  }
+`;
+
+const ActionIcon = styled(FontAwesome)`
+  margin-right: .5em;
+  cursor: pointer;
+`;
+
+export const ActionIconPositive = styled(ActionIcon)`
+  :hover {
+    color: #a4e063;
+  }
+  :active {
+    color: #94d053;
+  }
+`;
+
+export const ActionIconNegative = styled(ActionIcon)`
+  :hover {
+    color: #d0011b;
+  }
+  :active {
+    color: #c0001b;
   }
 `;
