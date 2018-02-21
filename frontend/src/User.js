@@ -38,7 +38,7 @@ class User extends Component {
 
   componentWillReceiveProps = nextProps => {
     const { user } = this.props;
-    const { newUser } = nextProps;
+    const { user: newUser } = nextProps;
     if (user.nick !== newUser.nick) {
       this.setState({
         newNick: null
