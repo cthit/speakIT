@@ -1,4 +1,6 @@
-localhost:80
+0.0.0.0:80
 gzip
-log
-rewrite / index.html
+log stdout
+rewrite / {
+    to {path} /
+}
