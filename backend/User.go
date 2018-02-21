@@ -125,13 +125,16 @@ func (u *User) receiveFromWebsocket(conn *websocket.Conn) {
 func (u *User) handleSendEvents() {
 	for {
 		content := <-u.input
+		workingSockets := u.sockets[:0]
 		for _, socket := range u.sockets {
 			err := socket.WriteMessage(websocket.TextMessage, []byte(content.String()))
-			if err != nil {
+			if err == nil {
+				workingSockets = append(workingSockets, socket)
+			} else {
 				log.Printf("Error when writing to socket for user %s: %v ", u.Nick, err)
-				break
 			}
 		}
+		u.sockets = workingSockets
 	}
 }
 
