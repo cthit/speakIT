@@ -37,9 +37,13 @@ class User extends Component {
   };
 
   componentWillReceiveProps = nextProps => {
-    this.setState({
-      newNick: null
-    });
+    const { user } = this.props;
+    const { newUser } = nextProps;
+    if (user.nick !== newUser.nick) {
+      this.setState({
+        newNick: null
+      });
+    }
   };
 
   dispatchUserUpdate = () => {
