@@ -13,8 +13,8 @@ const persistedState = loadState();
 const mainReducer = combineReducers({
 	user: UserReducer,
 	notes: NotesReducer,
-        lists: ListsReducer,
-        password: PasswordReducer
+	lists: ListsReducer,
+	password: PasswordReducer
 });
 
 const enhancers = compose(

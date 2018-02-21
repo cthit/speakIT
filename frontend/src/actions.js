@@ -168,7 +168,7 @@ export const dispatchActionFromTopic = (topic, obj) => {
       store.dispatch(updateList(obj));
       break;
     case ADMIN_UPDATE_PASSWORD_LIST:
-      store.dispatch(updatePasswordList(obj))
+      store.dispatch(updatePasswordList(obj));
       break;
     case ERROR:
       toast.error(obj.msg);

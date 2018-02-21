@@ -95,7 +95,15 @@ class Admin extends Component {
     }
     return (
       <div>
-        {users.filter(f).map(u => <UserRow key={u.id} user={u} removeEnabled={users.filter(user => user.isAdmin).length > 1} />)}
+        {users
+          .filter(f)
+          .map(u =>
+            <UserRow
+              key={u.id}
+              user={u}
+              removeEnabled={users.filter(user => user.isAdmin).length > 1}
+            />
+          )}
       </div>
     );
   };

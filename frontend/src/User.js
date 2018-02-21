@@ -8,7 +8,7 @@ import {
   RowContent,
   Input,
   ListHeader,
-  ListTitle,
+  ListTitle
 } from "./SharedComponents.js";
 
 import SubmitButton from "./SubmitButton.js";
@@ -68,11 +68,11 @@ class User extends Component {
     return (
       <Container>
         <SubContainer>
-        <ListHeader>
-          <ListTitle>
-            User settings
-          </ListTitle>
-        </ListHeader>
+          <ListHeader>
+            <ListTitle>
+              User settings
+            </ListTitle>
+          </ListHeader>
           <Row>
             <RowContent>
               <ItemTitle>Nick:</ItemTitle>
@@ -89,16 +89,14 @@ class User extends Component {
               <RowContent>
                 <ItemTitle>Id:</ItemTitle>
                 <Input type="text" disabled value={id} />
-              </RowContent>
-            }
+              </RowContent>}
           </Row>
           <Row>
             {isAdmin &&
               <RowContent>
                 <ItemTitle>Is Admin:</ItemTitle>
                 <Input type="text" disabled value={isAdmin} />
-              </RowContent>
-            }
+              </RowContent>}
           </Row>
           <Row>
             <RowContent>

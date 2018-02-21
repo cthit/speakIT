@@ -5,6 +5,6 @@ import ReactDOM from "react-dom";
 import Admin from "./Admin";
 
 it("renders without crashing", () => {
-	const div = document.createElement("div");
-	ReactDOM.render(<Provider store={store}><Admin /></Provider>, div);
+  const div = document.createElement("div");
+  ReactDOM.render(<Provider store={store}><Admin /></Provider>, div);
 });
