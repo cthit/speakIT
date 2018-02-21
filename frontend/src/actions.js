@@ -18,6 +18,9 @@ export const USERS_GET_WAITING = "USERS_GET_WAITING";
 
 export const ADMIN_LOGIN = "ADMIN_LOGIN";
 export const ADMIN_LOGIN_WAITING = "ADMIN_LOGIN_WAITING";
+export const ADMIN_GENERATE_PASSWORD = "ADMIN_GENERATE_PASSWORD";
+export const ADMIN_UPDATE_PASSWORD_LIST = "ADMIN_UPDATE_PASSWORD_LIST";
+export const ADMIN_PASSWORD_WAITING = "ADMIN_PASSWORD_WAITING";
 
 export const LISTS_GET = "LISTS_GET";
 export const LISTS_UPDATE = "LISTS_UPDATE";
@@ -65,6 +68,11 @@ export const requestAdminLogin = password => {
   return { type: ADMIN_LOGIN_WAITING };
 };
 
+export const requestAdminGeneratePassword = () => {
+  backend.send(ADMIN_GENERATE_PASSWORD);
+  return { type: ADMIN_PASSWORD_WAITING };
+};
+
 export const requestLists = () => {
   backend.send(LISTS_GET);
   return { type: LISTS_GET_WAITING };
@@ -84,6 +92,10 @@ export const updateLists = lists => {
 
 export const updateList = list => {
   return { type: LIST_UPDATE, list };
+};
+
+export const updatePasswordList = passwords => {
+  return { type: ADMIN_UPDATE_PASSWORD_LIST, passwords };
 };
 
 export const requestAddUserToList = listId => {
@@ -154,6 +166,9 @@ export const dispatchActionFromTopic = (topic, obj) => {
       break;
     case LIST_UPDATE:
       store.dispatch(updateList(obj));
+      break;
+    case ADMIN_UPDATE_PASSWORD_LIST:
+      store.dispatch(updatePasswordList(obj))
       break;
     case ERROR:
       toast.error(obj.msg);

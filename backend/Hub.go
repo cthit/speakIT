@@ -37,6 +37,13 @@ type Hub struct {
 	messageHandlers   map[string]MessageHandler
 }
 
+var reqs = garbler.PasswordStrengthRequirements{
+	MinimumTotalLength: 8,
+	MaximumTotalLength: 8,
+	Uppercase:          3,
+	Digits:             2,
+}
+
 var store = sessions.NewCookieStore([]byte("this is the secret stuff"))
 
 func CreateHub() Hub {
@@ -45,28 +52,19 @@ func CreateHub() Hub {
 		HttpOnly: true,
 	}
 
-	reqs := garbler.PasswordStrengthRequirements{
-		MinimumTotalLength: 8,
-		MaximumTotalLength: 8,
-		Uppercase:          3,
-		Digits:             2,
-	}
-
 	speakerLists := []*SpeakerList{}
-
-	initialPassword, err := garbler.NewPassword(&reqs)
-	if err != nil {
-		log.Panicf("Could not generate initial password: %v", err)
-	}
-	log.Printf("Generated password: %s", initialPassword)
 
 	hub := Hub{
 		Users:             make(map[uuid.UUID]*User),
 		AdminCreatedUsers: make(map[uuid.UUID]*User),
 		SpeakerLists:      speakerLists,
 		connectedUsers:    make(map[uuid.UUID]*User),
-		oneTimePasswords:  []string{initialPassword},
 	}
+
+	hub.generateNewPassword()
+	hub.generateNewPassword()
+	hub.generateNewPassword()
+
 	hub.messageHandlers = CreateHandlers(&hub)
 	return hub
 }
@@ -277,6 +275,29 @@ func (hub *Hub) tryAdminLogin(user *User, password string) bool {
 		hub.oneTimePasswords = append(hub.oneTimePasswords[:passwordIndex], hub.oneTimePasswords[passwordIndex+1:]...)
 	}
 	return ok
+}
+
+type PasswordListResponse struct {
+	Passwords []string `json:"passwords"`
+}
+
+func (hub *Hub) generateNewPassword() {
+	newPassword, err := garbler.NewPassword(&reqs)
+	if err != nil {
+		log.Panicf("Could not generate password: %v", err)
+	}
+	log.Printf("Generated password: %s", newPassword)
+	hub.oneTimePasswords = append(hub.oneTimePasswords, newPassword)
+}
+
+func createPasswordListResponse(passwordList []string) (messages.SendEvent, error) {
+	response := PasswordListResponse{passwordList}
+	jsonObj, err := json.Marshal(response)
+	if err != nil {
+		return messages.SendEvent{}, err
+	} else {
+		return messages.SendEvent{messages.ADMIN_UPDATE_PASSWORD_LIST, jsonObj}, nil
+	}
 }
 
 func getUUIDfromSession(session *sessions.Session) (uuid.UUID, error) {

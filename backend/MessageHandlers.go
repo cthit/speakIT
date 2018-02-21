@@ -28,6 +28,9 @@ type UserDelete struct {
 type AdminLogin struct {
 	hub *Hub
 }
+type AdminGenerateNewPassword struct {
+	hub *Hub
+}
 type ListsGet struct {
 	hub *Hub
 }
@@ -67,6 +70,7 @@ func CreateHandlers(hub *Hub) map[string]MessageHandler {
 		messages.USER_UPDATE:                UserUpdate{hub},
 		messages.USER_DELETE:                UserDelete{hub},
 		messages.ADMIN_LOGIN:                AdminLogin{hub},
+		messages.ADMIN_GENERATE_PASSWORD:    AdminGenerateNewPassword{hub},
 		messages.LISTS_GET:                  ListsGet{hub},
 		messages.LIST_ADD_USER:              ListAddUser{hub},
 		messages.LIST_REMOVE_USER:           ListRemoveUser{hub},
@@ -167,13 +171,37 @@ func (m UserDelete) handle(userEvent UserEvent) {
 
 func (m AdminLogin) handle(userEvent UserEvent) {
 	ok := m.hub.tryAdminLogin(userEvent.user, userEvent.Password)
-	if ok {
-		sendSuccess(userEvent.user.input, "Login successful.")
-		sendUserResponse(userEvent.user.input, userEvent.user)
-		sendUsersUpdateToAdmins(m.hub, userEvent.user)
-	} else {
+	if !ok {
 		sendError(userEvent.user.input, "Login failed.")
+		return
 	}
+	sendSuccess(userEvent.user.input, "Login successful.")
+	sendUserResponse(userEvent.user.input, userEvent.user)
+	sendUsersUpdateToAdmins(m.hub, userEvent.user)
+
+	response, err := createPasswordListResponse(m.hub.oneTimePasswords)
+	if err != nil {
+		sendError(userEvent.user.input, "Could not create password list response.")
+		return
+	}
+
+	m.hub.AdminBroadcast(response)
+}
+
+func (m AdminGenerateNewPassword) handle(userEvent UserEvent) {
+	if !userEvent.user.IsAdmin {
+		sendError(userEvent.user.input, "Unauthorized")
+		return
+	}
+
+	m.hub.generateNewPassword()
+	response, err := createPasswordListResponse(m.hub.oneTimePasswords)
+	if err != nil {
+		sendError(userEvent.user.input, "Could not create password list response.")
+		return
+	}
+
+	m.hub.AdminBroadcast(response)
 }
 
 func (m ListsGet) handle(userEvent UserEvent) {
@@ -240,7 +268,7 @@ func (m ListAdminAddUser) handle(userEvent UserEvent) {
 
 	var adminCreatedUser *User
 	for _, user := range m.hub.AdminCreatedUsers {
-		if user.Nick == userEvent.ReceivedUser.Nick{
+		if user.Nick == userEvent.ReceivedUser.Nick {
 			adminCreatedUser = user
 			break
 		}
