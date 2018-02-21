@@ -59,19 +59,17 @@ class Admin extends Component {
             <Title>Authenticate</Title>
           </Row>
           <Row>
-            <RowContent>
-              <Input
-                type={this.state.showPassword ? "text" : "password"}
-                onKeyPress={this.handleKeyPress}
-                value={this.state.authCode}
-                onChange={this.handleAuthCodeChange}
-              />
-              <FontAwesome
-                name={this.state.showPassword ? "eye-slash" : "eye"}
-                style={{ cursor: "pointer" }}
-                onClick={this.toggleShowPassword}
-              />
-            </RowContent>
+            <Input
+              type={this.state.showPassword ? "text" : "password"}
+              onKeyPress={this.handleKeyPress}
+              value={this.state.authCode}
+              onChange={this.handleAuthCodeChange}
+            />
+            <FontAwesome
+              name={this.state.showPassword ? "eye-slash" : "eye"}
+              style={{ cursor: "pointer" }}
+              onClick={this.toggleShowPassword}
+            />
           </Row>
           <Row>
             <RowContent>

@@ -25,7 +25,7 @@ export const SubContainer = styled.div`
 
 export const Row = styled.div`
   display: flex;
-  justify-content: space-around;
+  justify-content: center;
   flex-direction: row;
 `;
 
