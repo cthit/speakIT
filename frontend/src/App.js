@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import { BrowserRouter as Router, Route } from "react-router-dom";
 
-import { ToastContainer, toast } from "react-toastify";
+import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.min.css";
 
 import ListsView from "./Lists/ListsView.js";
@@ -13,20 +13,13 @@ import backend from "./backend.js";
 
 import { Provider, connect } from "react-redux";
 import store from "./store.js";
-import { sendClientHello } from "./actions.js";
 
 class App extends Component {
   componentWillMount() {
     window.backend = backend;
-    backend
-      .connect()
-      .then(() => {
-        sendClientHello();
-      })
-      .catch(err => {
-        console.log(err);
-        toast.error(`Error: ${err}`);
-      });
+    backend.connect().finally(a => {
+      backend.startKeepAlivePoller();
+    });
   }
 
   renderList = () => {
