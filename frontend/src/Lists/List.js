@@ -2,7 +2,6 @@ import React, { Component } from "react";
 
 import styled from "styled-components";
 import FontAwesome from "react-fontawesome";
-import ScrollArea from "react-scrollbar";
 
 import SubmitButton from "../SubmitButton.js";
 import AdminToolBar from "./AdminToolBar.js";
@@ -190,7 +189,7 @@ class List extends Component {
 
 				{adminAddingUser && this.renderAdminAddUserInputBox()}
 
-				<Scroll speed={0.8} horizontal={false} minScrollSize={1}>
+				<SpeakersArea>
 					<SubListTitle>
 						First speakers list ({list.speakersQueue.length})
 					</SubListTitle>
@@ -212,7 +211,7 @@ class List extends Component {
 								acc.concat(i === 0 ? [item] : [<HR key={i} />, item]),
 							[]
 						)}
-				</Scroll>
+				</SpeakersArea>
 				{user.isAdmin && this.renderAdminFooter(list.Id, inactive)}
 			</ListContainer>
 		);
@@ -274,9 +273,8 @@ const DiscussionClosedLabel = styled.div`
 	text-align: center;
 `;
 
-const Scroll = styled(ScrollArea)`
+const SpeakersArea = styled.div`
 	flex: 1;
-	max-height: 50em;
 	min-height: 20em;
 	margin-bottom: 1em;
 `;
