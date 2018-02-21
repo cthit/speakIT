@@ -275,19 +275,21 @@ const DiscussionClosedLabel = styled.div`
 `;
 
 const Scroll = styled(ScrollArea)`
-	height: 20em;
+	flex: 1;
+	max-height: 50em;
+	min-height: 20em;
 `;
 
 const Speaker = styled.div`
-	font-size: 1.5em;
-	padding: 1em 0;
+	font-size: 1em;
+	padding: 0.5em 0;
 `;
 
 const SpeakerRow = styled.div`display: flex;`;
 
 const CurrentSpeakerArrow = styled(FontAwesome)`
   color: green;
-  padding 1em;
+  padding 0.2em;
   padding-left: 1.5em;
   font-size: 1.5em;
 `;
