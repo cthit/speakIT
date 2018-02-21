@@ -1,12 +1,16 @@
-FROM node as builder
+FROM alpine as builder
+
+RUN apk update
+RUN apk add yarn
+
 
 COPY . .
 
-RUN npm install
-RUN npm run build
+RUN yarn install
+RUN yarn build
 
 
 
 FROM gesellix/caddy
 COPY --from=builder /build .
-COPY Caddyfile .
+COPY Caddyfile /
