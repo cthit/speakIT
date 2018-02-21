@@ -28,6 +28,7 @@ const (
 )
 
 type Hub struct {
+	ID                string
 	Users             map[uuid.UUID]*User
 	AdminCreatedUsers map[uuid.UUID]*User
 	SpeakerLists      []*SpeakerList
@@ -55,6 +56,7 @@ func CreateHub() Hub {
 	speakerLists := []*SpeakerList{}
 
 	hub := Hub{
+		ID:                fmt.Sprintf("%s_%s", SESSION_KEY, uuid.New().String()),
 		Users:             make(map[uuid.UUID]*User),
 		AdminCreatedUsers: make(map[uuid.UUID]*User),
 		SpeakerLists:      speakerLists,
@@ -175,7 +177,7 @@ func (hub *Hub) getList(id uuid.UUID) (*SpeakerList, error) {
 }
 
 func (hub Hub) getUserFromRequest(req *http.Request) (*User, error) {
-	session, err := store.Get(req, SESSION_KEY)
+	session, err := store.Get(req, hub.ID)
 	if err != nil {
 		return nil, errors.New("Could not get session from storage")
 	}
@@ -320,7 +322,7 @@ func getUUIDfromSession(session *sessions.Session) (uuid.UUID, error) {
 }
 
 func (hub *Hub) ServeWs(w http.ResponseWriter, r *http.Request) {
-	session, err := store.Get(r, SESSION_KEY)
+	session, err := store.Get(r, hub.ID)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
