@@ -25,7 +25,7 @@ var userCounter = 0
 func CreateUser() *User {
 
 	u := &User{
-		Nick:       fmt.Sprintf("Antendee_%d", userCounter),
+		Nick:       fmt.Sprintf("Attendee_%d", userCounter),
 		Id:         uuid.New(),
 		Connected:  false,
 		IsAdmin:    false,
