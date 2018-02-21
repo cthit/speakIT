@@ -14,13 +14,12 @@ import backend from "./backend.js";
 import { Provider, connect } from "react-redux";
 import store from "./store.js";
 import { sendClientHello } from "./actions.js";
-import conf from "./config.js";
 
 class App extends Component {
   componentWillMount() {
     window.backend = backend;
     backend
-      .connect(`${conf.backend_address}/ws`)
+      .connect()
       .then(() => {
         sendClientHello();
       })
@@ -63,9 +62,10 @@ const ConnectedApp = connect(state => ({
   lists: state.lists.lists
 }))(App);
 
-const ProviderApp = () =>
+const ProviderApp = () => (
   <Provider store={store}>
     <ConnectedApp />
-  </Provider>;
+  </Provider>
+);
 
 export default ProviderApp;

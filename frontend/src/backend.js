@@ -1,8 +1,9 @@
 import { dispatchActionFromTopic } from "./actions.js";
+import conf from "./config.js";
 
 class Backend {
-  connect(url) {
-    this.url = url;
+  connect() {
+    this.url = `${conf.backend_address}/ws`;
 
     return new Promise((resolve, reject) => {
       this.socket = new WebSocket(this.url);
