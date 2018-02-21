@@ -43,6 +43,13 @@ const ListContainer = Row.extend`
 
   transition: ${props =>
     props.numberOfLists > 1 ? "all" : "margin-left"} 1000ms;
+
+  @media (min-width: 900px) {
+    margin-right: 0em;
+  }
+  @media (max-width: 900px) {
+    margin-right: 1em;
+  }
 `;
 
 const MainContainer = Row.extend`
