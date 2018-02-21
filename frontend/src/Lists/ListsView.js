@@ -17,22 +17,20 @@ class ListsView extends Component {
     }
 
     return (
-      <ColumnContainer>
-        <MainContainer>
-          <ListContainer numberOfLists={lists.length}>
-            {lists.map((list, i) =>
-              <List
-                key={list.id}
-                list={list}
-                user={user}
-                inactive={i < lists.length - 1}
-              />
-            )}
-          </ListContainer>
-          {user.isAdmin && <CreateList />}
-          <Notes />
-        </MainContainer>
-      </ColumnContainer>
+      <MainContainer>
+        <ListContainer numberOfLists={lists.length}>
+          {lists.map((list, i) => (
+            <List
+              key={list.id}
+              list={list}
+              user={user}
+              inactive={i < lists.length - 1}
+            />
+          ))}
+        </ListContainer>
+        {user.isAdmin && <CreateList />}
+        <Notes />
+      </MainContainer>
     );
   }
 }
