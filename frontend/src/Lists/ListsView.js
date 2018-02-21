@@ -40,7 +40,9 @@ const ListContainer = Row.extend`
   align-self: ${props => (props.numberOfLists > 1 ? "flex-end" : "center")};
   width: ${props => props.numberOfLists * 20}em;
   margin-bottom: 2em;
-  transition: all 1000ms;
+
+  transition: ${props =>
+    props.numberOfLists > 1 ? "all" : "margin-left"} 1000ms;
 `;
 
 const MainContainer = Row.extend`
