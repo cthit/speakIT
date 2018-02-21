@@ -1,8 +1,8 @@
 import React, { Component } from "react";
 import { connect } from "react-redux";
-import FontAwesome from "react-fontawesome";
 
 import {
+  ActionIconPositive,
   ListContainer,
   ListHeader,
   ListTitle,
@@ -59,19 +59,17 @@ class Admin extends Component {
             <Title>Authenticate</Title>
           </Row>
           <Row>
-            <RowContent>
-              <Input
-                type={this.state.showPassword ? "text" : "password"}
-                onKeyPress={this.handleKeyPress}
-                value={this.state.authCode}
-                onChange={this.handleAuthCodeChange}
-              />
-              <FontAwesome
-                name={this.state.showPassword ? "eye-slash" : "eye"}
-                style={{ cursor: "pointer" }}
-                onClick={this.toggleShowPassword}
-              />
-            </RowContent>
+            <Input
+              type={this.state.showPassword ? "text" : "password"}
+              onKeyPress={this.handleKeyPress}
+              value={this.state.authCode}
+              onChange={this.handleAuthCodeChange}
+            />
+            <ActionIconPositive
+              name={this.state.showPassword ? "eye-slash" : "eye"}
+              style={{ cursor: "pointer" }}
+              onClick={this.toggleShowPassword}
+            />
           </Row>
           <Row>
             <RowContent>
@@ -160,7 +158,7 @@ class Admin extends Component {
               isShowingPositive={true}
             />
 
-            {passwords.map(x => <Row> {x} </Row>)}
+            {passwords.map(x => <Row key={x}> {x} </Row>)}
           </ListContainer>
         </ColumnContainer>
 

@@ -278,6 +278,7 @@ const Scroll = styled(ScrollArea)`
 	flex: 1;
 	max-height: 50em;
 	min-height: 20em;
+	margin-bottom: 1em;
 `;
 
 const Speaker = styled.div`

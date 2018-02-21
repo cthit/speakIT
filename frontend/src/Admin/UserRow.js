@@ -2,7 +2,11 @@ import React, { Component } from "react";
 import styled from "styled-components";
 import FontAwesome from "react-fontawesome";
 
-import { Row } from "../SharedComponents.js";
+import {
+  Row,
+  ActionIconPositive,
+  ActionIconNegative
+} from "../SharedComponents.js";
 import store from "../store.js";
 import { requestUserDelete, requestUserUpdate } from "../actions.js";
 
@@ -98,26 +102,4 @@ const EditingNick = styled.input`
   border: none;
   border-bottom: 1px solid black;
   outline: none;
-`;
-
-const ActionIcon = styled(FontAwesome)`
-  margin-right: .5em;
-  cursor: pointer;
-`;
-
-const ActionIconPositive = styled(ActionIcon)`
-  :hover {
-    color: #a4e063;
-  }
-  :active {
-    color: #94d053;
-  }
-`;
-const ActionIconNegative = styled(ActionIcon)`
-  :hover {
-    color: #d0011b;
-  }
-  :active {
-    color: #c0001b;
-  }
 `;
