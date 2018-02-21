@@ -128,7 +128,7 @@ func (m UserUpdate) handle(userEvent UserEvent) {
 		}
 		ok := m.hub.updateUser(userEvent.ReceivedUser)
 		if !ok {
-			sendError(userEvent.user.input, "Couldn't find user in ")
+			sendError(userEvent.user.input, "Couldn't find user in the hub.")
 			return
 		}
 
