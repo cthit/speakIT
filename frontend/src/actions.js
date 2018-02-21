@@ -68,7 +68,7 @@ export const requestAdminLogin = password => {
   return { type: ADMIN_LOGIN_WAITING };
 };
 
-export const requestAdminGenerateNewPassword = () => {
+export const requestAdminGeneratePassword = () => {
   backend.send(ADMIN_GENERATE_PASSWORD);
   return { type: ADMIN_PASSWORD_WAITING };
 };

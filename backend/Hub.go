@@ -284,7 +284,7 @@ type PasswordListResponse struct {
 func (hub *Hub) generateNewPassword() {
 	newPassword, err := garbler.NewPassword(&reqs)
 	if err != nil {
-		log.Panicf("Could not generate initial password: %v", err)
+		log.Panicf("Could not generate password: %v", err)
 	}
 	log.Printf("Generated password: %s", newPassword)
 	hub.oneTimePasswords = append(hub.oneTimePasswords, newPassword)

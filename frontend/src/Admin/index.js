@@ -21,10 +21,7 @@ import {
 
 import SubmitButton from "../SubmitButton.js";
 import UserRow from "./UserRow.js";
-import {
-  requestAdminLogin,
-  requestAdminGenerateNewPassword
-} from "../actions.js";
+import { requestAdminLogin, requestAdminGeneratePassword } from "../actions.js";
 
 import store from "../store.js";
 
@@ -43,7 +40,7 @@ class Admin extends Component {
   };
 
   requestNewPassword = () => {
-    store.dispatch(requestAdminGenerateNewPassword());
+    store.dispatch(requestAdminGeneratePassword());
   };
 
   handleAuthCodeChange = event => {
@@ -157,7 +154,7 @@ class Admin extends Component {
               isShowingPositive={true}
             />
 
-            <div> {passwords.map(x => <Row> {x} </Row>)} </div>
+            {passwords.map(x => <Row> {x} </Row>)}
           </ListContainer>
         </ColumnContainer>
 
