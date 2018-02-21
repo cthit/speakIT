@@ -20,7 +20,7 @@ class App extends Component {
   componentWillMount() {
     window.backend = backend;
     backend
-      .connect(`ws://${conf.backend_address}:${conf.backend_port}/ws`)
+      .connect(`${conf.backend_address}/ws`)
       .then(() => {
         sendClientHello();
       })

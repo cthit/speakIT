@@ -1,5 +1,5 @@
 const config = {
-  backend_address: "localhost",
+  backend_address: "ws://localhost:3000",
   backend_port: 3000
 };
 
