@@ -65,7 +65,6 @@ const ITLogo = styled.img`
 `;
 
 const Title = styled.div`
-  font-family: Helvetica Neue, Helvetica, Roboto, Arial, sans-serif;
   font-weight: 500;
   color: #0a0a0a;
   @media (min-width: 900px) {
@@ -120,7 +119,6 @@ const NavigationItem = styled(Link)`
   justify-content: space-around;
   text-decoration: none;
   color: #4a4a4a;
-  font-family: AvenirNext;
   font-weight: bold;
   font-size: 1.25rem;
   :hover {

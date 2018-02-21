@@ -45,7 +45,6 @@ export const Input = styled.input`
 `;
 
 export const Title = styled.div`
-  font-family: Helvetica Neue, Helvetica, Roboto, Arial, sans-serif;
   font-size: 2rem;
   font-weight: 200;
   color: #4a4a4a;
@@ -73,7 +72,6 @@ export const ListHeader = styled.div`
 `;
 
 export const ListTitle = styled.div`
-  font-family: Helvetica Neue, Helvetica, Roboto, Arial, sans-serif;
   font-size: 2em;
   height: 2em;
   line-height: 2em;
@@ -100,7 +98,6 @@ export const ColumnContainer = styled(Container)`
 `;
 
 export const SubListTitle = styled.div`
-  font-family: Helvetica Neue, Helvetica, Roboto, Arial, sans-serif;
   font-size: 1.25em;
   font-weight: bold;
   color: #4a4a4a;

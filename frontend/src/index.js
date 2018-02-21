@@ -13,6 +13,7 @@ injectGlobal`
     body {
         margin: 0;
         padding-bottom: 2rem;
+        font-family: 'Roboto', sans-serif;
     }
 `;
 

@@ -139,7 +139,6 @@ const AdminFooterPlaceholder = styled(AdminFooter)`
 `;
 
 const ListTitle = styled.div`
-  font-family: Helvetica Neue, Helvetica, Roboto, Arial, sans-serif;
   font-size: 1.25em;
   font-weight: bold;
   color: #4a4a4a;
@@ -148,7 +147,6 @@ const ListTitle = styled.div`
 `;
 
 const DiscussionTitle = styled.input`
-  font-family: Helvetica Neue, Helvetica, Roboto, Arial, sans-serif;
   font-size: 2em;
   height: 2em;
   line-height: 2em;
