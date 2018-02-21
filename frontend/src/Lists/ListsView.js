@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 
-import { Row, ColumnContainer } from "../SharedComponents.js";
+import { Row } from "../SharedComponents.js";
 
 import Loading from "../loading.js";
 
