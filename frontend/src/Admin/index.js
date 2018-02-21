@@ -158,7 +158,7 @@ class Admin extends Component {
               isShowingPositive={true}
             />
 
-            {passwords.map((x, i) => <Row key={i}> {x} </Row>)}
+            {passwords.map(x => <Row key={x}> {x} </Row>)}
           </ListContainer>
         </ColumnContainer>
 
