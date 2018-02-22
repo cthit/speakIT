@@ -17,7 +17,7 @@ class AdminToolBar extends Component {
 
     const debateBackground = discussionIsOpen
       ? {}
-      : { backgroundColor: "#d8d8d8" };
+      : { backgroundColor: "#333333" };
 
     return (
       <ToolBar className={className}>
@@ -32,7 +32,9 @@ class AdminToolBar extends Component {
             setDiscussionStatus(discussionIsOpen ? "closed" : "open")}
         >
           <Icon name="users" size="2x" />
-          <ItemText>Call for a vote</ItemText>
+          <ItemText>
+            {discussionIsOpen ? "Call for a vote" : "Open discussion"}
+          </ItemText>
         </ToolBarItem>
         <ToolBarItem onClick={onAddUser} inactive={inactive}>
           <Icon name="user-plus" size="2x" />
