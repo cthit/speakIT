@@ -37,18 +37,22 @@ class ListsView extends Component {
 
 const ListContainer = Row.extend`
   margin-left: -${props => (props.numberOfLists - 2) * 20}em;
-  align-self: ${props => (props.numberOfLists > 1 ? "flex-end" : "center")};
   width: ${props => props.numberOfLists * 20}em;
   margin-bottom: 2em;
+  align-self: center;
 
   transition: ${props =>
     props.numberOfLists > 1 ? "all" : "margin-left"} 1000ms;
 
-  @media (min-width: 900px) {
-    margin-right: 0em;
-  }
   @media (max-width: 900px) {
-    margin-right: 1em;
+    > * {
+      display: none;
+    }
+    > :last-child {
+       display: flex;
+    }
+    margin-left: 0em;
+    width: 20em;
   }
 `;
 
