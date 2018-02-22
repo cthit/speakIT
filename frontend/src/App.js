@@ -17,9 +17,9 @@ import store from "./store.js";
 class App extends Component {
   componentWillMount() {
     window.backend = backend;
-    backend.connect().finally(a => {
-      backend.startKeepAlivePoller();
-    });
+    backend
+      .connect()
+      .then(backend.startKeepAlivePoller, backend.startKeepAlivePoller);
   }
 
   renderList = () => {

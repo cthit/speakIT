@@ -3,7 +3,7 @@ import conf from "./config.js";
 import { toast } from "react-toastify";
 
 class Backend {
-  startKeepAlivePoller() {
+  startKeepAlivePoller = () => {
     setInterval(() => {
       if (
         this.socket.readyState !== this.socket.OPEN &&
@@ -12,7 +12,7 @@ class Backend {
         this.connect();
       }
     }, 25000);
-  }
+  };
 
   connect() {
     this.url = `${conf.backend_address}/ws`;
