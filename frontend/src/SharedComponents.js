@@ -86,6 +86,7 @@ export const RowContainer = styled(Container)`
   justify-content: space-around;
   @media (min-width: 900px) {
     flex-direction: row;
+    align-items: flex-start;
   }
   @media (max-width: 900px) {
     flex-direction: column;
@@ -96,7 +97,6 @@ export const RowContainer = styled(Container)`
 export const ColumnContainer = styled(Container)`
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
 `;
 
 export const SubListTitle = styled.div`
