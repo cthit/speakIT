@@ -24,6 +24,7 @@ class SubmitButton extends Component {
 }
 
 export const StyledSubmitButton = styled.input`
+  -webkit-appearance: none;
   background-color: #00a8e2;
   transition: background-color 0.25s ease-out, color 0.25s ease-out;
   color: #fff;
