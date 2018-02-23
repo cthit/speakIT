@@ -7,11 +7,11 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/cthit/speakIT/backend/messages"
 	"github.com/google/uuid"
 	"github.com/gorilla/sessions"
 	"github.com/gorilla/websocket"
 	garbler "github.com/michaelbironneau/garbler/lib"
-	"github.com/tejpbit/talarlista/backend/messages"
 )
 
 const SESSION_KEY = "talarlista_session"

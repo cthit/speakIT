@@ -1,11 +1,11 @@
 FROM golang as builder
 
-COPY . /go/src/github.com/tejpbit/talarlista/backend
+COPY . /go/src/github.com/cthit/speakIT/backend
 
-RUN go get github.com/tejpbit/talarlista/backend
-#RUN go install github.com/tejpbit/talarlista/backend
+RUN go get github.com/cthit/speakIT/backend
+#RUN go install github.com/cthit/speakIT/backend
 
-RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o /main /go/src/github.com/tejpbit/talarlista/backend/*.go
+RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o /main /go/src/github.com/cthit/speakIT/backend/*.go
 
 
 
