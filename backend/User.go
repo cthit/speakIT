@@ -3,9 +3,9 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/cthit/speakIT/backend/messages"
 	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
-	"github.com/tejpbit/talarlista/backend/messages"
 	"log"
 	"strings"
 )
@@ -36,7 +36,7 @@ func CreateUser() *User {
 	userCounter += 1
 
 	go u.handleSendEvents()
-	
+
 	return u
 }
 

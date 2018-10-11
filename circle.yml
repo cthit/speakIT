@@ -1,22 +1,22 @@
 version: 2
 jobs:
   build-backend:
-    working_directory: /go/src/github.com/tejpbit/talarlista/backend
+    working_directory: /go/src/github.com/cthit/speakIT/backend
     docker:
       - image: circleci/golang:1.8
     steps:
       - checkout:
-          path: /go/src/github.com/tejpbit/talarlista/
+          path: /go/src/github.com/cthit/speakIT/
       - run: go get -d
       - run: go build *.go
 
   build-frontend:
-    working_directory: ~/talarlista/frontend
+    working_directory: ~/speakIT/frontend
     docker:
       - image: circleci/node:8.1.2
     steps:
       - checkout:
-          path: ~/talarlista
+          path: ~/speakIT
       - run: npm install
       - run: npm run build
       - run: npm run test

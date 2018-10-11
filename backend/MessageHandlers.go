@@ -2,8 +2,8 @@ package main
 
 import (
 	"fmt"
+	"github.com/cthit/speakIT/backend/messages"
 	"github.com/google/uuid"
-	"github.com/tejpbit/talarlista/backend/messages"
 	"log"
 )
 
