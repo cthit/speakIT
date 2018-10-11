@@ -10,7 +10,7 @@ cd $GOPATH/src/github.com/cthit/speakIT
 (cd frontend; yarn)
 
 # Running backend
-(cd backend; go run main.go)
+(cd backend; go install) && $GOPATH/bin/backend
 
 # Runnig frontend
 (cd frontend; yarn start)
