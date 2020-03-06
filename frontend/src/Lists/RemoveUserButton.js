@@ -1,9 +1,15 @@
 import React from "react";
 import FontAwesome from "react-fontawesome";
 import styled from "styled-components";
+import { adminDeleteUserFromList } from "../actions";
 
-const RemoveUserButton = () => {
-  return <TrashIcon name="trash" onClick={() => console.log("hello")} />;
+const RemoveUserButton = ({ speakerName, listId }) => {
+  return (
+    <TrashIcon
+      name="trash"
+      onClick={() => adminDeleteUserFromList(speakerName, listId)}
+    />
+  );
 };
 
 export default RemoveUserButton;

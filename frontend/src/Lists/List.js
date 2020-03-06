@@ -26,7 +26,7 @@ import {
 } from "../actions.js";
 import RemoveUserButton from "./RemoveUserButton.js";
 
-const createSpeakerRow = (user, index, isAdmin) => {
+const createSpeakerRow = (user, index, isAdmin, listId) => {
   return (
     <SpeakerRow key={user.id}>
       {index === 0 ? (
@@ -35,7 +35,11 @@ const createSpeakerRow = (user, index, isAdmin) => {
         <PlaceHolder name="angle-right" />
       )}
       <Speaker key={user.id}>{user.nick}</Speaker>
-      {isAdmin ? <RemoveUserButton /> : <PlaceHolder name="trash" />}
+      {isAdmin ? (
+        <RemoveUserButton speakerName={user.nick} listId={listId} />
+      ) : (
+        <PlaceHolder name="trash" />
+      )}
     </SpeakerRow>
   );
 };
@@ -199,7 +203,7 @@ class List extends Component {
           </SubListTitle>
           {list.speakersQueue
             .map((aSpeaker, index) =>
-              createSpeakerRow(aSpeaker, index, user.isAdmin)
+              createSpeakerRow(aSpeaker, index, user.isAdmin, list.id)
             )
             .reduce(
               (acc, item, i) =>
@@ -212,7 +216,7 @@ class List extends Component {
           </SubListTitle>
           {list.secondSpeakersQueue
             .map((aSpeaker, index) =>
-              createSpeakerRow(aSpeaker, index, user.isAdmin)
+              createSpeakerRow(aSpeaker, index, user.isAdmin, list.id)
             )
             .reduce(
               (acc, item, i) =>

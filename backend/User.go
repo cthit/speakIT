@@ -20,6 +20,10 @@ type User struct {
 	input      chan messages.SendEvent
 }
 
+func (this User) String() string {
+	return fmt.Sprintf("Nick: %s\n Id:%s\n", this.Nick, this.Id)
+}
+
 var userCounter = 0
 
 func CreateUser() *User {

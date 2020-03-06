@@ -209,6 +209,12 @@ func (hub Hub) getUserFromName(name string) (*User, error) {
 			return user, nil
 		}
 	}
+	for _, user := range hub.AdminCreatedUsers {
+		if name == user.Nick {
+			return user, nil
+		}
+	}
+	
 	return nil, errors.New(UserNotFoundInList)
 }
 

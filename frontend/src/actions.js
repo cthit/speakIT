@@ -154,10 +154,10 @@ export const error = err => {
   return { type: ERROR, err };
 };
 
-export const adminDeleteUserFromList = (listId, speakerNameToDelete) => {
+export const adminDeleteUserFromList = (speakerNameToDelete, listId) => {
   backend.send(LIST_ADMIN_REMOVE_SPEAKER, {
     listId,
-    user: { speakerNameToDelete }
+    user: { nick: speakerNameToDelete }
   });
   return { type: LIST_WAITING, listId };
 };
