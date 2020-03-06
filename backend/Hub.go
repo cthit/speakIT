@@ -203,6 +203,21 @@ func (hub Hub) getUser(id uuid.UUID) (*User, error) {
 	return user, nil
 }
 
+func (hub Hub) getUserFromName(name string) (*User, error) {
+	for _, user := range hub.Users {
+		if name == user.Nick {
+			return user, nil
+		}
+	}
+	for _, user := range hub.AdminCreatedUsers {
+		if name == user.Nick {
+			return user, nil
+		}
+	}
+	
+	return nil, errors.New(UserNotFoundInList)
+}
+
 func (hub Hub) isUserNickTaken(nick string) bool {
 	for _, user := range hub.Users {
 		if user.Nick == nick {
