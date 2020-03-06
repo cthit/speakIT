@@ -36,6 +36,7 @@ export const LIST_POP = "LIST_POP";
 export const LIST_TITLE = "LIST_TITLE";
 export const LIST_SET_DISCUSSION_STATUS = "LIST_SET_DISCUSSION_STATUS";
 export const LIST_ADMIN_ADD_USER = "LIST_ADMIN_ADD_USER";
+export const LIST_ADMIN_REMOVE_SPEAKER = "LIST_ADMIN_REMOVE_SPEAKER";
 
 export const NOTES_EDIT = "NOTES_EDIT";
 
@@ -151,6 +152,14 @@ export const requestListAdminAddUser = (listId, nick) => {
 
 export const error = err => {
   return { type: ERROR, err };
+};
+
+export const adminDeleteUserFromList = (speakerNameToDelete, listId) => {
+  backend.send(LIST_ADMIN_REMOVE_SPEAKER, {
+    listId,
+    user: { nick: speakerNameToDelete }
+  });
+  return { type: LIST_WAITING, listId };
 };
 
 export const dispatchActionFromTopic = (topic, obj) => {

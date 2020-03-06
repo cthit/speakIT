@@ -24,16 +24,22 @@ import {
 	requestSetDiscussionStatus,
 	requestListAdminAddUser
 } from "../actions.js";
+import RemoveUserButton from "./RemoveUserButton.js";
 
-const createSpeakerRow = (user, index) => {
+const createSpeakerRow = (user, index, isAdmin, listId) => {
 	return (
 		<SpeakerRow key={user.id}>
-			{index === 0
-				? <CurrentSpeakerArrow name="angle-right" />
-				: <PlaceHolder name="angle-right" />}
-			<Speaker key={user.id}>
-				{user.nick}
-			</Speaker>
+      {index === 0 ? (
+        <CurrentSpeakerArrow name="angle-right" />
+      ) : (
+        <PlaceHolder name="angle-right" />
+      )}
+      <Speaker key={user.id}>{user.nick}</Speaker>
+      {isAdmin ? (
+        <RemoveUserButton speakerName={user.nick} listId={listId} />
+      ) : (
+        <PlaceHolder name="trash" />
+      )}
 		</SpeakerRow>
 	);
 };
@@ -194,7 +200,9 @@ class List extends Component {
 						First speakers list ({list.speakersQueue.length})
 					</SubListTitle>
 					{list.speakersQueue
-						.map((user, index) => createSpeakerRow(user, index))
+            .map((aSpeaker, index) =>
+              createSpeakerRow(aSpeaker, index, user.isAdmin, list.id)
+            )
 						.reduce(
 							(acc, item, i) =>
 								acc.concat(i === 0 ? [item] : [<HR key={i} />, item]),
@@ -205,7 +213,9 @@ class List extends Component {
 						Second speakers list ({list.secondSpeakersQueue.length})
 					</SubListTitle>
 					{list.secondSpeakersQueue
-						.map((user, index) => createSpeakerRow(user, index))
+            .map((aSpeaker, index) =>
+              createSpeakerRow(aSpeaker, index, user.isAdmin, list.id)
+            )
 						.reduce(
 							(acc, item, i) =>
 								acc.concat(i === 0 ? [item] : [<HR key={i} />, item]),
@@ -284,7 +294,10 @@ const Speaker = styled.div`
 	padding: 0.5em 0;
 `;
 
-const SpeakerRow = styled.div`display: flex;`;
+const SpeakerRow = styled.div`
+  display: flex;
+  align-items: center;
+`;
 
 const CurrentSpeakerArrow = styled(FontAwesome)`
   color: green;

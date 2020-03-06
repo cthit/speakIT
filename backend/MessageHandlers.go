@@ -61,6 +61,9 @@ type ListSetDiscussionStatus struct {
 type ListAdminAddUser struct {
 	hub *Hub
 }
+type ListAdminRemoveSpeaker struct {
+	hub *Hub
+}
 
 func CreateHandlers(hub *Hub) map[string]MessageHandler {
 	return map[string]MessageHandler{
@@ -81,6 +84,44 @@ func CreateHandlers(hub *Hub) map[string]MessageHandler {
 		messages.LIST_POP:                   ListPop{hub},
 		messages.LIST_SET_DISCUSSION_STATUS: ListSetDiscussionStatus{hub},
 		messages.LIST_ADMIN_ADD_USER:        ListAdminAddUser{hub},
+		messages.LIST_ADMIN_REMOVE_SPEAKER:  ListAdminRemoveSpeaker{hub},
+	}
+}
+
+func (m ListAdminRemoveSpeaker) handle(userEvent UserEvent) {
+	if ! userEvent.user.IsAdmin {
+		sendError(userEvent.user.input, "You aint admin bruh, suck it and stop using console to send commands u hacker cracker")
+		return
+	}
+
+	id, err := uuid.Parse(userEvent.ListId)
+	if err != nil {
+		sendError(userEvent.user.input, err.Error())
+		return
+	}
+	list, err := m.hub.getList(id)
+	if err != nil {
+		sendError(userEvent.user.input, err.Error())
+		return
+	}
+
+	userToRemoveFromList, err := m.hub.getUserFromName(userEvent.ReceivedUser.Nick);
+	if (err != nil) {
+		sendError(userEvent.user.input, err.Error())
+		return
+	}
+
+	ok := list.RemoveUser(userToRemoveFromList)
+	if !ok {
+		sendError(userEvent.user.input, "User not in list.")
+		return
+	}
+
+	resp, err := createListResponse(list)
+	if err != nil {
+		sendError(userEvent.user.input, err.Error())
+	} else {
+		m.hub.Broadcast(resp)
 	}
 }
 
