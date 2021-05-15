@@ -66,8 +66,8 @@ SpeakIT can also use docker and docker-compose for development so lets install t
 First we need to set a GOPATH variable, e.g. you could set it in a directory called `go` in your home directory:
 
 ```
-cd ~
-mkdir go
+$ cd ~
+$ mkdir go
 ```
 Now set the variable in your .profile by adding the following line
 
