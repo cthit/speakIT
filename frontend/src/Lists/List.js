@@ -22,7 +22,7 @@ import {
 	requestDeleteList,
 	requestPopList,
 	requestSetDiscussionStatus,
-	requestListAdminAddUser
+	requestListAdminAddUser, requestCreateList
 } from "../actions.js";
 import RemoveUserButton from "./RemoveUserButton.js";
 
@@ -77,6 +77,16 @@ class List extends Component {
 		const { list: { id } } = this.props;
 		store.dispatch(requestDeleteList(id));
 	};
+
+	resetList = () => {
+		if (this.props.inactive) {
+			return;
+		}
+
+		const { list: { title } } = this.props;
+		this.deleteList();
+		store.dispatch(requestCreateList(title))
+	}
 
 	nextSpeaker = () => {
 		if (this.props.inactive) {
@@ -160,7 +170,7 @@ class List extends Component {
 	};
 
 	renderAdminFooter = (listId, inactive) => {
-		return <AdminFooter onClick={this.deleteList} inactive={inactive} />;
+		return <AdminFooter deleteList={this.deleteList} resetList={this.resetList} inactive={inactive} />;
 	};
 
 	render() {

@@ -5,11 +5,16 @@ import { ToolBarButton } from "../SharedComponents.js";
 
 class AdminFooter extends Component {
 	render() {
-		const { className, onClick, inactive } = this.props;
+		const { className, resetList, deleteList, inactive } = this.props;
 		return (
-			<Footer className={className} onClick={onClick} inactive={inactive}>
-				End discussion <FontAwesome name="trash" />
-			</Footer>
+			<div>
+				<Footer className={className} onClick={resetList} inactive={inactive}>
+					Reset discussion <FontAwesome name="retweet" />
+				</Footer>
+				<Footer className={className} onClick={deleteList} inactive={inactive}>
+					End discussion <FontAwesome name="trash" />
+				</Footer>
+			</div>
 		);
 	}
 }
