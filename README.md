@@ -36,7 +36,7 @@ Now you should be able to search for and open vscode in your VM.
 
 ### Now we are going to install our other dependecnies
 The frontend part of SpeakIT is built with yarn, the easiest way to 
-install it is to install it via the node pakcage manager, so install npm 
+install is via the node pakcage manager, so install npm 
 first using:
 
 `$ sudo apt install npm`
@@ -48,8 +48,10 @@ Ather this we can install yarn with npm
 The backend is built with go so lets install go with the instructions at https://golang.org/doc/install
 
 1. Download the tar-ball "Download go for linux"
-2. Extract the archive you downloaded into /usr/local, creating a Go tree in /usr/local/go:
-3. `$ sudo tar -C /usr/local -xzf go1.16.4.linux-amd64.tar.gz`
+2. Extract the archive you downloaded into /usr/local, creating a Go tree in /usr/local/go using the following command
+
+`$ sudo tar -C /usr/local -xzf go1.16.4.linux-amd64.tar.gz`
+
 4. Edit your .profile file in your home directory and add the following line to the end of that file
 
 `export PATH=$PATH:/usr/local/go/bin`
