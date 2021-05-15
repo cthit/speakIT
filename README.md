@@ -48,14 +48,15 @@ Ather this we can install yarn with npm
 The backend is built with go so lets install go with the instructions at https://golang.org/doc/install
 
 1. Download the tar-ball "Download go for linux"
-2. Extract the archive you downloaded into /usr/local, creating a Go tree in /usr/local/go
-3. sudo tar -C /usr/local -xzf go1.16.4.linux-amd64.tar.gz
-4. Your .profile in your home directory and add the following line to the end of that file
+2. Extract the archive you downloaded into /usr/local, creating a Go tree in /usr/local/go:
+3. `$ sudo tar -C /usr/local -xzf go1.16.4.linux-amd64.tar.gz`
+4. Edit your .profile file in your home directory and add the following line to the end of that file
 
 `export PATH=$PATH:/usr/local/go/bin`
-5. From your terminal run the following command
-`$ source ~/.profile`
-6. Now `go version` should return the version you just installed
+
+5. From your terminal run the following command `$ source ~/.profile`
+
+6. Now `$ go version` should return the version you just installed
 
 SpeakIT can also use docker and docker-compose for development so lets install them.
 
