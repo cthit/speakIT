@@ -4,7 +4,7 @@
 ## Setup a development enviroment for SpeakIT
 This guide assumes you want to use a virtual machine instead of messing
 around in your host operative system, it is especially useful if you are
-using a windwos computer.
+using a windows computer.
 
 But the same dependecies are required regardless of what OS you are
 using so the instructions here should be somewhat relevant anyway.
