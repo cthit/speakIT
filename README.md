@@ -2,6 +2,12 @@
 [![CircleCI](https://circleci.com/gh/cthit/speakIT/tree/develop.svg?style=svg)](https://circleci.com/gh/cthit/speakIT/tree/develop)
 
 ## Setup a development enviroment for SpeakIT
+This guide assumes you want to use a virtual machine instead of messing
+around in your host operative system, it is especially useful if you are
+using a windwos computer.
+
+But the same dependecies are required regardless of what OS you are
+using so the instructions here should be somewhat relevant anyway.
 ### Install a new virtual machine with Ubuntu
 
 Download virtualbox for your current OS
