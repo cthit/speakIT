@@ -22,7 +22,8 @@ import {
 	requestDeleteList,
 	requestPopList,
 	requestSetDiscussionStatus,
-	requestListAdminAddUser, requestCreateList
+	requestListAdminAddUser,
+	requestCreateList
 } from "../actions.js";
 import RemoveUserButton from "./RemoveUserButton.js";
 
